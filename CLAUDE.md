@@ -1,6 +1,7 @@
 # SuryaSetu: AI-Powered Rooftop Solar Marketplace
 
 SELC Hackathon project, built with agentic coding. The brief is in [Problem statement.txt](Problem%20statement.txt). [SuryaSetu Architecture.html](SuryaSetu%20Architecture.html) is the source of truth for technology and design, except where the team's own documents in [docs/previous/](docs/previous/) override it: [db-schema.html](docs/previous/db-schema.html) for tables and columns, and [work-plan.html](docs/previous/work-plan.html) for the phases and the Partner A (backend, rules, AI) and Partner B (frontend, seed data, demo) split. Status and next tasks are in [docs/PLAN.md](docs/PLAN.md).
+SELC Hackathon project, built with agentic coding. The brief is in [Problem statement.txt](Problem%20statement.txt). [SuryaSetu Architecture.html](SuryaSetu%20Architecture.html) is the source of truth for technology and design. Status and next tasks are in [docs/PLAN.md](docs/PLAN.md). The `ui` branch follows Partner B's tasks in [docs/UI-PLAN.md](docs/UI-PLAN.md), from `docs/previous/work-plan.html`. [docs/ui-guide.html](docs/ui-guide.html) explains the UI flows and every file; update it whenever files in `ui/src` change.
 
 Households post rooftop solar needs under PM Surya Ghar, vendors respond with quotes, and an AI assistant helps the household decide. Judging: working request → quote → accept flow 30%, architecture 20%, scalability and deployment plan 20%, AI features with numbers calculated in code 20%, presentation 10%.
 
@@ -23,6 +24,11 @@ Households post rooftop solar needs under PM Surya Ghar, vendors respond with qu
 | Database | SQLite locally (`DATABASE_URL`); the same models run on PostgreSQL 16 with PostGIS in production. Tables from `db-schema.html`, JSON columns for AI output |
 | Storage | Local `uploads/` folder through multipart `POST /uploads`; object storage in production |
 | Background jobs | FastAPI `BackgroundTasks`, with an in-memory rate limiter and a cache on `ai_jobs.input_hash`. Redis and a separate worker are the production plan |
+| Frontend | Next.js 16 (React, TypeScript strict), Tailwind CSS 4, Leaflet with OpenStreetMap, JSON translations for `en`, `hi`, `gu` |
+| API | FastAPI, Pydantic 2, SQLAlchemy 2, GeoAlchemy2, Alembic |
+| Database | PostgreSQL 16 with PostGIS, JSONB for AI output |
+| Storage | MinIO locally, S3-compatible in production, presigned browser uploads |
+| Queue and cache | Redis with an `arq` worker, including the token bucket and response cache |
 | AI | Gemini Flash for vision and reasoning, Groq Whisper large-v3 for speech, Groq Llama as text fallback |
 | Realtime | Server-Sent Events |
 | Local run | `npm run api:dev` and the web dev server, no Docker |
@@ -34,7 +40,7 @@ Python code must run on 3.11 and 3.12. Containers use 3.12. TypeScript stays on 
 
 ```
 docker-compose.yml
-package.json              Task runner for both languages, npm workspace for web
+package.json              Task runner for Python tools. ui/ has its own package.json
 pyproject.toml            Ruff, mypy, pytest config
 scripts/py.mjs            Runs Python tools from .venv on any OS
 web/                      Next.js: app/(household), app/(vendor), components/, lib/, i18n/{en,hi,gu}.json
@@ -42,6 +48,12 @@ api/app/                  main.py, config.py, db.py, enums.py, models.py, schema
 api/app/llm/              gateway, ratelimit, guard, providers/{gemini,groq,fake}
 api/app/jobs/             photo_assess, voice_extract, quote_review, recommend
 api/openapi.json          Generated contract for the web types
+ui/src/routes/paths.ts    Main route file
+ui/src/app/               Next.js routes, thin files
+ui/src/tasks/<task>/      api.ts, mock.ts, types.ts, ui/ for each task
+ui/src/shared/            Client, session, i18n, design system, mock store
+api/app/                  main.py, routers/, services/, models.py, schemas.py
+api/alembic/              Migrations
 api/tests/
 rules/                    Pure package: sizing, subsidy, payback, scoring, checklist
 rules/pm_surya_ghar_v2024_03.yaml
@@ -54,15 +66,19 @@ docs/previous/            The team's schema, work plan and earlier architecture
 ```
 
 `rules/` does no I/O and imports nothing from `api/`. `api/` imports `rules`. `web/` talks only to the API.
+`rules/` does no I/O and imports nothing from `api/` or `worker/`. `api/` and `worker/` both import `rules`. `ui/` talks only to the API.
 
 ## Commands
 
 ```bash
+docker compose up        # Full stack
+cd ui && npm run dev     # UI on :3000, using the mock API by default
+cd ui && npm run verify  # UI typecheck, lint and tests
+cd ui && npm run test:e2e # Browser test of every journey, app must be running
 npm run verify           # Typecheck, lint, tests with coverage, both languages
 npm run typecheck
 npm run lint
 npm run test
-npm run test:e2e         # Playwright, AI_PROVIDER=fake
 npm run test:hooks       # Tests for .claude/hooks
 npm run api:dev          # API on :8000, docs at /docs
 npm run api:openapi      # Regenerate api/openapi.json after a schema change
@@ -76,7 +92,7 @@ Set up Python with `python -m venv .venv`, then `node scripts/py.mjs pip install
 
 **Python:** full type hints checked by mypy strict. Pydantic at every boundary: HTTP, env, LLM output. Routers call services, services call the database. Money is whole rupees in `int`, capacity is `Decimal` kW. No float arithmetic for money. Comments explain why, not what.
 
-**TypeScript:** strict, no `any`. Tailwind utilities only, with colours from theme tokens. Server Components by default, Client Components only for interaction. API types are generated from the FastAPI OpenAPI schema into `web/lib/api-types.ts`, never hand-written.
+**TypeScript:** strict, no `any`. Tailwind utilities only, with colours from theme tokens. Server Components by default, Client Components only for interaction. Types live in each task's `types.ts` until the backend publishes OpenAPI. `shared/mock/` is the only place the browser may calculate, and it is removed when the API is live.
 
 **Both:** secrets live only in `.env`, and each new variable goes in `.env.example`. Do not add a dependency if the stack already covers the need.
 
@@ -96,6 +112,9 @@ Write the failing test first for rules, API behaviour and bug fixes. For each ta
 | API | pytest on a temporary SQLite database | `api/tests/` | 70% |
 | AI jobs | pytest with the `fake` provider | `api/tests/` | 70% |
 | UI | Vitest, Testing Library | `web/**/*.test.tsx` | 70% |
+| API | pytest against real Postgres | `api/tests/` | 70% |
+| Worker | pytest with the `fake` provider | `worker/tests/` | 70% |
+| UI | Vitest, Testing Library | `ui/src/**/*.test.tsx` | 70% |
 | Main flow | Playwright | `e2e/` | Request → quote → accept |
 
 Never skip, delete or weaken a test to get to green. Tests never call a real LLM. If a check cannot run, say so instead of claiming it passed. Run `/verify` before calling a feature complete.
@@ -110,6 +129,9 @@ The main Claude session is the **delivery manager**. It reads `docs/PLAN.md`, as
 | `backend-engineer` | `api/` except the AI folders, `seed/` | Backend |
 | `frontend-engineer` | `web/` | Frontend |
 | `ai-engineer` | `api/app/llm/`, `api/app/jobs/` | AI features |
+| `backend-engineer` | `api/`, `seed/` | Backend |
+| `frontend-engineer` | `ui/` | Frontend |
+| `ai-engineer` | `worker/` | AI features |
 | `qa-reviewer` | `e2e/`, reads everything | Reviews and tests |
 
 Rules for working in parallel:

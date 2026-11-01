@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SuryaSetu UI Guide</title>
+<style>
+:root {
+  --bg: #f6f4ee; --surface: #fff; --ink: #1c2a26; --muted: #5b6863; --line: #dfdbd0;
+  --primary: #0f6b4f; --primary-soft: #dcefe6; --sun: #f5a524; --sun-soft: #fdf0d5; --sun-ink: #8a5400;
+  --info: #1d5fa8; --info-soft: #e0ecf8; --danger: #b3261e; --danger-soft: #fbe9e7;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131a18; --surface: #1c2523; --ink: #e6ecea; --muted: #a2afaa; --line: #33403c;
+    --primary: #5fcfa6; --primary-soft: #1d3a30; --sun: #f5b94c; --sun-soft: #3a2f16; --sun-ink: #f5c566;
+    --info: #8dbcf0; --info-soft: #1d2f44; --danger: #f0897d; --danger-soft: #3f1f1b;
+  }
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 16px; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 system-ui, "Segoe UI", "Noto Sans", sans-serif; }
+code, pre { font-family: ui-monospace, Consolas, "Cascadia Code", monospace; font-size: 0.86em; }
+code { overflow-wrap: anywhere; }
+a { color: var(--info); }
+h1 { font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0 0 12px; }
+h2 { font-size: 25px; line-height: 1.2; margin: 0 0 8px; }
+h3 { font-size: 18px; margin: 28px 0 8px; }
+p { margin: 0 0 12px; max-width: 74ch; }
+.layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 40px; max-width: 1180px; margin: 0 auto; padding: 32px 24px 64px; }
+nav { position: sticky; top: 16px; align-self: start; font-size: 14px; }
+nav a { display: block; padding: 5px 10px; color: var(--muted); text-decoration: none; border-radius: 6px; }
+nav a:hover { background: var(--surface); color: var(--ink); }
+nav strong { display: block; padding: 0 10px 8px; font-size: 17px; }
+section { padding: 32px 0; border-top: 1px solid var(--line); }
+header + section { border-top: 0; }
+.lede { font-size: 18px; color: var(--muted); }
+.note { background: var(--sun-soft); color: var(--ink); border-radius: 10px; padding: 12px 16px; margin: 16px 0; max-width: 74ch; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); margin: 12px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+th, td { padding: 9px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+th { font-weight: 600; color: var(--muted); }
+tr:last-child td { border-bottom: 0; }
+pre { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; overflow-x: auto; margin: 12px 0; }
+.layers { display: grid; gap: 6px; margin: 16px 0; max-width: 640px; }
+.layer { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--primary); border-radius: 8px; padding: 8px 14px; }
+.layer small { display: block; color: var(--muted); }
+.layer.switch { border-left-color: var(--sun); background: var(--sun-soft); }
+.arrow { color: var(--muted); padding-left: 16px; line-height: 1; }
+.fork { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+ol.flow { list-style: none; counter-reset: step; margin: 16px 0; padding: 0; }
+ol.flow > li { counter-increment: step; position: relative; padding: 0 0 16px 44px; }
+ol.flow > li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--primary); color: var(--surface); font-weight: 700; font-size: 14px; }
+ol.flow > li:not(:last-child)::after { content: ""; position: absolute; left: 14px; top: 34px; bottom: 2px; width: 2px; background: var(--line); }
+ol.flow.vendor > li::before { background: var(--info); }
+ol.flow.ai > li::before { background: var(--sun); color: #1c2a26; }
+.step { font-weight: 600; }
+.files { display: block; color: var(--muted); font-size: 14px; }
+.task { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 4px 16px 12px; margin: 12px 0; }
+.task h3 { margin: 12px 0 2px; }
+.task p { color: var(--muted); font-size: 15px; margin-bottom: 8px; }
+.task table { font-size: 14px; }
+.task th, .task td { padding: 6px 8px 6px 0; }
+.pill { display: inline-block; border-radius: 99px; padding: 1px 10px; font-size: 13px; font-weight: 600; }
+.yes { background: var(--primary-soft); color: var(--primary); }
+.no { background: var(--danger-soft); color: var(--danger); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 16px 0; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.stat b { display: block; font-size: 24px; }
+.stat span { color: var(--muted); font-size: 14px; }
+@media (max-width: 860px) {
+  .layout { grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 20px 16px 48px; }
+  nav { position: static; display: flex; flex-wrap: wrap; gap: 2px; }
+  nav strong { width: 100%; }
+  .fork { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav aria-label="Sections">
+    <strong>UI Guide</strong>
+    <a href="#run">Run it</a>
+    <a href="#how">How a page works</a>
+    <a href="#flows">User flows</a>
+    <a href="#routes">Routes</a>
+    <a href="#tasks">Task folders</a>
+    <a href="#shared">Shared files</a>
+    <a href="#numbers">Who calculates what</a>
+    <a href="#tests">Tests</a>
+    <a href="#live">Moving to the real API</a>
+    <a href="#update">Keeping this updated</a>
+  </nav>
+
+  <main>
+    <header>
+      <h1>SuryaSetu UI Guide</h1>
+      <p class="lede">How the screens work, and which file does which job. For Partner B and anyone joining the <code>ui</code> branch.</p>
+    </header>
+
+    <section id="run">
+      <h2>Run it</h2>
+      <pre>cd ui
+npm install      # first time only
+npm run dev      # http://localhost:3000</pre>
+      <p>Sign in with phones <code>9000000001</code> (household), <code>9000000002</code> (vendor) or <code>9000000003</code> (admin). The demo buttons on the sign-in page only fill in the phone number. Every sign-in still needs the code <code>123456</code>.</p>
+      <div class="note"><strong>All data is sample data for now.</strong> The backend does not exist yet, so the app runs on a mock API inside the browser. Your changes are saved in that browser's local storage. To start again, run <code>localStorage.clear()</code> in the browser console.</div>
+    </section>
+
+    <section id="how">
+      <h2>How a page works</h2>
+      <p>Every screen follows the same path. A route file stays thin, the task folder does the work, and one setting decides whether data comes from the mock or the real API.</p>
+      <div class="layers">
+        <div class="layer"><code>src/routes/paths.ts</code><small>Every URL is defined here</small></div>
+        <div class="arrow">↓</div>
+        <div class="layer"><code>src/app/…/page.tsx</code><small>Next.js route: checks the role, then renders a task's page</small></div>
+        <div class="arrow">↓</div>
+        <div class="layer"><code>src/tasks/&lt;task&gt;/ui/</code><small>The screen the user sees</small></div>
+        <div class="arrow">↓</div>
+        <div class="layer switch"><code>src/tasks/&lt;task&gt;/api.ts</code><small>The switch: checks <code>NEXT_PUBLIC_API_MODE</code></small></div>
+        <div class="arrow">↓</div>
+        <div class="fork">
+          <div class="layer"><code>mock.ts</code><small>Used now. Sample data in the browser</small></div>
+          <div class="layer"><code>shared/api/client.ts</code><small>Used later. Calls Partner A's API</small></div>
+        </div>
+      </div>
+      <h3>Every task folder has the same four parts</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th scope="col">File</th><th scope="col">Job</th></tr></thead>
+        <tbody>
+          <tr><td><code>api.ts</code></td><td>The endpoints this task calls</td></tr>
+          <tr><td><code>mock.ts</code></td><td>The same functions with sample data</td></tr>
+          <tr><td><code>types.ts</code></td><td>The shapes of this task's data</td></tr>
+          <tr><td><code>ui/</code></td><td>Screens and components, with their tests beside them</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="flows">
+      <h2>User flows</h2>
+      <p>Together these make the request → quote → accept path, worth 30% of the judging score.</p>
+
+      <h3>Household: post a request</h3>
+      <ol class="flow">
+        <li><span class="step">Sign in</span> with phone and OTP. A code is valid once, for 5 minutes and 5 attempts.
+          <span class="files"><code>tasks/auth/ui/LoginPage.tsx</code> · <code>POST /auth/otp</code>, <code>POST /auth/verify</code></span></li>
+        <li><span class="step">See my requests.</span> The list shows only this household's requests.
+          <span class="files"><code>tasks/my-requests/ui/MyRequestsPage.tsx</code> · <code>GET /requests/mine</code></span></li>
+        <li><span class="step">Pin the home</span> with the device location, an address search or a map click, then drag the pin onto the roof. Satellite view helps find it.
+          <span class="files"><code>tasks/new-request/ui/MapPicker.tsx</code>, <code>tasks/new-request/location.ts</code></span></li>
+        <li><span class="step">Speak the requirement (optional)</span> in English, Hindi or Gujarati. The browser turns speech into text, the app reads the numbers from it, and the household checks the form. Nothing posts by itself.
+          <span class="files"><code>tasks/voice-input/ui/VoiceInput.tsx</code>, <code>tasks/voice-input/speech.ts</code>, <code>tasks/voice-input/parse.ts</code></span></li>
+        <li><span class="step">Enter usage, budget and roof area, and add a terrace photo.</span>
+          <span class="files"><code>tasks/new-request/ui/NewRequestPage.tsx</code> · <code>POST /uploads</code></span></li>
+        <li><span class="step">Post and see the estimate:</span> size, subsidy, cost, saving and payback, each with its working and source.
+          <span class="files"><code>tasks/rule-sources/ui/EstimateCard.tsx</code>, <code>tasks/rule-sources/ui/RuleSource.tsx</code> · <code>POST /requests</code>, <code>GET /rules/current</code></span></li>
+      </ol>
+
+      <h3>AI: terrace photo check</h3>
+      <ol class="flow ai">
+        <li><span class="step">The page shows "AI review in progress".</span> The estimate stays usable meanwhile.
+          <span class="files"><code>tasks/roof-assessment/ui/RoofAssessmentPanel.tsx</code></span></li>
+        <li><span class="step">The page checks every 2 seconds</span> until the result arrives.
+          <span class="files"><code>GET /requests/{id}/assessment</code></span></li>
+        <li><span class="step">Obstruction boxes appear over the photo,</span> with usable area and the roof's kW limit. If the AI fails, only this panel changes.</li>
+      </ol>
+
+      <h3>Vendor: send a quote</h3>
+      <ol class="flow vendor">
+        <li><span class="step">See open requests on the map.</span> The location is rounded to about 500 m, and no phone number is shown.
+          <span class="files"><code>tasks/vendor-map/ui/VendorMapPage.tsx</code>, <code>tasks/vendor-map/ui/RequestsMap.tsx</code> · <code>GET /requests/open?bbox=</code></span></li>
+        <li><span class="step">Pick a request</span> from the map or the list beside it.</li>
+        <li><span class="step">Fill in the quote:</span> price, panel, inverter, warranty, timeline and what is included.
+          <span class="files"><code>tasks/quote-form/ui/QuoteFormPage.tsx</code> · <code>GET /vendor/requests/{id}</code>, <code>POST /requests/{id}/quotes</code></span></li>
+        <li><span class="step">The request becomes "Quotes received"</span> for the household.</li>
+      </ol>
+
+      <h3>Household: compare and accept</h3>
+      <ol class="flow">
+        <li><span class="step">Compare quotes side by side,</span> as a table on desktop and cards on a phone. Best values are marked.
+          <span class="files"><code>tasks/compare-quotes/ui/QuoteComparison.tsx</code> · <code>GET /requests/{id}/quotes</code></span></li>
+        <li><span class="step">See problems:</span> missing items, non-DCR panels, a system bigger than the roof, and a warning on any quote with hidden AI instructions.</li>
+        <li><span class="step">Get a recommendation.</span> The ranking comes from code, and the AI only writes the reasons.
+          <span class="files"><code>tasks/recommendation/ui/RecommendationCard.tsx</code> · <code>POST /requests/{id}/recommendation</code></span></li>
+        <li><span class="step">Accept one quote</span> and confirm on the page. The other quotes are declined.
+          <span class="files"><code>POST /quotes/{id}/accept</code></span></li>
+        <li><span class="step">Contact details open up.</span> The household sees the vendor's phone, and the vendor sees the household's phone and exact location.</li>
+      </ol>
+
+      <h3>Admin: run the marketplace</h3>
+      <ol class="flow vendor">
+        <li><span class="step">Watch the dashboard:</span> totals, trends, and alerts for work waiting.
+          <span class="files"><code>tasks/admin/ui/AdminPage.tsx</code>, <code>tasks/admin/ui/charts.tsx</code> · <code>GET /admin/overview</code></span></li>
+        <li><span class="step">Manage requests:</span> search, filter, export to CSV, and cancel an active request.
+          <span class="files"><code>tasks/admin/ui/AdminRequestsPage.tsx</code></span></li>
+        <li><span class="step">Manage vendors:</span> verify, reject, suspend or reinstate. A suspended vendor cannot sign in.
+          <span class="files"><code>tasks/admin/ui/AdminVendorsPage.tsx</code></span></li>
+        <li><span class="step">Review flagged quotes:</span> see the hidden text, mark it reviewed, or suspend the vendor. Each action goes in the activity log.
+          <span class="files"><code>tasks/admin/ui/AdminReviewPage.tsx</code></span></li>
+      </ol>
+    </section>
+
+    <section id="routes">
+      <h2>Routes</h2>
+      <p>All paths are defined in <code>ui/src/routes/paths.ts</code>.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th scope="col">URL</th><th scope="col">Who</th><th scope="col">Route file</th><th scope="col">Screen</th></tr></thead>
+        <tbody>
+          <tr><td><code>/</code></td><td>Anyone</td><td><code>ui/src/app/page.tsx</code></td><td>Redirects to login</td></tr>
+          <tr><td><code>/login</code></td><td>Anyone</td><td><code>ui/src/app/login/page.tsx</code></td><td><code>LoginPage</code></td></tr>
+          <tr><td><code>/household</code></td><td>Household</td><td><code>ui/src/app/household/page.tsx</code></td><td><code>MyRequestsPage</code></td></tr>
+          <tr><td><code>/household/new</code></td><td>Household</td><td><code>ui/src/app/household/new/page.tsx</code></td><td><code>NewRequestPage</code></td></tr>
+          <tr><td><code>/household/requests/[id]</code></td><td>Household</td><td><code>ui/src/app/household/requests/[id]/page.tsx</code></td><td><code>RequestDetailPage</code></td></tr>
+          <tr><td><code>/vendor</code></td><td>Vendor</td><td><code>ui/src/app/vendor/page.tsx</code></td><td><code>VendorMapPage</code></td></tr>
+          <tr><td><code>/vendor/requests/[id]</code></td><td>Vendor</td><td><code>ui/src/app/vendor/requests/[id]/page.tsx</code></td><td><code>QuoteFormPage</code></td></tr>
+          <tr><td><code>/admin</code></td><td>Admin</td><td><code>ui/src/app/admin/page.tsx</code></td><td><code>AdminPage</code></td></tr>
+          <tr><td><code>/admin/requests</code></td><td>Admin</td><td><code>ui/src/app/admin/requests/page.tsx</code></td><td><code>AdminRequestsPage</code></td></tr>
+          <tr><td><code>/admin/vendors</code></td><td>Admin</td><td><code>ui/src/app/admin/vendors/page.tsx</code></td><td><code>AdminVendorsPage</code></td></tr>
+          <tr><td><code>/admin/review</code></td><td>Admin</td><td><code>ui/src/app/admin/review/page.tsx</code></td><td><code>AdminReviewPage</code></td></tr>
+        </tbody>
+      </table></div>
+      <p>A visitor who isn't signed in goes to login, and the wrong role goes to its own home. This is only a convenience: the real API must enforce every role itself.</p>
+    </section>
+
+    <section id="tasks">
+      <h2>Task folders</h2>
+      <p>Each folder matches tasks in <a href="UI-PLAN.md">UI-PLAN.md</a>. Folders normally have <code>api.ts</code>, <code>mock.ts</code> and <code>types.ts</code>. <code>voice-input</code> has no mock, because it uses real speech recognition in the browser.</p>
+
+      <div class="task"><h3>auth</h3><p>Sign in with OTP. Work plan 3.7.</p>
+        <table><tbody>
+          <tr><td><code>ui/src/tasks/auth/api.ts</code></td><td><code>requestOtp</code>, <code>verifyOtp</code></td></tr>
+          <tr><td><code>ui/src/tasks/auth/mock.ts</code></td><td>Issues a code per phone, with expiry and an attempt limit. Refuses suspended vendors</td></tr>
+          <tr><td><code>ui/src/tasks/auth/types.ts</code></td><td>OTP inputs, demo phone numbers</td></tr>
+          <tr><td><code>ui/src/tasks/auth/ui/LoginPage.tsx</code></td><td>Phone and code form, demo buttons</td></tr>
+        </tbody></table></div>
+
+      <div class="task"><h3>new-request</h3><p>Pin, form, photo and posting. Work plan 1.7 and 3.8.</p>
+        <table><tbody>
+          <tr><td><code>ui/src/tasks/new-request/api.ts</code></td><td><code>uploadFile</code>, <code>createRequest</code>, <code>searchAddress</code></td></tr>
+          <tr><td><code>ui/src/tasks/new-request/mock.ts</code></td><td>Stores the photo and request, starts the sample AI review</td></tr>
+          <tr><td><code>ui/src/tasks/new-request/types.ts</code></td><td>Request input, location, uploaded file</td></tr>
+          <tr><td><code>ui/src/tasks/new-request/ui/NewRequestPage.tsx</code></td><td>The whole form, validation and result</td></tr>
+          <tr><td><code>ui/src/tasks/new-request/ui/MapPicker.tsx</code></td><td>Leaflet map: click or drag the pin, accuracy circle, satellite view</td></tr>
+          <tr><td><code>ui/src/tasks/new-request/location.ts</code></td><td>Device location at high accuracy, keeping the best position found</td></tr>
+        </tbody></table></div>
+
+      <div class="task"><h3>voice-input</h3><p>Speak the requirement in three languages. Work plan 4.7.</p>
+        <table><tbody>
+          <tr><td><code>ui/src/tasks/voice-input/speech.ts</code></td><td>Live dictation through the browser's speech recognition</td></tr>
+          <tr><td><code>ui/src/tasks/voice-input/parse.ts</code></td><td>Reads units, budget and roof area from the spoken text in three languages</td></tr>
+          <tr><td><code>ui/src/tasks/voice-input/types.ts</code></td><td>Extracted fields and speech errors</td></tr>
+          <tr><td><code>ui/src/tasks/voice-input/ui/VoiceInput.tsx</code></td><td>Language picker, live transcript and result</td></tr>
+        </tbody></table></div>
+
+      <div class="task"><h3>rule-sources</h3><p>The estimate and where each rule comes from. Work plan 3.8.</p>
+        <table><tbody>
+          <tr><td><code>ui/src/tasks/rule-sources/api.ts</code></td><td><code>getCurrentRules</code></td></tr>
+          <tr><td><code>ui/src/tasks/rule-sources/mock.ts</code></td><td>Rule list copied from <code>rules/</code></td></tr>
+          <tr><td><code>ui/src/tasks/rule-sources/types.ts</code></td><td>Rule set and citation</td></tr>
+          <tr><td><code>ui/src/tasks/rule-sources/ui/EstimateCard.tsx</code></td><td>Five headline numbers and "How was this calculated?"</td></tr>
+          <tr><td><code>ui/src/tasks/rule-sources/ui/RuleSource.tsx</code></td><td>The ⓘ source link and "Estimate" label</td></tr>
+        </tbody></table></div>
+
+      <div class="task"><h3>my-requests</h3><p>The household's list and detail page. Work plan 3.9.</p>
+        <table><tbody>
+          <tr><td><code>ui/src/tasks/my-requests/api.ts</code></td><td><code>listMyRequests</code>, <code>getRequest</code></td></tr>
+          <tr><td><code>ui/src/tasks/my-requests/mock.ts</code></td><td>Returns only this household's requests</td></tr>
+          <tr><td><code>ui/src/tasks/my-requests/types.ts</code></td><td>Request type</td></tr>
+          <tr><td><code>ui/src/tasks/my-requests/ui/MyRequestsPage.tsx</code></td><td>List with status badges</td></tr>
+          <tr><td><code>ui/src/tasks/my-requests/ui/RequestDetailPage.tsx</code></td><td>Joins the estimate, photo check and quotes on one page</td></tr>
+        </tbody></table></div>
+
+      <div class="task"><h3>roof-assessment</h3><p>AI photo result. Work plan 4.6 and 4.9.</p>
+        <table><tbody>
+          <tr><td><code>ui/src/tasks/roof-assessment/api.ts</code></td><td><code>getAssessment</code></td></tr>
+          <tr><td><code>ui/src/tasks/roof-assessment/mock.ts</code></td><td>Sample result after a short wait</td></tr>
+          <tr><td><code>ui/src/tasks/roof-assessment/types.ts</code></td><td>Assessment and obstruction boxes</td></tr>
+          <tr><td><code>ui/src/tasks/roof-assessment/ui/RoofAssessmentPanel.tsx</code></td><td>Pending, failed and done states, boxes over the photo</td></tr>
+        </tbody></table></div>
+
+      <div class="task"><h3>vendor-map</h3><p>Open requests on a map. Work plan 3.10.</p>
+        <table><tbody>
+          <tr><td><code>ui/src/tasks/vendor-map/api.ts</code></td><td><code>listOpenRequests</code></td></tr>
+          <tr><td><code>ui/src/tasks/vendor-map/mock.ts</code></td><td>Filters by map area, rounds location to about 500 m</td></tr>
+          <tr><td><code>ui/src/tasks/vendor-map/types.ts</code></td><td>Open request with no phone or exact location</td></tr>
+          <tr><td><code>ui/src/tasks/vendor-map/ui/VendorMapPage.tsx</code></td><td>Map, list and details panel</td></tr>
+          <tr><td><code>ui/src/tasks/vendor-map/ui/RequestsMap.tsx</code></td><td>Leaflet map with request pins</td></tr>
+        </tbody></table></div>
+
+      <div class="task"><h3>quote-form</h3><p>The vendor's quote. Work plan 3.10.</p>
+        <table><tbody>
+          <tr><td><code>ui/src/tasks/quote-form/api.ts</code></td><td><code>getVendorRequest</code>, <code>submitQuote</code></td></tr>
+          <tr><td><code>ui/src/tasks/quote-form/mock.ts</code></td><td>Stores the quote and rescores the request's quotes</td></tr>
+          <tr><td><code>ui/src/tasks/quote-form/types.ts</code></td><td>Quote input and vendor's view of a request</td></tr>
+          <tr><td><code>ui/src/tasks/quote-form/ui/QuoteFormPage.tsx</code></td><td>Quote form, submitted and accepted states</td></tr>
+        </tbody></table></div>
+
+      <div class="task"><h3>compare-quotes</h3><p>Comparison and accept. Work plan 3.11 and 4.8.</p>
+        <table><tbody>
+          <tr><td><code>ui/src/tasks/compare-quotes/api.ts</code></td><td><code>listQuotes</code>, <code>acceptQuote</code></td></tr>
+          <tr><td><code>ui/src/tasks/compare-quotes/mock.ts</code></td><td>Sorts by score, accepts one and declines the rest</td></tr>
+          <tr><td><code>ui/src/tasks/compare-quotes/types.ts</code></td><td>Quote, review, warnings, score</td></tr>
+          <tr><td><code>ui/src/tasks/compare-quotes/ui/QuoteComparison.tsx</code></td><td>Table, phone cards, chips, injection warning, accept</td></tr>
+        </tbody></table></div>
+
+      <div class="task"><h3>recommendation</h3><p>Recommended vendor with reasons. Work plan 4.8 and 4.9.</p>
+        <table><tbody>
+          <tr><td><code>ui/src/tasks/recommendation/api.ts</code></td><td><code>getRecommendation</code></td></tr>
+          <tr><td><code>ui/src/tasks/recommendation/mock.ts</code></td><td>Ranks by score, fills in template reasons</td></tr>
+          <tr><td><code>ui/src/tasks/recommendation/types.ts</code></td><td>Ranking and reasons</td></tr>
+          <tr><td><code>ui/src/tasks/recommendation/ui/RecommendationCard.tsx</code></td><td>Button, loading, failure and result</td></tr>
+        </tbody></table></div>
+
+      <div class="task"><h3>admin</h3><p>Dashboard and marketplace management. The route is in work plan 1.6.</p>
+        <table><tbody>
+          <tr><td><code>ui/src/tasks/admin/api.ts</code></td><td>Overview, requests, vendors and flagged quotes, with their actions</td></tr>
+          <tr><td><code>ui/src/tasks/admin/mock.ts</code></td><td>Calculates the dashboard, applies each action, writes the activity log</td></tr>
+          <tr><td><code>ui/src/tasks/admin/types.ts</code></td><td>Overview, vendor statuses, activity entries</td></tr>
+          <tr><td><code>ui/src/tasks/admin/ui/AdminPage.tsx</code></td><td>Dashboard</td></tr>
+          <tr><td><code>ui/src/tasks/admin/ui/charts.tsx</code></td><td>Column and bar charts, each with a screen reader table</td></tr>
+          <tr><td><code>ui/src/tasks/admin/ui/AdminRequestsPage.tsx</code></td><td>Search, filter, export, cancel</td></tr>
+          <tr><td><code>ui/src/tasks/admin/ui/AdminVendorsPage.tsx</code></td><td>Verify, reject, suspend, reinstate, export</td></tr>
+          <tr><td><code>ui/src/tasks/admin/ui/AdminReviewPage.tsx</code></td><td>Flagged quote queue</td></tr>
+        </tbody></table></div>
+    </section>
+
+    <section id="shared">
+      <h2>Shared files</h2>
+      <p>Code used by more than one task.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th scope="col">File</th><th scope="col">Job</th></tr></thead>
+        <tbody>
+          <tr><td><code>ui/src/routes/paths.ts</code></td><td>All URLs, each role's home page and menu</td></tr>
+          <tr><td><code>ui/src/shared/api/client.ts</code></td><td>Calls the real API, adds the login token, handles errors, decides mock or live</td></tr>
+          <tr><td><code>ui/src/shared/api/session.ts</code></td><td>Stores and reads the signed-in user</td></tr>
+          <tr><td><code>ui/src/shared/hooks/useAsync.ts</code></td><td>Loading, error, data and reload for a screen</td></tr>
+          <tr><td><code>ui/src/shared/lib/format.ts</code></td><td>Rupee, kW, distance and date formatting</td></tr>
+          <tr><td><code>ui/src/shared/lib/csv.ts</code></td><td>CSV export, safe against spreadsheet formulas</td></tr>
+          <tr><td><code>ui/src/shared/types/common.ts</code></td><td>Roles, statuses, request and calculation types</td></tr>
+          <tr><td><code>ui/src/shared/i18n/I18nProvider.tsx</code></td><td>Language switching, the <code>useI18n</code> hook</td></tr>
+          <tr><td><code>ui/src/shared/i18n/en.json</code></td><td>English text</td></tr>
+          <tr><td><code>ui/src/shared/i18n/hi.json</code></td><td>Hindi text</td></tr>
+          <tr><td><code>ui/src/shared/i18n/gu.json</code></td><td>Gujarati text</td></tr>
+          <tr><td><code>ui/src/shared/ui/primitives.tsx</code></td><td>Design system: Button, Card, SectionCard, Field, StatusBadge, StatCard, and loading, error and empty states</td></tr>
+          <tr><td><code>ui/src/shared/ui/AppShell.tsx</code></td><td>Sidebar, top bar, phone menu, sign out</td></tr>
+          <tr><td><code>ui/src/shared/ui/LanguagePicker.tsx</code></td><td>Language menu</td></tr>
+          <tr><td><code>ui/src/shared/ui/RequireRole.tsx</code></td><td>Sends visitors away from pages that aren't for their role</td></tr>
+          <tr><td><code>ui/src/shared/mock/engine.ts</code></td><td>Stand-in for the backend's calculations, removed when the API is live</td></tr>
+          <tr><td><code>ui/src/shared/mock/seed.ts</code></td><td>Sample users, vendors, requests and quotes</td></tr>
+          <tr><td><code>ui/src/shared/mock/store.ts</code></td><td>Stand-in database in browser storage</td></tr>
+          <tr><td><code>ui/src/app/layout.tsx</code></td><td>Page frame, fonts and language provider</td></tr>
+          <tr><td><code>ui/src/app/globals.css</code></td><td>Colour tokens and base styles</td></tr>
+          <tr><td><code>ui/src/test-setup.ts</code></td><td>Runs before each unit test</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="numbers">
+      <h2>Who calculates what</h2>
+      <p>The brief requires subsidy, cost and payback to be calculated in code, and never guessed by the LLM. The UI only displays them.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th scope="col">Output</th><th scope="col">Now, in the demo</th><th scope="col">With the real backend</th></tr></thead>
+        <tbody>
+          <tr><td>Size, subsidy, payback</td><td><code>shared/mock/engine.ts</code></td><td><code>rules/</code></td></tr>
+          <tr><td>Missing items, warnings</td><td><code>shared/mock/engine.ts</code></td><td><code>rules/checklist.py</code></td></tr>
+          <tr><td>Scores and ranking</td><td><code>shared/mock/engine.ts</code></td><td><code>rules/scoring.py</code></td></tr>
+          <tr><td>Photo findings</td><td>Fixed sample, the photo is not read</td><td>Gemini vision</td></tr>
+          <tr><td>Spoken text</td><td>Browser speech recognition, real</td><td>Browser, or Groq Whisper once the API is ready</td></tr>
+          <tr><td>Fields from speech</td><td><code>tasks/voice-input/parse.ts</code>, real</td><td>Same, or the LLM job</td></tr>
+          <tr><td>Recommendation reasons</td><td>Template text</td><td>LLM, from the score table only</td></tr>
+        </tbody>
+      </table></div>
+      <p>Tests hold the mock to the same golden example as <code>rules/tests/test_golden.py</code>: 330 units, 3 kW, ₹78,000 subsidy, ₹25,740 saved a year, 4.2 year payback.</p>
+    </section>
+
+    <section id="tests">
+      <h2>Tests</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th scope="col">Suite</th><th scope="col">Command</th><th scope="col">Covers</th></tr></thead>
+        <tbody>
+          <tr><td>UI unit tests</td><td><code>cd ui &amp;&amp; npm run verify</code></td><td>Typecheck, lint, and tests beside each component</td></tr>
+          <tr><td>Full journey</td><td><code>cd ui &amp;&amp; npm run test:e2e</code></td><td>A real browser against the running app. Screenshots go to <code>ui/e2e/output/</code></td></tr>
+          <tr><td>Rules engine</td><td><code>npm run verify</code> at the repo root</td><td>Subsidy, sizing, payback, scoring</td></tr>
+          <tr><td>Claude Code hooks</td><td><code>npm run test:hooks</code> at the repo root</td><td>The automatic checks</td></tr>
+        </tbody>
+      </table></div>
+      <h3>Last run</h3>
+      <div id="results">
+        <p>Run on 2026-11-01 on sample data, in headless Chrome on Windows.</p>
+        <div class="stats">
+          <div class="stat"><b>105 / 105</b><span>Browser checks</span></div>
+          <div class="stat"><b>143 / 143</b><span>UI unit tests</span></div>
+          <div class="stat"><b>61 / 61</b><span>Rules engine tests</span></div>
+          <div class="stat"><b>25 / 25</b><span>Hook tests</span></div>
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr><th scope="col">Browser journey</th><th scope="col">Checks</th><th scope="col">Result</th></tr></thead>
+          <tbody>
+            <tr><td>Sign in and access</td><td>17</td><td><span class="pill yes">Pass</span></td></tr>
+            <tr><td>Household: new request</td><td>8</td><td><span class="pill yes">Pass</span></td></tr>
+            <tr><td>Household: exact location</td><td>9</td><td><span class="pill yes">Pass</span></td></tr>
+            <tr><td>Household: voice input</td><td>8</td><td><span class="pill yes">Pass</span></td></tr>
+            <tr><td>Household: estimate and photo check</td><td>9</td><td><span class="pill yes">Pass</span></td></tr>
+            <tr><td>Vendor: map and quote</td><td>8</td><td><span class="pill yes">Pass</span></td></tr>
+            <tr><td>Household: compare, recommend, accept</td><td>19</td><td><span class="pill yes">Pass</span></td></tr>
+            <tr><td>After acceptance</td><td>3</td><td><span class="pill yes">Pass</span></td></tr>
+            <tr><td>Admin dashboard and actions</td><td>10</td><td><span class="pill yes">Pass</span></td></tr>
+            <tr><td>Languages</td><td>3</td><td><span class="pill yes">Pass</span></td></tr>
+            <tr><td>Phone width, 360 px</td><td>10</td><td><span class="pill yes">Pass</span></td></tr>
+            <tr><td>Browser console has no errors</td><td>1</td><td><span class="pill yes">Pass</span></td></tr>
+          </tbody>
+        </table></div>
+        <h3>Not tested yet</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th scope="col">Area</th><th scope="col">Why</th></tr></thead>
+          <tbody>
+            <tr><td>The real API, Gemini and Whisper</td><td>The backend still returns "not implemented"</td></tr>
+            <tr><td>Real speech recognition</td><td>Headless Chrome cannot hear, so the test supplies the transcript. The transcript handling and number reading are real</td></tr>
+            <tr><td>A real GPS position</td><td>The test supplies the position. A laptop without GPS can only give an estimate</td></tr>
+            <tr><td>A real terrace photo</td><td>Needs real photos. The sample AI result does not read the photo</td></tr>
+            <tr><td>Real phones and Safari</td><td>Phone width was tested in desktop Chrome only</td></tr>
+            <tr><td>Hindi and Gujarati wording</td><td>Needs a native speaker's review</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <section id="live">
+      <h2>Moving to the real API</h2>
+      <ol>
+        <li>The API must add the <code>/admin</code> routes listed in <a href="UI-PLAN.md">UI-PLAN.md</a>, and enforce the OTP limits itself.</li>
+        <li>Create <code>ui/.env.local</code> with <code>NEXT_PUBLIC_API_MODE=live</code> and <code>NEXT_PUBLIC_API_URL</code>. See <code>ui/.env.example</code>.</li>
+        <li>Compare each task's <code>types.ts</code> with Partner A's OpenAPI, and fix any differences there.</li>
+        <li>Once every task works live, delete <code>ui/src/shared/mock/</code> and each <code>mock.ts</code>.</li>
+      </ol>
+      <p>The endpoint list and open questions for Partner A are in <a href="UI-PLAN.md">UI-PLAN.md</a>.</p>
+    </section>
+
+    <section id="update">
+      <h2>Keeping this updated</h2>
+      <p>When you add, move or delete a file in <code>ui/src</code>, update this page in the same change. <code>src/routes/guide.test.ts</code> fails if this page names a file that doesn't exist, or leaves out a source file.</p>
+    </section>
+  </main>
+</div>
+</body>
+</html>

@@ -2,7 +2,7 @@
 // tests that cover it, so a break is reported on the step that caused it.
 import { existsSync } from 'node:fs';
 import { basename, join } from 'node:path';
-import { block, hasWebTool, isInsideRepo, readInput, root, sh, tail, toRepoPath, venvPython } from './lib/common.mjs';
+import { block, hasUiTool, isInsideRepo, readInput, root, sh, tail, toRepoPath, venvPython } from './lib/common.mjs';
 
 const filePath = readInput().tool_input?.file_path;
 if (!filePath) process.exit(0);
@@ -14,7 +14,7 @@ if (skipped || /["$`%]/.test(repoPath)) process.exit(0);
 
 const failures = [];
 if (repoPath.endsWith('.py')) checkPython();
-if (repoPath.startsWith('web/')) checkWeb();
+if (repoPath.startsWith('ui/')) checkUi();
 if (failures.length > 0) block(failures.join('\n\n'));
 remindAboutTests();
 
@@ -33,19 +33,19 @@ function checkPython() {
   }
 }
 
-function checkWeb() {
-  const webRoot = join(root, 'web');
-  const quoted = `"${repoPath.slice('web/'.length)}"`;
-  if (/\.(tsx?|json|css|md)$/.test(repoPath) && hasWebTool('prettier')) {
-    sh(`npx --no-install prettier --write --ignore-unknown ${quoted}`, 30_000, webRoot);
+function checkUi() {
+  const uiRoot = join(root, 'ui');
+  const quoted = `"${repoPath.slice('ui/'.length)}"`;
+  if (/\.(tsx?|json|css|md)$/.test(repoPath) && hasUiTool('prettier')) {
+    sh(`npx --no-install prettier --write --ignore-unknown ${quoted}`, 30_000, uiRoot);
   }
   if (!/\.tsx?$/.test(repoPath)) return;
-  if (hasWebTool('eslint')) {
-    const lint = sh(`npx --no-install eslint --fix ${quoted}`, 60_000, webRoot);
+  if (hasUiTool('eslint')) {
+    const lint = sh(`npx --no-install eslint --fix ${quoted}`, 60_000, uiRoot);
     if (!lint.ok) failures.push(`ESLint failed for ${repoPath}:\n${tail(lint.output)}`);
   }
-  if (hasWebTool('vitest')) {
-    const tests = sh(`npx --no-install vitest related ${quoted} --run --passWithNoTests`, 120_000, webRoot);
+  if (hasUiTool('vitest')) {
+    const tests = sh(`npx --no-install vitest related ${quoted} --run --passWithNoTests`, 120_000, uiRoot);
     if (!tests.ok) failures.push(`Tests affected by ${repoPath} failed:\n${tail(tests.output)}`);
   }
 }
@@ -58,8 +58,8 @@ function expectedTests(path) {
   if (pythonSource && !pythonExempt) {
     return [`${path.split('/')[0]}/tests/test_${name}`];
   }
-  const webSource = /^web\/(components|lib)\/.+\.tsx?$/.test(path);
-  if (webSource && !/\.(test|spec)\.|\.d\.ts$|\/index\.tsx?$/.test(path)) {
+  const uiSource = /^ui\/src\/(tasks|shared)\/.+\.tsx?$/.test(path);
+  if (uiSource && !/\.(test|spec)\.|\.d\.ts$|\/(types|api|mock)\.ts$|\/shared\/mock\//.test(path)) {
     const stem = path.replace(/\.tsx?$/, '');
     return [`${stem}.test.ts`, `${stem}.test.tsx`];
   }

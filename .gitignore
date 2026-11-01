@@ -28,6 +28,7 @@ minio-data/
 # Test output
 playwright-report/
 test-results/
+ui/e2e/output/
 
 # Claude Code, personal or generated
 .claude/settings.local.json

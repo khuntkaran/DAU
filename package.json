@@ -14,6 +14,7 @@
     "test:hooks": "node --test .claude/hooks/hooks.test.mjs",
     "api:openapi": "node scripts/py.mjs api.app.export_openapi",
     "api:dev": "node scripts/py.mjs uvicorn api.app.main:app --reload --port 8000",
-    "db:seed": "node scripts/py.mjs api.app.seed"
+    "db:seed": "node scripts/py.mjs api.app.seed",
+    "verify:ui": "npm --prefix ui run verify"
   }
 }

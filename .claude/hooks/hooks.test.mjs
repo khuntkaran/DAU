@@ -76,7 +76,7 @@ describe('guard-files', () => {
   });
 
   it('blocks skipped and focused TypeScript tests', () => {
-    const file = 'web/components/QuoteTable.test.tsx';
+    const file = 'ui/src/tasks/compare-quotes/ui/QuoteTable.test.tsx';
     assert.equal(edit(file, { new_string: "it.skip('x', () => {})" }).code, 2);
     assert.equal(edit(file, { new_string: "describe.only('x', () => {})" }).code, 2);
     assert.equal(edit(file, { new_string: "it('x', () => {})" }).code, 0);
@@ -90,11 +90,11 @@ describe('guard-files', () => {
   });
 
   it('does not flag .skip outside test files', () => {
-    assert.equal(edit('web/lib/page.ts', { new_string: 'query.skip(10)' }).code, 0);
+    assert.equal(edit('ui/src/shared/lib/page.ts', { new_string: 'query.skip(10)' }).code, 0);
   });
 
   it('allows normal source edits', () => {
-    assert.equal(edit('web/app/page.tsx', { content: 'export {}' }).code, 0);
+    assert.equal(edit('ui/src/app/page.tsx', { content: 'export {}' }).code, 0);
   });
 
   it('protects committed migrations but allows new ones', () => {
@@ -233,15 +233,15 @@ describe('post-edit-check', () => {
 
   it('does not ask for tests of tests, schemas or package files', () => {
     const repo = makeRepo({ testsPass: true, venv: false });
-    for (const file of ['rules/tests/test_subsidy.py', 'rules/__init__.py', 'api/app/models.py', 'web/app/page.tsx']) {
+    for (const file of ['rules/tests/test_subsidy.py', 'rules/__init__.py', 'api/app/models.py', 'ui/src/app/page.tsx', 'ui/src/tasks/auth/api.ts']) {
       assert.equal(edit(file, repo).stdout, '', file);
     }
     rmSync(repo, { recursive: true, force: true });
   });
 
-  it('asks for a test beside a web component', () => {
+  it('asks for a test beside a UI component', () => {
     const repo = makeRepo({ testsPass: true, venv: false });
-    assert.match(edit('web/components/QuoteTable.tsx', repo).stdout, /QuoteTable\.test\.ts/);
+    assert.match(edit('ui/src/tasks/compare-quotes/ui/QuoteTable.tsx', repo).stdout, /QuoteTable\.test\.ts/);
     rmSync(repo, { recursive: true, force: true });
   });
 

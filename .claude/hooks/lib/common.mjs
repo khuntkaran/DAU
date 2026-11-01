@@ -11,7 +11,7 @@ const OUTPUT_TAIL_CHARS = 3000;
 const GATE_STEP_TIMEOUT_MS = 240_000;
 
 /** Files whose change means the gate has to run again. */
-const GATED_PATH = /^(web|api|rules|worker|seed)\/|^(package\.json|package-lock\.json|pyproject\.toml|requirements[^/]*\.txt)$/;
+const GATED_PATH = /^(ui|api|rules|worker|seed)\/|^(package\.json|package-lock\.json|pyproject\.toml|requirements[^/]*\.txt)$/;
 
 export function readInput() {
   try {
@@ -46,9 +46,9 @@ export function venvPython() {
   return candidates.find((path) => existsSync(join(root, path))) ?? null;
 }
 
-/** True when a Node tool from the web workspace is installed. */
-export function hasWebTool(name) {
-  return ['node_modules', join('web', 'node_modules')].some((dir) => existsSync(join(root, dir, '.bin', name)));
+/** True when a Node tool from ui/ is installed. */
+export function hasUiTool(name) {
+  return ['node_modules', join('ui', 'node_modules')].some((dir) => existsSync(join(root, dir, '.bin', name)));
 }
 
 export function npmScripts() {
@@ -103,7 +103,7 @@ export function fingerprint() {
 export function runGate() {
   const scripts = npmScripts();
   const steps = ['typecheck', 'lint', 'test'].filter((step) => scripts[step]);
-  const installed = venvPython() !== null || hasWebTool('next');
+  const installed = venvPython() !== null || hasUiTool('next');
   if (steps.length === 0 || !installed) return { ok: true, skipped: true };
 
   const print = fingerprint();

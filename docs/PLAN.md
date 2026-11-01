@@ -4,6 +4,8 @@ The delivery manager keeps this file current. A task is `done` only when its che
 
 Status values: `todo`, `doing`, `done`, `blocked`.
 
+UI work on the `ui` branch is tracked in [UI-PLAN.md](UI-PLAN.md).
+
 ## Prerequisites from the team
 
 | # | Item | Why | Status |

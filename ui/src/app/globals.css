@@ -1,0 +1,58 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-canvas: #f4f6f3;
+  --color-surface: #ffffff;
+  --color-ink: #13231d;
+  --color-muted: #5a6a63;
+  --color-line: #e2e7e2;
+
+  --color-primary: #0e7a5a;
+  --color-primary-strong: #0a5c44;
+  --color-primary-soft: #dff3ea;
+  --color-on-primary: #ffffff;
+
+  --color-sidebar: #0c2b23;
+  --color-sidebar-raised: #15402f;
+  --color-on-sidebar: #f1f6f3;
+  --color-on-sidebar-muted: #a9c0b6;
+
+  --color-sun: #f2a516;
+  --color-sun-strong: #8a5400;
+  --color-sun-soft: #fdf1d8;
+
+  --color-info: #1d5fa8;
+  --color-info-soft: #e3eefa;
+  --color-danger: #b3261e;
+  --color-danger-soft: #fcebe9;
+
+  --font-sans: var(--font-latin), var(--font-devanagari), var(--font-gujarati), system-ui, sans-serif;
+
+  --shadow-card: 0 1px 2px rgb(19 35 29 / 0.05), 0 4px 16px rgb(19 35 29 / 0.04);
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+}
+
+/* Leaflet draws above page content by default. Keep it below the sticky UI. */
+.leaflet-container {
+  z-index: 0;
+  font-family: inherit;
+}
+
+.map-pin {
+  cursor: grab;
+}
+
+.map-pin-shape {
+  display: block;
+  width: 28px;
+  height: 28px;
+  background: var(--color-sun);
+  border: 3px solid var(--color-sidebar);
+  border-radius: 50% 50% 50% 0;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.35);
+  transform: rotate(-45deg);
+}
