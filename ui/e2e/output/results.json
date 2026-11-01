@@ -1,0 +1,638 @@
+{
+  "date": "2026-11-01T10:10:44.487Z",
+  "passed": 105,
+  "failed": 0,
+  "results": [
+    {
+      "group": "Sign in and access",
+      "name": "Root opens the login page",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Sign in and access",
+      "name": "A signed-out visitor is sent to login",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Sign in and access",
+      "name": "A short phone number is refused",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Sign in and access",
+      "name": "A wrong code is refused",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Sign in and access",
+      "name": "Phone and code sign a vendor in",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Sign in and access",
+      "name": "A vendor cannot open household pages",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Sign in and access",
+      "name": "A vendor cannot open the admin page",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Sign in and access",
+      "name": "Sign out returns to login",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Sign in and access",
+      "name": "Sign out clears the session",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Sign in and access",
+      "name": "The Household demo button asks for the code",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Sign in and access",
+      "name": "The Household demo button does not sign in",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Sign in and access",
+      "name": "The Vendor demo button asks for the code",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Sign in and access",
+      "name": "The Vendor demo button does not sign in",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Sign in and access",
+      "name": "The Admin demo button asks for the code",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Sign in and access",
+      "name": "The Admin demo button does not sign in",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Sign in and access",
+      "name": "A demo account refuses a wrong code",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Sign in and access",
+      "name": "Still signed out after a wrong code",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: new request",
+      "name": "Household lands on its requests",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: new request",
+      "name": "Its seeded request is listed",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: new request",
+      "name": "Other households’ requests are hidden",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: new request",
+      "name": "Missing map pin is reported",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: new request",
+      "name": "Empty numbers are reported",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: new request",
+      "name": "The map appears",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: new request",
+      "name": "Clicking the map places a pin",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: new request",
+      "name": "The pin clears the location error",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: exact location",
+      "name": "A precise device fix sets the exact coordinates",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: exact location",
+      "name": "The accuracy is shown",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: exact location",
+      "name": "A precise fix shows no warning",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: exact location",
+      "name": "A vague fix warns instead of pretending",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: exact location",
+      "name": "The pin is visible inside the map",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: exact location",
+      "name": "Dragging the pin moves it and clears the warning",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: exact location",
+      "name": "The map stays put and the pin stays visible after dragging",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: exact location",
+      "name": "Map and satellite views are offered",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: exact location",
+      "name": "Satellite imagery loads",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: voice input",
+      "name": "Listening starts in the chosen language",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: voice input",
+      "name": "The form asks the household to confirm",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: voice input",
+      "name": "The transcript is what was said",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: voice input",
+      "name": "Units are what was said, not demo data",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: voice input",
+      "name": "Budget is what was said",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: voice input",
+      "name": "Roof area is what was said",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: voice input",
+      "name": "Speech with no numbers changes nothing",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: voice input",
+      "name": "Voice alone does not post the request",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: estimate and photo check",
+      "name": "The request posts",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: estimate and photo check",
+      "name": "Estimate shows the ₹78,000 subsidy",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: estimate and photo check",
+      "name": "Working steps are shown",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: estimate and photo check",
+      "name": "A rule links to its source",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: estimate and photo check",
+      "name": "Assumptions are labelled as estimates",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: estimate and photo check",
+      "name": "A new request has no quotes yet",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: estimate and photo check",
+      "name": "AI review shows as pending",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: estimate and photo check",
+      "name": "The AI result arrives without a reload",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: estimate and photo check",
+      "name": "Obstruction boxes are drawn over the photo",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Vendor: map and quote",
+      "name": "Pins appear on the map",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Vendor: map and quote",
+      "name": "Map tiles load",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Vendor: map and quote",
+      "name": "Exact location is not promised",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Vendor: map and quote",
+      "name": "No household phone is shown",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Vendor: map and quote",
+      "name": "Selecting a request shows its details",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Vendor: map and quote",
+      "name": "Required quote fields are enforced",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Vendor: map and quote",
+      "name": "The quote is submitted",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Vendor: map and quote",
+      "name": "Household contact stays hidden before acceptance",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: compare, recommend, accept",
+      "name": "The new quote arrives",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: compare, recommend, accept",
+      "name": "Its status changed to quotes received",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: compare, recommend, accept",
+      "name": "The hidden instruction is flagged",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: compare, recommend, accept",
+      "name": "The vendor’s raw note is not shown",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: compare, recommend, accept",
+      "name": "Net cost comes from the API",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: compare, recommend, accept",
+      "name": "Payback is the corrected 4.2 years",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: compare, recommend, accept",
+      "name": "Missing items are flagged",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: compare, recommend, accept",
+      "name": "Non-DCR panels are flagged",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: compare, recommend, accept",
+      "name": "An oversized system is flagged",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: compare, recommend, accept",
+      "name": "Best values are marked",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: compare, recommend, accept",
+      "name": "The top scored vendor is recommended",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: compare, recommend, accept",
+      "name": "The injected vendor is not recommended",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: compare, recommend, accept",
+      "name": "The page says ranking comes from code",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: compare, recommend, accept",
+      "name": "Accepting asks for confirmation",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: compare, recommend, accept",
+      "name": "Cancel leaves the quote unaccepted",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: compare, recommend, accept",
+      "name": "Accepting reveals the vendor phone",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: compare, recommend, accept",
+      "name": "Other quotes show as not selected",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: compare, recommend, accept",
+      "name": "No more quotes can be accepted",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: compare, recommend, accept",
+      "name": "The decision survives a reload",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "After acceptance",
+      "name": "Household accepts the demo vendor",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "After acceptance",
+      "name": "The vendor sees the acceptance",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "After acceptance",
+      "name": "The vendor now gets the household phone",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Admin",
+      "name": "Admin lands on the dashboard",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Admin",
+      "name": "Totals are shown",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Admin",
+      "name": "Flagged quotes are counted",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Admin",
+      "name": "The weekly chart draws",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Admin",
+      "name": "Admin search filters requests",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Admin",
+      "name": "Admin can cancel a request",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Admin",
+      "name": "Admin can verify a vendor",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Admin",
+      "name": "The review queue shows the hidden text",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Admin",
+      "name": "A flagged quote can be marked reviewed",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Admin",
+      "name": "A suspended vendor cannot sign in",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Languages",
+      "name": "Hindi applies straight away",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Languages",
+      "name": "Gujarati applies straight away",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Languages",
+      "name": "The language survives a reload",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Phone width, 360 px",
+      "name": "/admin has no sideways scroll",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Phone width, 360 px",
+      "name": "/admin/requests has no sideways scroll",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Phone width, 360 px",
+      "name": "/admin/vendors has no sideways scroll",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Phone width, 360 px",
+      "name": "/admin/review has no sideways scroll",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Phone width, 360 px",
+      "name": "/household has no sideways scroll",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Phone width, 360 px",
+      "name": "/household/new has no sideways scroll",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Phone width, 360 px",
+      "name": "/household/requests/r-1 has no sideways scroll",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Phone width, 360 px",
+      "name": "/vendor has no sideways scroll",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Phone width, 360 px",
+      "name": "/vendor/requests/r-2 has no sideways scroll",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Phone width, 360 px",
+      "name": "/login has no sideways scroll",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Browser console",
+      "name": "No errors in the browser console",
+      "passed": true,
+      "detail": ""
+    }
+  ],
+  "browserErrors": []
+}
