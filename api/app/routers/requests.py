@@ -17,7 +17,7 @@ from api.app.schemas import (
     RequestSummary,
     VendorRequestView,
 )
-from api.app.services import requests
+from api.app.services import quotes, requests
 
 router = APIRouter(prefix="/requests", tags=["requests"])
 
@@ -73,12 +73,14 @@ def get_request(
     response_model=QuoteCreated,
     responses=error_responses(401, 403, 404, 409, 422),
 )
-async def submit_quote(request_id: UUID, body: QuoteCreate, user: Vendor) -> QuoteCreated:
+def submit_quote(request_id: UUID, body: QuoteCreate, user: Vendor, db: DbSession) -> QuoteCreated:
     """Saves the quote with net cost and payback from code, then queues `quote_review`.
 
-    409 when the request is not OPEN or QUOTED, or this vendor has already quoted it.
+    Missing items and warnings are checked in code at once; the AI notes follow later.
+    409 when the request is not open or quoted, or this vendor has already quoted it.
     """
-    raise not_implemented()
+    quote, job = quotes.submit_quote(db, user, request_id, body)
+    return QuoteCreated(quote=quotes.quote_out(db, quote), review_job_id=job.id)
 
 
 @router.get(
@@ -86,8 +88,9 @@ async def submit_quote(request_id: UUID, body: QuoteCreate, user: Vendor) -> Quo
     response_model=QuoteComparison,
     responses=error_responses(401, 403, 404),
 )
-async def compare_quotes(request_id: UUID, user: Household) -> QuoteComparison:
-    raise not_implemented()
+def compare_quotes(request_id: UUID, user: Household, db: DbSession) -> QuoteComparison:
+    """Every quote on the household's request, best score first, with each score explained."""
+    return quotes.compare_quotes(db, user, request_id)
 
 
 @router.post(

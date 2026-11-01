@@ -733,7 +733,7 @@
           "requests"
         ],
         "summary": "Submit Quote",
-        "description": "Saves the quote with net cost and payback from code, then queues `quote_review`.\n\n409 when the request is not OPEN or QUOTED, or this vendor has already quoted it.",
+        "description": "Saves the quote with net cost and payback from code, then queues `quote_review`.\n\nMissing items and warnings are checked in code at once; the AI notes follow later.\n409 when the request is not open or quoted, or this vendor has already quoted it.",
         "operationId": "submit_quote_requests__request_id__quotes_post",
         "security": [
           {
@@ -830,6 +830,7 @@
           "requests"
         ],
         "summary": "Compare Quotes",
+        "description": "Every quote on the household's request, best score first, with each score explained.",
         "operationId": "compare_quotes_requests__request_id__quotes_get",
         "security": [
           {
@@ -1073,6 +1074,7 @@
           "quotes"
         ],
         "summary": "My Quotes",
+        "description": "The vendor's quotes, newest first. Household contact appears once a quote is accepted.",
         "operationId": "my_quotes_quotes_mine_get",
         "security": [
           {
@@ -1160,7 +1162,7 @@
           "quotes"
         ],
         "summary": "Accept Quote",
-        "description": "One transaction: this quote ACCEPTED, the others REJECTED, the request ACCEPTED.\n\n409 when the request is no longer QUOTED, including the loser of two simultaneous accepts.",
+        "description": "One transaction: this quote accepted, the others rejected, the request accepted.\n\nReturns the vendor's contact. The vendor sees the household's contact from then on.\n409 when the request is no longer quoted, including the loser of two simultaneous accepts.",
         "operationId": "accept_quote_quotes__quote_id__accept_post",
         "security": [
           {

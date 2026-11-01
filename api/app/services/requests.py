@@ -6,7 +6,7 @@ from datetime import timedelta
 from typing import Any, TypeVar
 
 from pydantic import BaseModel
-from sqlalchemy import func, or_, select, tuple_
+from sqlalchemy import or_, select, tuple_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -36,6 +36,7 @@ from api.app.schemas import (
     VendorRequestView,
 )
 from api.app.services.calculations import request_estimate
+from api.app.services.codes import CODE_RETRIES, next_code
 from api.app.services.geo import GRID_DEG, approx_point, haversine_km, km
 from api.app.services.pagination import decode_cursor, encode_cursor
 from api.app.services.rules import citations_for, ensure_rule_set
@@ -43,7 +44,6 @@ from api.app.services.rules import citations_for, ensure_rule_set
 # From the request lifecycle in the architecture: open requests expire after 30 days.
 REQUEST_LIFETIME = timedelta(days=30)
 VISIBLE_TO_VENDORS = (RequestStatus.OPEN, RequestStatus.QUOTED)
-_CODE_RETRIES = 3
 
 _NOT_FOUND = ApiError(404, "not_found", "Request not found.")
 
@@ -77,16 +77,6 @@ def _owned_files(
     return [found[i] for i in ids]
 
 
-def _next_code(db: Session) -> str:
-    prefix = f"SR-{utcnow().year}-"
-    last = db.scalar(
-        select(func.max(models.SolarRequest.request_code)).where(
-            models.SolarRequest.request_code.like(f"{prefix}%")
-        )
-    )
-    return f"{prefix}{int(last[-6:]) + 1 if last else 1:06d}"
-
-
 def create_request(db: Session, user: models.User, body: RequestCreate) -> models.SolarRequest:
     discom = None
     if body.discom_id is not None:
@@ -104,13 +94,13 @@ def create_request(db: Session, user: models.User, body: RequestCreate) -> model
             raise ApiError(422, "invalid_voice_input", "That voice note cannot be used here.")
 
     fields = body.model_dump(exclude={"photo_file_ids", "bill_file_id", "voice_input_id"})
-    for attempt in range(_CODE_RETRIES):
+    for attempt in range(CODE_RETRIES):
         try:
             return _insert(db, user, fields, discom, photos, bills, voice)
         except IntegrityError:
             # Two requests took the same code at once; the loser takes the next one.
             db.rollback()
-            if attempt == _CODE_RETRIES - 1:
+            if attempt == CODE_RETRIES - 1:
                 raise
     raise AssertionError("unreachable")
 
@@ -128,7 +118,7 @@ def _insert(
     now = utcnow()
     request = models.SolarRequest(
         **fields,
-        request_code=_next_code(db),
+        request_code=next_code(db, models.SolarRequest.request_code, "SR"),
         household_id=user.id,
         state_category=discom.state_category if discom else StateCategory.GENERAL,
         status=RequestStatus.OPEN,
@@ -172,23 +162,23 @@ def _insert(
 # --- Reading --------------------------------------------------------------------------------
 
 
-def _required(row: Row | None, what: str) -> Row:
+def required(row: Row | None, what: str) -> Row:
     # Foreign keys guarantee these rows; a miss means the database is damaged.
     if row is None:
         raise RuntimeError(f"missing {what}")
     return row
 
 
-def _fields(row: object, model: type[BaseModel]) -> dict[str, Any]:
+def fields_of(row: object, model: type[BaseModel]) -> dict[str, Any]:
     return {name: getattr(row, name) for name in model.model_fields if hasattr(row, name)}
 
 
 def calculation_out(db: Session, calc: models.Calculation) -> CalculationOut:
-    rule_set = _required(db.get(models.RuleSet, calc.rule_set_id), "rule set")
+    rule_set = required(db.get(models.RuleSet, calc.rule_set_id), "rule set")
     citations = citations_for(db, calc.rule_set_id)
     return CalculationOut.model_validate(
         {
-            **_fields(calc, CalculationOut),
+            **fields_of(calc, CalculationOut),
             "rule_version": rule_set.version,
             "citations": [citations[k] for k in calc.citation_keys if k in citations],
         }
@@ -232,7 +222,7 @@ def _roof_assessment(db: Session, request: models.SolarRequest) -> RoofAssessmen
     )
     return RoofAssessmentOut.model_validate(
         {
-            **_fields(assessment, RoofAssessmentOut),
+            **fields_of(assessment, RoofAssessmentOut),
             "obstructions": [ObstructionOut.model_validate(o) for o in obstructions],
         }
     )
@@ -241,7 +231,7 @@ def _roof_assessment(db: Session, request: models.SolarRequest) -> RoofAssessmen
 def _common(
     db: Session, request: models.SolarRequest, kinds: tuple[AttachmentKind, ...]
 ) -> dict[str, Any]:
-    estimate = _required(db.get(models.Calculation, request.latest_estimate_id), "estimate")
+    estimate = required(db.get(models.Calculation, request.latest_estimate_id), "estimate")
     return {
         "estimate": calculation_out(db, estimate),
         "roof_assessment": _roof_assessment(db, request),
@@ -252,7 +242,19 @@ def _common(
 def owner_view(db: Session, request: models.SolarRequest) -> RequestOut:
     every_kind = tuple(AttachmentKind)
     return RequestOut.model_validate(
-        {**_fields(request, RequestOut), **_common(db, request, every_kind)}
+        {**fields_of(request, RequestOut), **_common(db, request, every_kind)}
+    )
+
+
+def household_contact(db: Session, request: models.SolarRequest) -> HouseholdContact:
+    """Only for the vendor whose quote was accepted."""
+    household = required(db.get(models.User, request.household_id), "household")
+    return HouseholdContact(
+        full_name=household.full_name,
+        phone=household.phone,
+        lat=request.lat,
+        lng=request.lng,
+        address_text=request.address_text,
     )
 
 
@@ -271,17 +273,10 @@ def vendor_view(
 
     contact = None
     if my_quote is not None and my_quote.status == QuoteStatus.ACCEPTED:
-        household = _required(db.get(models.User, request.household_id), "household")
-        contact = HouseholdContact(
-            full_name=household.full_name,
-            phone=household.phone,
-            lat=request.lat,
-            lng=request.lng,
-            address_text=request.address_text,
-        )
+        contact = household_contact(db, request)
     return VendorRequestView.model_validate(
         {
-            **_fields(request, VendorRequestView),
+            **fields_of(request, VendorRequestView),
             # Bills and voice notes are private; vendors see terrace photos only.
             **_common(db, request, (AttachmentKind.TERRACE_PHOTO,)),
             "approx_lat": approx_lat,
@@ -335,7 +330,7 @@ def my_requests(
         )
     rows = db.execute(query).all()
     items = [
-        RequestSummary.model_validate({**_fields(r, RequestSummary), "system_kw": kw})
+        RequestSummary.model_validate({**fields_of(r, RequestSummary), "system_kw": kw})
         for r, kw in rows[:limit]
     ]
     last = rows[limit - 1][0] if len(rows) > limit else None
@@ -417,7 +412,7 @@ def open_requests(
             pins.append(
                 OpenRequestPin.model_validate(
                     {
-                        **_fields(request, OpenRequestPin),
+                        **fields_of(request, OpenRequestPin),
                         "approx_lat": approx_lat,
                         "approx_lng": approx_lng,
                         "distance_km": distance,

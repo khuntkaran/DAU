@@ -51,8 +51,9 @@ Everyone works in parallel against this after it is agreed.
 | OTP auth with roles (3.1) | Partner A | `api/tests/test_auth.py` | done |
 | Multipart uploads (3.2) | Partner A | `api/tests/test_uploads.py` | done |
 | Requests with sizing and subsidy, owner and vendor views (3.3) | Partner A | `api/tests/test_requests.py` | done |
-| Vendor map query (3.4) | Partner A | API tests | todo |
-| Quotes and transactional accept (3.5, 3.6) | Partner A | Double-accept race test | todo |
+| Vendor map query (3.4) | Partner A | `api/tests/test_open_requests.py` | done |
+| Quotes, code review, comparison, vendor's list (3.5) | Partner A | `api/tests/test_quotes.py` | done |
+| Transactional accept (3.6) | Partner A | `api/tests/test_accept.py`, race test 15/15 | done |
 | Next.js setup, theme, i18n, API client | Frontend | Vitest and build | todo |
 | Household flow: pin, photo, form, compare, accept | Frontend | Vitest | todo |
 | Vendor flow: map and quote form | Frontend | Vitest | todo |

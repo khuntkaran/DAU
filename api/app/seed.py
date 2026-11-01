@@ -31,8 +31,6 @@ from api.app.enums import (
     InputMethod,
     Lang,
     LocationSource,
-    QuoteSource,
-    QuoteStatus,
     RequestStatus,
     Role,
     RoofType,
@@ -40,7 +38,8 @@ from api.app.enums import (
     VerificationStatus,
 )
 from api.app.schemas import Input, Lat, Lng, Phone, QuoteCreate, Rupees, check_upload
-from api.app.services.calculations import quote_financials, request_estimate
+from api.app.services.calculations import request_estimate
+from api.app.services.quotes import insert_quote
 from api.app.services.requests import REQUEST_LIFETIME
 from api.app.services.rules import ensure_rule_set
 from rules.loader import load_rules
@@ -304,40 +303,25 @@ def seed(
                 )
             request_by_code[r.code] = request
 
+        db.commit()
+
         for n, q in enumerate(quotes, start=1):
             request = _lookup(request_by_code, q.request_code, "quotes.json", "request")
             vendor = _lookup(vendor_by_phone, q.vendor_phone, "quotes.json", "vendor")
-            # Quotes arrive one minute apart, so the demo shows a believable order.
-            submitted = now + timedelta(minutes=n)
-            quote = models.Quote(
-                quote_code=q.code,
-                request_id=request.id,
-                vendor_id=vendor.id,
-                status=QuoteStatus.SUBMITTED,
-                source=QuoteSource.FORM,
-                submitted_at=submitted,
-                **q.model_dump(exclude={"code", "request_code", "vendor_phone", "line_items"}),
+            body = QuoteCreate.model_validate(
+                q.model_dump(exclude={"code", "request_code", "vendor_phone"})
             )
-            quote.line_items = [
-                models.QuoteLineItem(sort_order=i, **item.model_dump())
-                for i, item in enumerate(q.line_items)
-            ]
-            db.add(quote)
-            db.flush()
-            db.add(quote_financials(quote, request))
-            if request.status == RequestStatus.OPEN:
-                request.status = RequestStatus.QUOTED
-                db.add(
-                    models.RequestStatusHistory(
-                        request_id=request.id,
-                        from_status=RequestStatus.OPEN,
-                        to_status=RequestStatus.QUOTED,
-                        created_at=submitted,
-                    )
-                )
-            request.quotes_count += 1
-
-        db.commit()
+            # The same path as the API, so seeded quotes get financials and a review too.
+            # They arrive one minute apart, so the demo shows a believable order.
+            insert_quote(
+                db,
+                vendor.user,
+                vendor,
+                request,
+                body,
+                code=q.code,
+                submitted_at=now + timedelta(minutes=n),
+            )
 
     return {
         "rule_items": len(load_rules().citations),
