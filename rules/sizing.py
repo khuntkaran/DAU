@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from decimal import ROUND_FLOOR, ROUND_HALF_UP, Decimal
 
 from rules.loader import RuleSet, load_rules
+from rules.steps import Step, fmt
 
 
 @dataclass(frozen=True)
@@ -14,6 +15,7 @@ class SizingResult:
     capped_by_roof: bool
     rule_version: str
     citations: tuple[str, ...]
+    steps: tuple[Step, ...]
 
 
 def _to_step(value: Decimal, step: Decimal, rounding: str) -> Decimal:
@@ -42,15 +44,63 @@ def suggest_size(
     # Rounding the roof limit up would suggest panels that do not fit.
     max_kw = _to_step(roof_area_m2 * fraction / sizing.roof_m2_per_kw, sizing.step_kw, ROUND_FLOOR)
 
+    size_kw = min(wanted_kw, max_kw)
+
     citations = ["SIZE_BANDS", "GENERATION", "ROOF_AREA"]
     if usable_fraction is None:
         citations.append("USABLE_FRACTION")
 
+    usable_area = roof_area_m2 * fraction
+    step = fmt(sizing.step_kw)
+    steps = (
+        Step(
+            "raw_kw",
+            "Size that covers your usage",
+            f"{monthly_units} units ÷ {fmt(sizing.generation_kwh_per_kw_month)} units per kW"
+            " per month",
+            fmt(raw_kw),
+            "kW",
+            "GENERATION",
+        ),
+        Step(
+            "wanted_kw",
+            "Rounded to a standard size",
+            f"{fmt(raw_kw)} kW rounded to the nearest {step} kW",
+            fmt(wanted_kw),
+            "kW",
+        ),
+        Step(
+            "usable_area",
+            "Usable roof area",
+            f"{fmt(roof_area_m2)} m² × {fmt(fraction)} usable",
+            fmt(usable_area),
+            "m²",
+            "USABLE_FRACTION" if usable_fraction is None else None,
+        ),
+        Step(
+            "max_kw",
+            "Largest system the roof fits",
+            f"{fmt(usable_area)} m² ÷ {fmt(sizing.roof_m2_per_kw)} m² per kW,"
+            f" rounded down to {step} kW",
+            fmt(max_kw),
+            "kW",
+            "ROOF_AREA",
+        ),
+        Step(
+            "size_kw",
+            "Suggested size",
+            f"smaller of {fmt(wanted_kw)} kW and {fmt(max_kw)} kW",
+            fmt(size_kw),
+            "kW",
+        ),
+    )
+
     return SizingResult(
         raw_kw=raw_kw,
-        size_kw=min(wanted_kw, max_kw),
+        size_kw=size_kw,
         max_kw=max_kw,
         capped_by_roof=wanted_kw > max_kw,
         rule_version=ruleset.version,
         citations=tuple(citations),
+        steps=steps,
     )

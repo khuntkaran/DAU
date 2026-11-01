@@ -1,0 +1,32 @@
+[
+  {
+    "code": "UGVCL",
+    "name": "Uttar Gujarat Vij Company Ltd",
+    "state": "Gujarat",
+    "state_category": "general"
+  },
+  {
+    "code": "MGVCL",
+    "name": "Madhya Gujarat Vij Company Ltd",
+    "state": "Gujarat",
+    "state_category": "general"
+  },
+  {
+    "code": "DGVCL",
+    "name": "Dakshin Gujarat Vij Company Ltd",
+    "state": "Gujarat",
+    "state_category": "general"
+  },
+  {
+    "code": "PGVCL",
+    "name": "Paschim Gujarat Vij Company Ltd",
+    "state": "Gujarat",
+    "state_category": "general"
+  },
+  {
+    "code": "TORRENT-AHD",
+    "name": "Torrent Power, Ahmedabad",
+    "state": "Gujarat",
+    "state_category": "general"
+  }
+]

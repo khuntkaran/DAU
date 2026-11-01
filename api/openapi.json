@@ -12,7 +12,7 @@
           "auth"
         ],
         "summary": "Send Otp",
-        "description": "Public. Sends a login code. The demo code is 123456.",
+        "description": "Public. Sends a login code. In local mode the code is `DEMO_OTP`.",
         "operationId": "send_otp_auth_otp_post",
         "requestBody": {
           "content": {
@@ -54,6 +54,16 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -64,7 +74,7 @@
           "auth"
         ],
         "summary": "Verify Otp",
-        "description": "Public. Exchanges the code for a JWT that carries the user's role.",
+        "description": "Public. Exchanges the code for a JWT. A new phone must choose `household` or `vendor`.",
         "operationId": "verify_otp_auth_verify_post",
         "requestBody": {
           "content": {
@@ -87,6 +97,26 @@
               }
             }
           },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Unauthorized",
             "content": {
@@ -97,8 +127,18 @@
               }
             }
           },
-          "422": {
-            "description": "Unprocessable Entity",
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -116,7 +156,7 @@
           "files"
         ],
         "summary": "Upload File",
-        "description": "Multipart upload to the local `uploads/` folder, with a `files` row and its sha256.\n\nStands in for presigned object storage in production. Type and size limits are in\n`schemas.check_upload`.",
+        "description": "Multipart upload to the local `uploads/` folder. Photos lose their metadata.\n\nProduction swaps the folder for presigned object storage behind the same response.",
         "operationId": "upload_file_uploads_post",
         "requestBody": {
           "content": {
@@ -139,6 +179,16 @@
               }
             }
           },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Unauthorized",
             "content": {
@@ -149,8 +199,8 @@
               }
             }
           },
-          "413": {
-            "description": "Request Entity Too Large",
+          "403": {
+            "description": "Forbidden",
             "content": {
               "application/json": {
                 "schema": {
@@ -159,8 +209,8 @@
               }
             }
           },
-          "422": {
-            "description": "Unprocessable Entity",
+          "413": {
+            "description": "Request Entity Too Large",
             "content": {
               "application/json": {
                 "schema": {
@@ -193,7 +243,7 @@
           "files"
         ],
         "summary": "Get File",
-        "description": "Only the owner, or a party to the file's request, can read it.",
+        "description": "The owner, an admin, or a vendor viewing that request's terrace photo.",
         "operationId": "get_file_files__file_id__get",
         "security": [
           {
@@ -225,16 +275,6 @@
               }
             },
             "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
           },
           "404": {
             "content": {
@@ -419,6 +459,7 @@
           "requests"
         ],
         "summary": "My Requests",
+        "description": "The household's requests, newest first.",
         "operationId": "my_requests_requests_mine_get",
         "security": [
           {
@@ -506,7 +547,7 @@
           "requests"
         ],
         "summary": "Open Requests",
-        "description": "Open and quoted requests inside the viewport and the vendor's service radius.",
+        "description": "Open and quoted requests inside the viewport and the vendor's service radius.\n\nPins sit at the rounded location, newest first. Without a base location the radius\nis not applied and distances are empty.",
         "operationId": "open_requests_requests_open_get",
         "security": [
           {
@@ -605,7 +646,7 @@
           "requests"
         ],
         "summary": "Get Request",
-        "description": "The owner gets `RequestOut`; a vendor gets `VendorRequestView`. Check `view`.",
+        "description": "The owner gets `RequestOut`; a vendor gets `VendorRequestView`. Check `view`.\n\nVendors see open and quoted requests, and any request they have quoted.",
         "operationId": "get_request_requests__request_id__get",
         "security": [
           {
@@ -1490,9 +1531,15 @@
       },
       "CalcStep": {
         "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key",
+            "description": "Stable id for translating the label, e.g. `annual_saving`."
+          },
           "label": {
             "type": "string",
-            "title": "Label"
+            "title": "Label",
+            "description": "English label."
           },
           "formula": {
             "type": "string",
@@ -1500,7 +1547,27 @@
           },
           "value": {
             "type": "string",
-            "title": "Value"
+            "title": "Value",
+            "description": "Display value; `never` when there is no payback."
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "kW",
+                  "m²",
+                  "kWh",
+                  "INR",
+                  "%",
+                  "years"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
           },
           "rule_key": {
             "anyOf": [
@@ -1517,12 +1584,14 @@
         },
         "type": "object",
         "required": [
+          "key",
           "label",
           "formula",
-          "value"
+          "value",
+          "unit"
         ],
         "title": "CalcStep",
-        "description": "One line of working, rendered in the UI with an ⓘ link to its rule."
+        "description": "One line of working from `rules.steps.Step`, rendered with an ⓘ link to its rule."
       },
       "CalculationOut": {
         "properties": {
@@ -2575,8 +2644,16 @@
             "title": "Approx Lng"
           },
           "distance_km": {
-            "type": "string",
-            "title": "Distance Km"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distance Km",
+            "description": "Empty until the vendor sets a base location."
           },
           "district": {
             "anyOf": [
@@ -4956,8 +5033,16 @@
             "title": "Approx Lng"
           },
           "distance_km": {
-            "type": "string",
-            "title": "Distance Km"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distance Km",
+            "description": "Empty until the vendor sets a base location."
           },
           "my_quote_id": {
             "anyOf": [

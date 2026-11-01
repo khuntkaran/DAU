@@ -1,0 +1,47 @@
+[
+  {
+    "phone": "+919000000101",
+    "full_name": "Demo Contact One",
+    "company_name": "Demo Solar Ahmedabad",
+    "mnre_registration_no": "DEMO-MNRE-0101",
+    "years_in_business": 8,
+    "installations_completed": 420,
+    "contact_phone": "+919000000101",
+    "address": "Navrangpura, Ahmedabad",
+    "base_lat": 23.0365,
+    "base_lng": 72.5611,
+    "service_radius_km": 60,
+    "avg_rating": "4.6",
+    "rating_count": 38
+  },
+  {
+    "phone": "+919000000102",
+    "full_name": "Demo Contact Two",
+    "company_name": "Demo Rooftop Gandhinagar",
+    "mnre_registration_no": "DEMO-MNRE-0102",
+    "years_in_business": 4,
+    "installations_completed": 150,
+    "contact_phone": "+919000000102",
+    "address": "Sector 11, Gandhinagar",
+    "base_lat": 23.2232,
+    "base_lng": 72.6505,
+    "service_radius_km": 50,
+    "avg_rating": "4.2",
+    "rating_count": 17
+  },
+  {
+    "phone": "+919000000103",
+    "full_name": "Demo Contact Three",
+    "company_name": "Demo Green Energy Vadodara",
+    "years_in_business": 2,
+    "installations_completed": 40,
+    "contact_phone": "+919000000103",
+    "address": "Alkapuri, Vadodara",
+    "base_lat": 22.3119,
+    "base_lng": 73.1723,
+    "service_radius_km": 150,
+    "verification_status": "pending",
+    "avg_rating": "3.9",
+    "rating_count": 6
+  }
+]

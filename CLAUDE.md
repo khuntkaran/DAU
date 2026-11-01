@@ -66,6 +66,7 @@ npm run test:e2e         # Playwright, AI_PROVIDER=fake
 npm run test:hooks       # Tests for .claude/hooks
 npm run api:dev          # API on :8000, docs at /docs
 npm run api:openapi      # Regenerate api/openapi.json after a schema change
+npm run db:seed -- --reset   # Rebuild suryasetu.db from seed/data and seed/photos
 node scripts/py.mjs pytest rules/tests/test_subsidy.py    # One Python test file
 ```
 

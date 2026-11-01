@@ -12,6 +12,7 @@ Status values: `todo`, `doing`, `done`, `blocked`.
 | P2 | ~~Install Docker Desktop~~ | Not needed: local mode is SQLite and a local `uploads/` folder | dropped |
 | P3 | Gemini and Groq free keys in `.env` | Real AI features and the final hand test | blocked |
 | P4 | Confirm rule values marked `verify` in `rules/` | The brief requires public rules with sources | todo |
+| P5 | Source a DCR rule: subsidy only with domestic panels | Non-DCR quotes currently get the full subsidy | todo |
 
 ## Phases
 
@@ -40,21 +41,22 @@ Everyone works in parallel against this after it is agreed.
 | Config, SQLite engine, enums (work plan 1.1, 1.2, 1.4) | Partner A | `npm run verify` | done |
 | SQLAlchemy models for the 21 P0 tables (1.3) | Partner A | `api/tests/test_models.py` | done |
 | Pydantic schemas and OpenAPI for all routes (1.4, 1.5) | Partner A | `api/tests/test_contract.py` | done |
-| Rules return `steps[]` for the calculation panel (2.2) | Partner A | Golden tests | todo |
-| Seed script with `--reset` (2.4) | Partner A | Fresh database from scratch | todo |
+| Rules return `steps[]` for the calculation panel (2.2) | Partner A | `rules/tests/test_steps.py` | done |
+| Seed script with `--reset` (2.4) | Partner A | `api/tests/test_seed.py`, `npm run db:seed -- --reset` | done |
 
 ### Phase 3: Core flow, worth 30% of the score
 
 | Task | Owner | Check | Status |
 |---|---|---|---|
-| OTP auth with roles (3.1) | Partner A | API tests | todo |
-| Multipart uploads (3.2) | Partner A | API tests | todo |
-| Requests with sizing and subsidy, map query (3.3, 3.4) | Partner A | API tests | todo |
+| OTP auth with roles (3.1) | Partner A | `api/tests/test_auth.py` | done |
+| Multipart uploads (3.2) | Partner A | `api/tests/test_uploads.py` | done |
+| Requests with sizing and subsidy, owner and vendor views (3.3) | Partner A | `api/tests/test_requests.py` | done |
+| Vendor map query (3.4) | Partner A | API tests | todo |
 | Quotes and transactional accept (3.5, 3.6) | Partner A | Double-accept race test | todo |
 | Next.js setup, theme, i18n, API client | Frontend | Vitest and build | todo |
 | Household flow: pin, photo, form, compare, accept | Frontend | Vitest | todo |
 | Vendor flow: map and quote form | Frontend | Vitest | todo |
-| Seed data: vendors, requests, planted quotes (2.5 to 2.9) | Partner B | Seed script loads it | todo |
+| Seed data: vendors, requests, planted quotes (2.5 to 2.9) | Partner B | `api/tests/test_seed.py` | doing: starter set in `seed/data/` |
 | Request → quote → accept E2E | QA | Playwright | todo |
 
 ### Phase 4: AI
@@ -95,3 +97,5 @@ Everyone works in parallel against this after it is agreed.
 - 2026-11-01: The work plan says 22 P0 tables, but its list and `db-schema.html` name 21. All 21 are built.
 - 2026-11-01: Statuses are lowercase, as in `db-schema.html`. Quote line items map to the rules checklist in `api/app/services/quotes.py`.
 - 2026-11-01: Unbuilt routes answer 501 rather than the plan's mock JSON, so the frontend never shows invented numbers.
+- 2026-11-01: `rule_items.status` and `calculations.citation_keys` are added beyond `db-schema.html`, so estimates can be labelled and every cited rule reaches the UI.
+- 2026-11-01: The seed starter set in `seed/data/` uses demo names and `+91 90000` numbers and has no tariff slabs, so no DISCOM rate is invented. Partner B extends it; `test_seed.py` validates every file.

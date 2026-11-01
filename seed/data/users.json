@@ -1,0 +1,25 @@
+[
+  {
+    "phone": "+919000000001",
+    "role": "household",
+    "full_name": "Demo Household Ahmedabad",
+    "preferred_lang": "gu"
+  },
+  {
+    "phone": "+919000000002",
+    "role": "household",
+    "full_name": "Demo Household Gandhinagar",
+    "preferred_lang": "hi"
+  },
+  {
+    "phone": "+919000000003",
+    "role": "household",
+    "full_name": "Demo Household Vadodara",
+    "preferred_lang": "en"
+  },
+  {
+    "phone": "+919000000900",
+    "role": "admin",
+    "full_name": "Demo Admin"
+  }
+]

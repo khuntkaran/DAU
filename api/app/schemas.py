@@ -36,6 +36,7 @@ from api.app.enums import (
     VoiceLanguage,
 )
 from rules.loader import PaybackRules, ScoringRules, SizingRules, SubsidyRules
+from rules.steps import Unit
 
 # --- Shared -------------------------------------------------------------------------------
 
@@ -235,11 +236,13 @@ class VoiceResult(Output):
 
 
 class CalcStep(Output):
-    """One line of working, rendered in the UI with an ⓘ link to its rule."""
+    """One line of working from `rules.steps.Step`, rendered with an ⓘ link to its rule."""
 
-    label: str
+    key: str = Field(description="Stable id for translating the label, e.g. `annual_saving`.")
+    label: str = Field(description="English label.")
     formula: str
-    value: str
+    value: str = Field(description="Display value; `never` when there is no payback.")
+    unit: Unit | None
     rule_key: str | None = Field(None, description="Key into `citations`; empty for arithmetic.")
 
 
@@ -391,7 +394,7 @@ class VendorRequestView(RequestBase):
     view: Literal["vendor"] = "vendor"
     approx_lat: float
     approx_lng: float
-    distance_km: Decimal
+    distance_km: Decimal | None = Field(description="Empty until the vendor sets a base location.")
     my_quote_id: UUID | None
     contact: HouseholdContact | None = Field(
         None, description="Set once this vendor's quote is accepted."
@@ -403,7 +406,7 @@ class OpenRequestPin(Output):
     request_code: str
     approx_lat: float
     approx_lng: float
-    distance_km: Decimal
+    distance_km: Decimal | None = Field(description="Empty until the vendor sets a base location.")
     district: str | None
     monthly_units: int
     budget_inr: int

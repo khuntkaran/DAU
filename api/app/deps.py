@@ -1,4 +1,4 @@
-"""Shared route dependencies: authentication, roles, pagination and the map bounding box."""
+"""Shared route dependencies: database, settings, signed-in user, pagination and map box."""
 
 from collections.abc import Callable
 from typing import Annotated
@@ -6,36 +6,42 @@ from typing import Annotated
 from fastapi import Depends, Query
 from fastapi.exceptions import RequestValidationError
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy.orm import Session
 
+from api.app import models
+from api.app.config import Settings, get_settings
+from api.app.db import get_db
 from api.app.enums import Role
 from api.app.errors import ApiError
 from api.app.schemas import BBox
+from api.app.services.auth import current_user
+
+DbSession = Annotated[Session, Depends(get_db)]
+AppSettings = Annotated[Settings, Depends(get_settings)]
 
 _bearer = HTTPBearer(auto_error=False)
 
 
-def require_role(*roles: Role) -> Callable[[HTTPAuthorizationCredentials | None], str]:
-    """Declares who may call a route.
-
-    Only the token's presence is checked for now. JWT decoding and the role check replace the
-    body of `_check` when OTP auth is built, without changing any route signature.
-    """
+def require_role(*roles: Role) -> Callable[..., models.User]:
+    """Declares who may call a route, and hands the route the signed-in user."""
 
     def _check(
         credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
-    ) -> str:
+        db: DbSession,
+        settings: AppSettings,
+    ) -> models.User:
         if credentials is None:
             raise ApiError(401, "unauthenticated", "Sign in first.")
-        return credentials.credentials
+        return current_user(db, settings, credentials.credentials, roles)
 
     _check.__name__ = f"require_{'_or_'.join(roles)}"
     return _check
 
 
-Household = Annotated[str, Depends(require_role("household"))]
-Vendor = Annotated[str, Depends(require_role("vendor"))]
-HouseholdOrVendor = Annotated[str, Depends(require_role("household", "vendor"))]
-AnyUser = Annotated[str, Depends(require_role("household", "vendor", "admin"))]
+Household = Annotated[models.User, Depends(require_role(Role.HOUSEHOLD))]
+Vendor = Annotated[models.User, Depends(require_role(Role.VENDOR))]
+HouseholdOrVendor = Annotated[models.User, Depends(require_role(Role.HOUSEHOLD, Role.VENDOR))]
+AnyUser = Annotated[models.User, Depends(require_role(Role.HOUSEHOLD, Role.VENDOR, Role.ADMIN))]
 
 
 def page_params(

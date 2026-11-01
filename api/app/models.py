@@ -14,7 +14,6 @@ from sqlalchemy import (
     BigInteger,
     CheckConstraint,
     Date,
-    DateTime,
     Float,
     ForeignKey,
     Index,
@@ -27,7 +26,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from api.app.db import Base, JsonDoc, str_enum, utcnow
+from api.app.db import Base, JsonDoc, UtcDateTime, str_enum, utcnow
 from api.app.enums import (
     AssessmentStatus,
     AttachmentKind,
@@ -69,11 +68,11 @@ def _fk(target: str, *, nullable: bool = False, index: bool = False) -> Mapped[A
 
 
 def _created() -> Mapped[datetime]:
-    return mapped_column(DateTime(timezone=True), default=utcnow)
+    return mapped_column(UtcDateTime(), default=utcnow)
 
 
 def _updated() -> Mapped[datetime]:
-    return mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+    return mapped_column(UtcDateTime(), default=utcnow, onupdate=utcnow)
 
 
 def _kw() -> Mapped[Any]:
@@ -97,7 +96,7 @@ class User(Base):
         Uuid, ForeignKey("files.id", use_alter=True)
     )
     is_active: Mapped[bool] = mapped_column(default=True)
-    last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_login_at: Mapped[datetime | None] = mapped_column(UtcDateTime())
     created_at: Mapped[datetime] = _created()
     updated_at: Mapped[datetime] = _updated()
 
@@ -114,8 +113,8 @@ class AuthOtp(Base):
     code_hash: Mapped[str] = mapped_column(Text)
     purpose: Mapped[OtpPurpose] = mapped_column(str_enum(OtpPurpose))
     attempts: Mapped[int] = mapped_column(default=0)
-    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    consumed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    expires_at: Mapped[datetime] = mapped_column(UtcDateTime())
+    consumed_at: Mapped[datetime | None] = mapped_column(UtcDateTime())
     created_at: Mapped[datetime] = _created()
 
 
@@ -146,7 +145,7 @@ class Vendor(Base):
         str_enum(VerificationStatus), default=VerificationStatus.PENDING, index=True
     )
     verified_by: Mapped[uuid.UUID | None] = _fk("users.id", nullable=True)
-    verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    verified_at: Mapped[datetime | None] = mapped_column(UtcDateTime())
     avg_rating: Mapped[Decimal | None] = mapped_column(Numeric(3, 2))
     rating_count: Mapped[int] = mapped_column(default=0)
     created_at: Mapped[datetime] = _created()
@@ -223,6 +222,8 @@ class RuleItem(Base):
         Text, comment="Null for assumptions, which the UI labels."
     )
     source_clause: Mapped[str | None] = mapped_column(Text)
+    # Not in db-schema.html; the UI labels `verify` and `assumption` figures as estimates.
+    status: Mapped[str] = mapped_column(String(16), comment="confirmed, verify or assumption")
 
     __table_args__ = (UniqueConstraint("rule_set_id", "rule_key", "applies_to"),)
 
@@ -248,7 +249,7 @@ class File(Base):
     height: Mapped[int | None]
     thumbnail_key: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = _created()
-    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    deleted_at: Mapped[datetime | None] = mapped_column(UtcDateTime())
 
 
 class AiJob(Base):
@@ -272,8 +273,8 @@ class AiJob(Base):
     latency_ms: Mapped[int | None]
     requested_by: Mapped[uuid.UUID | None] = _fk("users.id", nullable=True)
     queued_at: Mapped[datetime] = _created()
-    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    started_at: Mapped[datetime | None] = mapped_column(UtcDateTime())
+    finished_at: Mapped[datetime | None] = mapped_column(UtcDateTime())
 
     __table_args__ = (
         Index("ix_ai_jobs_input_hash_job_type", "input_hash", "job_type"),
@@ -316,9 +317,9 @@ class SolarRequest(Base):
     accepted_quote_id: Mapped[uuid.UUID | None] = mapped_column(
         Uuid, ForeignKey("quotes.id", use_alter=True)
     )
-    submitted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    submitted_at: Mapped[datetime | None] = mapped_column(UtcDateTime())
+    expires_at: Mapped[datetime | None] = mapped_column(UtcDateTime())
+    closed_at: Mapped[datetime | None] = mapped_column(UtcDateTime())
     created_at: Mapped[datetime] = _created()
     updated_at: Mapped[datetime] = _updated()
 
@@ -428,7 +429,9 @@ class Calculation(Base):
     payback_years: Mapped[Decimal | None] = mapped_column(Numeric(4, 1))
     savings_25y_inr: Mapped[int | None]
     inputs_snapshot: Mapped[Json] = mapped_column(JsonDoc)
-    steps: Mapped[Json] = mapped_column(JsonDoc)
+    steps: Mapped[list[dict[str, Any]]] = mapped_column(JsonDoc)
+    # Not in db-schema.html: some rules back a result without appearing in one step.
+    citation_keys: Mapped[list[str]] = mapped_column(JsonDoc)
     engine_version: Mapped[str] = mapped_column(String(32))
     computed_at: Mapped[datetime] = _created()
 
@@ -496,8 +499,8 @@ class Quote(Base):
     injection_flag: Mapped[bool] = mapped_column(default=False)
     injection_reason: Mapped[str | None] = mapped_column(Text)
     revision: Mapped[int] = mapped_column(default=1)
-    submitted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    submitted_at: Mapped[datetime | None] = mapped_column(UtcDateTime())
+    decided_at: Mapped[datetime | None] = mapped_column(UtcDateTime())
     created_at: Mapped[datetime] = _created()
     updated_at: Mapped[datetime] = _updated()
 

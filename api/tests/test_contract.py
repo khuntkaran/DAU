@@ -3,6 +3,8 @@
 These tests need no database. Behaviour tests arrive with each endpoint.
 """
 
+from collections.abc import Callable
+from dataclasses import asdict
 from decimal import Decimal
 from typing import Any
 
@@ -11,12 +13,12 @@ from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
 from api.app import schemas
-from api.app.enums import FilePurpose
+from api.app.enums import FilePurpose, Role
 from api.app.export_openapi import DEFAULT_PATH, render
 from api.app.main import app
+from api.tests.conftest import MakeUser
 from rules.loader import load_rules
-
-client = TestClient(app)
+from rules.sizing import suggest_size
 
 ROUTES = {
     ("post", "/auth/otp"),
@@ -100,7 +102,7 @@ def test_openapi_advertises_only_our_error_shape() -> None:
                 assert ref.endswith("/ErrorResponse"), (path, status)
 
 
-def test_missing_token_gets_401_in_the_error_shape() -> None:
+def test_missing_token_gets_401_in_the_error_shape(client: TestClient) -> None:
     response = client.post("/requests", json=VALID_REQUEST)
 
     assert response.status_code == 401
@@ -109,14 +111,16 @@ def test_missing_token_gets_401_in_the_error_shape() -> None:
     }
 
 
-def test_stub_routes_answer_501_until_built() -> None:
-    response = client.get(f"/jobs/{REQUEST_ID}", headers={"Authorization": "Bearer x"})
+def test_stub_routes_answer_501_until_built(
+    client: TestClient, make_user: MakeUser, auth: Callable[..., dict[str, str]]
+) -> None:
+    response = client.get(f"/jobs/{REQUEST_ID}", headers=auth(make_user()))
 
     assert response.status_code == 501
     assert response.json()["error"]["code"] == "not_implemented"
 
 
-def test_invalid_body_gets_422_in_the_error_shape() -> None:
+def test_invalid_body_gets_422_in_the_error_shape(client: TestClient) -> None:
     response = client.post("/auth/otp", json={"phone": "12345"})
 
     assert response.status_code == 422
@@ -125,7 +129,7 @@ def test_invalid_body_gets_422_in_the_error_shape() -> None:
     assert body["details"][0]["loc"] == ["body", "phone"]
 
 
-def test_rules_current_returns_the_rule_set_with_citations() -> None:
+def test_rules_current_returns_the_rule_set_with_citations(client: TestClient) -> None:
     response = client.get("/rules/current")
 
     assert response.status_code == 200
@@ -143,13 +147,19 @@ def test_committed_openapi_file_matches_the_code() -> None:
     assert committed == render(), "Run: npm run api:openapi"
 
 
-def test_health() -> None:
+def test_health(client: TestClient) -> None:
     assert client.get("/health").json() == {"status": "ok"}
 
 
 def test_statuses_use_the_lowercase_values_from_the_schema_doc() -> None:
     statuses = app.openapi()["components"]["schemas"]["RequestStatus"]["enum"]
     assert statuses == ["draft", "open", "quoted", "accepted", "completed", "cancelled", "expired"]
+
+
+def test_calc_step_carries_every_field_the_rules_engine_produces() -> None:
+    step = suggest_size(330, Decimal(40)).steps[0]
+    out = schemas.CalcStep.model_validate(step, from_attributes=True)
+    assert out.model_dump() == asdict(step)
 
 
 def test_request_create_accepts_a_valid_body() -> None:
@@ -259,9 +269,11 @@ def test_bbox_rejects_malformed_boxes(raw: str) -> None:
         schemas.BBox.parse(raw)
 
 
-def test_open_requests_rejects_a_bad_bbox_with_422() -> None:
+def test_open_requests_rejects_a_bad_bbox_with_422(
+    client: TestClient, make_user: MakeUser, auth: Callable[..., dict[str, str]]
+) -> None:
     response = client.get(
-        "/requests/open", params={"bbox": "1,2,3"}, headers={"Authorization": "Bearer x"}
+        "/requests/open", params={"bbox": "1,2,3"}, headers=auth(make_user(Role.VENDOR))
     )
     assert response.status_code == 422
     assert response.json()["error"]["code"] == "validation_error"

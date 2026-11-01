@@ -1,0 +1,51 @@
+[
+  {
+    "code": "SR-2026-000001",
+    "household_phone": "+919000000001",
+    "lat": 23.0225,
+    "lng": 72.5714,
+    "address_text": "Demo Society, Ahmedabad",
+    "district": "Ahmedabad",
+    "pincode": "380009",
+    "discom_code": "TORRENT-AHD",
+    "monthly_units": 330,
+    "monthly_bill_inr": 2600,
+    "budget_inr": 200000,
+    "roof_type": "rcc_flat",
+    "roof_area_sqm": "40",
+    "floors": 2,
+    "building_type": "independent"
+  },
+  {
+    "code": "SR-2026-000002",
+    "household_phone": "+919000000002",
+    "lat": 23.2156,
+    "lng": 72.6369,
+    "address_text": "Demo Nagar, Gandhinagar",
+    "district": "Gandhinagar",
+    "pincode": "382010",
+    "discom_code": "UGVCL",
+    "monthly_units": 180,
+    "budget_inr": 150000,
+    "roof_type": "rcc_flat",
+    "roof_area_sqm": "30",
+    "floors": 1,
+    "building_type": "independent"
+  },
+  {
+    "code": "SR-2026-000003",
+    "household_phone": "+919000000003",
+    "lat": 22.3072,
+    "lng": 73.1812,
+    "address_text": "Demo Park, Vadodara",
+    "district": "Vadodara",
+    "pincode": "390007",
+    "discom_code": "MGVCL",
+    "monthly_units": 120,
+    "budget_inr": 100000,
+    "roof_type": "rcc_flat",
+    "roof_area_sqm": "25",
+    "floors": 1,
+    "building_type": "independent"
+  }
+]

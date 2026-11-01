@@ -12,6 +12,10 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./suryasetu.db"
     upload_dir: Path = Path("./uploads")
     web_origins: str = "http://localhost:3000"
+    jwt_secret: str = ""
+    jwt_ttl_s: int = 12 * 60 * 60
+    # With no SMS provider yet, every login code is this value. Leave empty in production.
+    demo_otp: str | None = None
 
     @property
     def cors_origins(self) -> list[str]:

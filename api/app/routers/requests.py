@@ -2,7 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter
 
-from api.app.deps import Household, HouseholdOrVendor, MapBox, PageParams, Vendor
+from api.app.deps import DbSession, Household, HouseholdOrVendor, MapBox, PageParams, Vendor
 from api.app.errors import error_responses, not_implemented
 from api.app.schemas import (
     JobAccepted,
@@ -17,6 +17,7 @@ from api.app.schemas import (
     RequestSummary,
     VendorRequestView,
 )
+from api.app.services import requests
 
 router = APIRouter(prefix="/requests", tags=["requests"])
 
@@ -26,20 +27,29 @@ router = APIRouter(prefix="/requests", tags=["requests"])
 @router.post(
     "", status_code=201, response_model=RequestOut, responses=error_responses(401, 403, 422)
 )
-async def create_request(body: RequestCreate, user: Household) -> RequestOut:
+def create_request(body: RequestCreate, user: Household, db: DbSession) -> RequestOut:
     """Opens a request. Sizing and subsidy are calculated in code and returned at once."""
-    raise not_implemented()
+    return requests.owner_view(db, requests.create_request(db, user, body))
 
 
-@router.get("/mine", response_model=Page[RequestSummary], responses=error_responses(401, 403))
-async def my_requests(user: Household, page: PageParams) -> Page[RequestSummary]:
-    raise not_implemented()
+@router.get("/mine", response_model=Page[RequestSummary], responses=error_responses(401, 403, 422))
+def my_requests(user: Household, page: PageParams, db: DbSession) -> Page[RequestSummary]:
+    """The household's requests, newest first."""
+    limit, cursor = page
+    return requests.my_requests(db, user, limit, cursor)
 
 
 @router.get("/open", response_model=Page[OpenRequestPin], responses=error_responses(401, 403, 422))
-async def open_requests(user: Vendor, bbox: MapBox, page: PageParams) -> Page[OpenRequestPin]:
-    """Open and quoted requests inside the viewport and the vendor's service radius."""
-    raise not_implemented()
+def open_requests(
+    user: Vendor, bbox: MapBox, page: PageParams, db: DbSession
+) -> Page[OpenRequestPin]:
+    """Open and quoted requests inside the viewport and the vendor's service radius.
+
+    Pins sit at the rounded location, newest first. Without a base location the radius
+    is not applied and distances are empty.
+    """
+    limit, cursor = page
+    return requests.open_requests(db, user, bbox, limit, cursor)
 
 
 @router.get(
@@ -47,9 +57,14 @@ async def open_requests(user: Vendor, bbox: MapBox, page: PageParams) -> Page[Op
     response_model=RequestOut | VendorRequestView,
     responses=error_responses(401, 403, 404),
 )
-async def get_request(request_id: UUID, user: HouseholdOrVendor) -> RequestOut | VendorRequestView:
-    """The owner gets `RequestOut`; a vendor gets `VendorRequestView`. Check `view`."""
-    raise not_implemented()
+def get_request(
+    request_id: UUID, user: HouseholdOrVendor, db: DbSession
+) -> RequestOut | VendorRequestView:
+    """The owner gets `RequestOut`; a vendor gets `VendorRequestView`. Check `view`.
+
+    Vendors see open and quoted requests, and any request they have quoted.
+    """
+    return requests.get_request(db, user, request_id)
 
 
 @router.post(

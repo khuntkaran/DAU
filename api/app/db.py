@@ -10,10 +10,11 @@ from enum import StrEnum
 from functools import lru_cache
 from typing import Any
 
-from sqlalchemy import JSON, Engine, MetaData, create_engine, event
+from sqlalchemy import JSON, DateTime, Dialect, Engine, MetaData, create_engine, event
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
+from sqlalchemy.types import TypeDecorator
 
 from api.app.config import get_settings
 
@@ -47,6 +48,23 @@ def str_enum(enum: type[StrEnum]) -> SAEnum:
 
 def utcnow() -> datetime:
     return datetime.now(UTC)
+
+
+class UtcDateTime(TypeDecorator[datetime]):
+    """Always hands back an aware UTC datetime. SQLite drops the zone; PostgreSQL keeps it."""
+
+    impl = DateTime(timezone=True)
+    cache_ok = True
+
+    def process_bind_param(self, value: datetime | None, dialect: Dialect) -> datetime | None:
+        if value is not None and value.tzinfo is None:
+            raise ValueError("timestamps must carry a time zone")
+        return value.astimezone(UTC) if value is not None else None
+
+    def process_result_value(self, value: datetime | None, dialect: Dialect) -> datetime | None:
+        if value is None:
+            return None
+        return value.replace(tzinfo=UTC) if value.tzinfo is None else value.astimezone(UTC)
 
 
 def enable_sqlite_foreign_keys(dbapi_connection: Any, _: Any) -> None:
