@@ -8,8 +8,9 @@ from collections.abc import Iterator
 from datetime import UTC, datetime
 from enum import StrEnum
 from functools import lru_cache
-from typing import Any
+from typing import Annotated, Any
 
+from fastapi import Depends
 from sqlalchemy import JSON, DateTime, Dialect, Engine, MetaData, create_engine, event
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.dialects.postgresql import JSONB
@@ -87,11 +88,17 @@ def get_engine() -> Engine:
     return make_engine(get_settings().database_url)
 
 
+SessionFactory = sessionmaker[Session]
+
+
 @lru_cache
-def _session_factory() -> sessionmaker[Session]:
+def get_session_factory() -> SessionFactory:
+    """Also handed to background jobs, which outlive the request's own session."""
     return sessionmaker(get_engine(), expire_on_commit=False)
 
 
-def get_db() -> Iterator[Session]:
-    with _session_factory()() as session:
+def get_db(
+    factory: Annotated[SessionFactory, Depends(get_session_factory)],
+) -> Iterator[Session]:
+    with factory() as session:
         yield session

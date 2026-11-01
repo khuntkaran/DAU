@@ -10,15 +10,22 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from api.app import models
 from api.app.config import Settings, get_settings
-from api.app.db import Base, get_db, make_engine
+from api.app.db import Base, SessionFactory, get_session_factory, make_engine
 from api.app.enums import Role
+from api.app.llm.gateway import Gateway, get_gateway
+from api.app.llm.providers.fake import FakeProvider
+from api.app.llm.ratelimit import RateLimiter
 from api.app.main import app
 from api.app.services.auth import issue_token
 
+# Explicit values win over .env, so tests never see real keys or call a real provider.
 TEST_SETTINGS = Settings(
     database_url="sqlite://",
     jwt_secret="test-secret-that-is-long-enough-for-hs256",
     demo_otp="123456",
+    ai_provider="fake",
+    gemini_api_key=None,
+    groq_api_key=None,
 )
 
 
@@ -42,15 +49,25 @@ def settings() -> Settings:
 
 
 @pytest.fixture
-def client(engine: Engine, settings: Settings) -> Iterator[TestClient]:
-    factory = sessionmaker(engine, expire_on_commit=False)
+def factory(engine: Engine) -> SessionFactory:
+    return sessionmaker(engine, expire_on_commit=False)
 
-    def _db() -> Iterator[Session]:
-        with factory() as session:
-            yield session
 
-    app.dependency_overrides[get_db] = _db
+@pytest.fixture
+def fake_ai() -> FakeProvider:
+    return FakeProvider()
+
+
+@pytest.fixture
+def gateway(fake_ai: FakeProvider) -> Gateway:
+    return Gateway([fake_ai], RateLimiter({}), sleep=lambda _: None)
+
+
+@pytest.fixture
+def client(factory: SessionFactory, settings: Settings, gateway: Gateway) -> Iterator[TestClient]:
+    app.dependency_overrides[get_session_factory] = lambda: factory
     app.dependency_overrides[get_settings] = lambda: settings
+    app.dependency_overrides[get_gateway] = lambda: gateway
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()

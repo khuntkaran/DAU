@@ -305,7 +305,7 @@
           "voice"
         ],
         "summary": "Transcribe",
-        "description": "Queues `voice_extract`. The job output is a `VoiceResult` with fields to prefill.",
+        "description": "Queues `voice_extract` for an uploaded voice note. Poll the job for a `VoiceResult`.\n\nThe fields prefill the form for the household to check. Pass `entity_id` as\n`voice_input_id` when submitting the request. Limited to 10 voice notes an hour.",
         "operationId": "transcribe_voice_transcribe_post",
         "requestBody": {
           "content": {
@@ -324,26 +324,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/JobAccepted"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Too Many Requests",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -368,8 +348,18 @@
               }
             }
           },
-          "404": {
-            "description": "Not Found",
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
@@ -392,7 +382,7 @@
           "requests"
         ],
         "summary": "Create Request",
-        "description": "Opens a request. Sizing and subsidy are calculated in code and returned at once.",
+        "description": "Opens a request. Sizing and subsidy are calculated in code and returned at once.\n\nWith a photo, the roof assessment starts in the background and shows as `pending`; when it\nfinishes, the estimate is recalculated from the usable roof area.",
         "operationId": "create_request_requests_post",
         "requestBody": {
           "content": {
@@ -909,7 +899,7 @@
           "requests"
         ],
         "summary": "Request Recommendation",
-        "description": "Queues `recommend`, or returns the existing job while the quotes are unchanged.",
+        "description": "Queues `recommend`, or returns the existing job while the quotes are unchanged.\n\nCode ranks the quotes; the AI only explains the ranking, and a template takes over if the\nAI is down. 409 when there are no quotes yet.",
         "operationId": "request_recommendation_requests__request_id__recommendation_post",
         "security": [
           {
@@ -996,6 +986,7 @@
           "requests"
         ],
         "summary": "Get Recommendation",
+        "description": "The latest recommendation. `stale` is true once a quote has changed since.",
         "operationId": "get_recommendation_requests__request_id__recommendation_get",
         "security": [
           {
@@ -1251,7 +1242,7 @@
           "jobs"
         ],
         "summary": "Get Job",
-        "description": "Polling fallback for clients without SSE. Only the job's owner can read it.",
+        "description": "Polling fallback for clients without SSE. Only the user who started a job can read it.",
         "operationId": "get_job_jobs__job_id__get",
         "security": [
           {
@@ -3812,7 +3803,16 @@
               "type": "string"
             },
             "type": "array",
-            "title": "Reasons"
+            "title": "Reasons",
+            "description": "Why the top quote leads, in plain words."
+          },
+          "other_notes": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Other Notes",
+            "description": "One line per other quote, keyed by quote id."
           },
           "caveats": {
             "anyOf": [
@@ -3824,6 +3824,15 @@
               }
             ],
             "title": "Caveats"
+          },
+          "written_by": {
+            "type": "string",
+            "enum": [
+              "ai",
+              "template"
+            ],
+            "title": "Written By",
+            "description": "`template` when the AI was unavailable or its text failed the checks."
           },
           "stale": {
             "type": "boolean",
@@ -3846,6 +3855,7 @@
           "ranking",
           "reasons",
           "caveats",
+          "written_by",
           "stale",
           "created_at"
         ],

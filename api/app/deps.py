@@ -10,14 +10,17 @@ from sqlalchemy.orm import Session
 
 from api.app import models
 from api.app.config import Settings, get_settings
-from api.app.db import get_db
+from api.app.db import SessionFactory, get_db, get_session_factory
 from api.app.enums import Role
 from api.app.errors import ApiError
+from api.app.llm.gateway import Gateway, get_gateway
 from api.app.schemas import BBox
 from api.app.services.auth import current_user
 
 DbSession = Annotated[Session, Depends(get_db)]
 AppSettings = Annotated[Settings, Depends(get_settings)]
+Sessions = Annotated[SessionFactory, Depends(get_session_factory)]
+Ai = Annotated[Gateway, Depends(get_gateway)]
 
 _bearer = HTTPBearer(auto_error=False)
 

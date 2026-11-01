@@ -188,10 +188,15 @@ def test_the_ai_review_is_queued_not_awaited(
 ) -> None:
     created = _submit(client, request_id, auth(make_vendor())).json()
 
+    # The vendor's response comes back before the AI review runs.
+    assert created["quote"]["review"]["llm_status"] == "queued"
     job = db.get(models.AiJob, uuid.UUID(created["review_job_id"]))
     assert job is not None
-    assert (job.job_type, job.status) == (JobType.QUOTE_REVIEW, JobStatus.QUEUED)
-    assert job.entity_id == uuid.UUID(created["quote"]["id"])
+    db.refresh(job)
+    assert (job.job_type, job.status) == (JobType.QUOTE_REVIEW, JobStatus.SUCCEEDED)
+    review = db.get(models.QuoteReview, job.entity_id)
+    assert review is not None
+    assert str(review.quote_id) == created["quote"]["id"]
 
 
 def test_a_vendor_quotes_a_request_only_once(

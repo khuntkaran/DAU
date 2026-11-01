@@ -114,7 +114,7 @@ def test_missing_token_gets_401_in_the_error_shape(client: TestClient) -> None:
 def test_stub_routes_answer_501_until_built(
     client: TestClient, make_user: MakeUser, auth: Callable[..., dict[str, str]]
 ) -> None:
-    response = client.get(f"/jobs/{REQUEST_ID}", headers=auth(make_user()))
+    response = client.get("/events", headers=auth(make_user()))
 
     assert response.status_code == 501
     assert response.json()["error"]["code"] == "not_implemented"

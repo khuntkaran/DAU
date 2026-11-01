@@ -1,9 +1,21 @@
 from uuid import UUID
 
-from fastapi import APIRouter
+from fastapi import APIRouter, BackgroundTasks
 
-from api.app.deps import DbSession, Household, HouseholdOrVendor, MapBox, PageParams, Vendor
-from api.app.errors import error_responses, not_implemented
+from api.app.deps import (
+    Ai,
+    AppSettings,
+    DbSession,
+    Household,
+    HouseholdOrVendor,
+    MapBox,
+    PageParams,
+    Sessions,
+    Vendor,
+)
+from api.app.errors import error_responses
+from api.app.jobs import photo_assess, recommend
+from api.app.jobs.runner import run_job
 from api.app.schemas import (
     JobAccepted,
     OpenRequestPin,
@@ -27,9 +39,25 @@ router = APIRouter(prefix="/requests", tags=["requests"])
 @router.post(
     "", status_code=201, response_model=RequestOut, responses=error_responses(401, 403, 422)
 )
-def create_request(body: RequestCreate, user: Household, db: DbSession) -> RequestOut:
-    """Opens a request. Sizing and subsidy are calculated in code and returned at once."""
-    return requests.owner_view(db, requests.create_request(db, user, body))
+def create_request(
+    body: RequestCreate,
+    user: Household,
+    db: DbSession,
+    background: BackgroundTasks,
+    sessions: Sessions,
+    ai: Ai,
+    settings: AppSettings,
+) -> RequestOut:
+    """Opens a request. Sizing and subsidy are calculated in code and returned at once.
+
+    With a photo, the roof assessment starts in the background and shows as `pending`; when it
+    finishes, the estimate is recalculated from the usable roof area.
+    """
+    request = requests.create_request(db, user, body)
+    job = photo_assess.queue_assessment(db, request, user)
+    if job is not None:
+        background.add_task(run_job, job.id, sessions, ai, settings)
+    return requests.owner_view(db, request)
 
 
 @router.get("/mine", response_model=Page[RequestSummary], responses=error_responses(401, 403, 422))
@@ -73,13 +101,24 @@ def get_request(
     response_model=QuoteCreated,
     responses=error_responses(401, 403, 404, 409, 422),
 )
-def submit_quote(request_id: UUID, body: QuoteCreate, user: Vendor, db: DbSession) -> QuoteCreated:
+def submit_quote(
+    request_id: UUID,
+    body: QuoteCreate,
+    user: Vendor,
+    db: DbSession,
+    background: BackgroundTasks,
+    sessions: Sessions,
+    ai: Ai,
+    settings: AppSettings,
+) -> QuoteCreated:
     """Saves the quote with net cost and payback from code, then queues `quote_review`.
 
     Missing items and warnings are checked in code at once; the AI notes follow later.
     409 when the request is not open or quoted, or this vendor has already quoted it.
     """
-    quote, job = quotes.submit_quote(db, user, request_id, body)
+    quote, job, needs_run = quotes.submit_quote(db, user, request_id, body)
+    if needs_run:
+        background.add_task(run_job, job.id, sessions, ai, settings)
     return QuoteCreated(quote=quotes.quote_out(db, quote), review_job_id=job.id)
 
 
@@ -99,9 +138,26 @@ def compare_quotes(request_id: UUID, user: Household, db: DbSession) -> QuoteCom
     response_model=JobAccepted,
     responses=error_responses(401, 403, 404, 409),
 )
-async def request_recommendation(request_id: UUID, user: Household) -> JobAccepted:
-    """Queues `recommend`, or returns the existing job while the quotes are unchanged."""
-    raise not_implemented()
+def request_recommendation(
+    request_id: UUID,
+    user: Household,
+    db: DbSession,
+    background: BackgroundTasks,
+    sessions: Sessions,
+    ai: Ai,
+    settings: AppSettings,
+) -> JobAccepted:
+    """Queues `recommend`, or returns the existing job while the quotes are unchanged.
+
+    Code ranks the quotes; the AI only explains the ranking, and a template takes over if the
+    AI is down. 409 when there are no quotes yet.
+    """
+    job, needs_run = recommend.request_recommendation(db, user, request_id)
+    if needs_run:
+        background.add_task(run_job, job.id, sessions, ai, settings)
+    return JobAccepted(
+        job_id=job.id, job_type=job.job_type, status=job.status, entity_id=job.entity_id
+    )
 
 
 @router.get(
@@ -109,5 +165,6 @@ async def request_recommendation(request_id: UUID, user: Household) -> JobAccept
     response_model=RecommendationOut,
     responses=error_responses(401, 403, 404),
 )
-async def get_recommendation(request_id: UUID, user: Household) -> RecommendationOut:
-    raise not_implemented()
+def get_recommendation(request_id: UUID, user: Household, db: DbSession) -> RecommendationOut:
+    """The latest recommendation. `stale` is true once a quote has changed since."""
+    return recommend.latest_recommendation(db, user, request_id)

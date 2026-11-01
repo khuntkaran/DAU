@@ -10,7 +10,7 @@ Status values: `todo`, `doing`, `done`, `blocked`.
 |---|---|---|---|
 | P1 | Apply `.claude/settings.proposed.json` | Hooks and plugins are off until this is done | blocked |
 | P2 | ~~Install Docker Desktop~~ | Not needed: local mode is SQLite and a local `uploads/` folder | dropped |
-| P3 | Gemini and Groq free keys in `.env` | Real AI features and the final hand test | blocked |
+| P3 | Gemini and Groq free keys in `.env` | Real AI features and the final hand test | done (rotate after the hackathon) |
 | P4 | Confirm rule values marked `verify` in `rules/` | The brief requires public rules with sources | todo |
 | P5 | Source a DCR rule: subsidy only with domestic panels | Non-DCR quotes currently get the full subsidy | todo |
 
@@ -64,11 +64,12 @@ Everyone works in parallel against this after it is agreed.
 
 | Task | Owner | Check | Status |
 |---|---|---|---|
-| LLM gateway, token bucket, cache, fallback, fake provider | AI | Worker tests | todo |
-| Injection guard | AI | Worker tests | todo |
-| Photo assessment job | AI | Worker tests | todo |
-| Voice job in `en`, `hi`, `gu` | AI | Worker tests | todo |
-| Quote review and recommendation jobs | AI | Worker tests | todo |
+| LLM gateway, token bucket, cache, fallback, fake provider, `GET /jobs` (4.1) | Partner A | `api/tests/test_llm.py`, `test_jobs.py`, live call to both providers | done |
+| Injection guard: patterns in en/hi/gu at submit, LLM classifier, output checks (4.4) | Partner A | `api/tests/test_guard.py`, `test_quote_review.py`; live run caught a reworded instruction the patterns missed | done |
+| Photo assessment job (4.2) | Partner A | `api/tests/test_photo_assess.py`, live run with Gemini | done |
+| Voice job in `en`, `hi`, `gu` (4.3) | Partner A | `api/tests/test_voice.py`; live English run 1.8 s. Hindi and Gujarati need a person | done |
+| Quote review job (4.4) | Partner A | `api/tests/test_quote_review.py` | done |
+| Recommendation job with winner check and template fallback (4.5) | Partner A | `api/tests/test_recommend.py`; live run 1.6 s via Groq | done |
 | SSE notifications | Backend | API tests | blocked by P2 |
 | Photo boxes, recommendation, citations, voice UI | Frontend | Vitest | todo |
 
@@ -100,3 +101,10 @@ Everyone works in parallel against this after it is agreed.
 - 2026-11-01: Unbuilt routes answer 501 rather than the plan's mock JSON, so the frontend never shows invented numbers.
 - 2026-11-01: `rule_items.status` and `calculations.citation_keys` are added beyond `db-schema.html`, so estimates can be labelled and every cited rule reaches the UI.
 - 2026-11-01: The seed starter set in `seed/data/` uses demo names and `+91 90000` numbers and has no tariff slabs, so no DISCOM rate is invented. Partner B extends it; `test_seed.py` validates every file.
+- 2026-11-01: Live checks through the gateway: `gemini-3.8-flash` returned 504 every time, `gemini-2.5-flash` is retired, `gemini-3.7-flash` works. Groq has no Llama models on this account; `qwen/qwen3.8-27b` is the text fallback and `whisper-large-v3` handles speech.
+- 2026-11-01: Every provider call has a timeout (`LLM_TIMEOUT_S`) and the SDKs' own retries are off, so the gateway alone decides retries, backoff and fallback.
+- 2026-11-01: Rate limits: `GROQ_RPM_LIMIT=20` from Groq's published table, confirmed by this account's response headers (qwen 30, whisper 20; the lower is used). `GEMINI_RPM_LIMIT=5` is a deliberately low value until replaced with the figure at aistudio.google.com/rate-limit, which only the account owner can see.
+- 2026-11-01: Gemini returned "high demand" 503s for every Flash model except Lite during testing. `GEMINI_FALLBACK_MODEL=gemini-3.5-flash-lite` runs as its own provider with its own breaker, and server errors get one retry before moving on. The live photo test then succeeded through the fallback in about 4 s of model time.
+- 2026-11-01: Voice extraction is a short text task with a person waiting, so it asks the gateway for the fast provider first (Groq). A live English clip went from 41 s, when it waited on an overloaded Gemini, to 1.8 s.
+- 2026-11-01: Groq's text-to-speech model needs the account admin to accept its terms, so live test audio was made with Windows speech instead.
+- 2026-11-01: The recommendation model sees neutral labels (Quote A, B) in submission order and a score table only: no vendor names, notes or other vendor text. A figure filter drops any line with digits, currency or lakh/crore; units alone are allowed.

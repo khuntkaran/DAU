@@ -5,9 +5,9 @@ reads them: the checklist, warnings and ranking use structured fields only.
 """
 
 import hashlib
-import json
 import uuid
 from collections.abc import Iterable
+from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
 from typing import Any, cast
@@ -19,9 +19,6 @@ from sqlalchemy.orm import Session
 from api.app import models
 from api.app.db import utcnow
 from api.app.enums import (
-    JobPriority,
-    JobStatus,
-    JobType,
     Level,
     LineItemType,
     QuoteSource,
@@ -29,10 +26,10 @@ from api.app.enums import (
     RequestStatus,
 )
 from api.app.errors import ApiError
+from api.app.jobs import quote_review
 from api.app.schemas import (
     AcceptResult,
     LineItemOut,
-    MissingItem,
     Page,
     QuoteComparison,
     QuoteCreate,
@@ -57,10 +54,9 @@ from api.app.services.requests import (
 from api.app.services.rules import citations_for
 from rules.checklist import REQUIRED_INCLUSIONS, TOTAL_ITEMS, QuoteFacts, missing_items
 from rules.loader import load_rules
-from rules.scoring import QuoteScore, rank_quotes
+from rules.scoring import QuoteScore, Ranking, rank_quotes
 
 CHECKLIST_VERSION = "1"
-REVIEW_PROMPT_VERSION = "quote_review.v1"
 MAX_QUOTES_COMPARED = 50
 
 # Each checklist item from `rules.checklist`, and the line items that together satisfy it.
@@ -169,7 +165,7 @@ def _financials(db: Session, quote: models.Quote) -> models.Calculation:
 
 def submit_quote(
     db: Session, user: models.User, request_id: uuid.UUID, body: QuoteCreate
-) -> tuple[models.Quote, models.AiJob]:
+) -> tuple[models.Quote, models.AiJob, bool]:
     vendor = user.vendor
     if vendor is None:
         raise ApiError(403, "forbidden", "Complete your vendor profile first.")
@@ -214,7 +210,7 @@ def insert_quote(
     *,
     code: str | None = None,
     submitted_at: datetime | None = None,
-) -> tuple[models.Quote, models.AiJob]:
+) -> tuple[models.Quote, models.AiJob, bool]:
     """Stores a quote with its financials, code review and queued AI review. The seed script
     passes a fixed code and time; the API leaves both to be generated."""
     now = submitted_at or utcnow()
@@ -238,42 +234,28 @@ def insert_quote(
     db.add(financials)
     db.flush()
 
-    job = models.AiJob(
-        job_type=JobType.QUOTE_REVIEW,
-        entity_type="quote",
-        entity_id=quote.id,
-        status=JobStatus.QUEUED,
-        priority=JobPriority.LOW,
-        prompt_version=REVIEW_PROMPT_VERSION,
-        input_hash=hashlib.sha256(
-            json.dumps(body.model_dump(mode="json"), sort_keys=True).encode()
-        ).hexdigest(),
-        requested_by=user.id,
-        queued_at=now,
-    )
-    db.add(job)
-    db.flush()
-
     estimate = db.get(models.Calculation, request.latest_estimate_id)
-    db.add(
-        models.QuoteReview(
-            quote_id=quote.id,
-            rule_set_id=request.rule_set_id,
-            checklist_version=CHECKLIST_VERSION,
-            missing_items=[
-                {
-                    "item": item,
-                    "severity": MISSING_ITEM_TEXT[item][0],
-                    "why": MISSING_ITEM_TEXT[item][1],
-                }
-                for item in missing_items(_facts(quote, vendor, financials))
-            ],
-            warnings=_warnings(quote, estimate),
-            injection_detected=False,
-            ai_job_id=job.id,
-            reviewed_at=now,
-        )
+    review = models.QuoteReview(
+        quote_id=quote.id,
+        rule_set_id=request.rule_set_id,
+        checklist_version=CHECKLIST_VERSION,
+        missing_items=[
+            {
+                "item": item,
+                "severity": MISSING_ITEM_TEXT[item][0],
+                "why": MISSING_ITEM_TEXT[item][1],
+            }
+            for item in missing_items(_facts(quote, vendor, financials))
+        ],
+        warnings=_warnings(quote, estimate),
+        injection_detected=False,
+        reviewed_at=now,
     )
+    db.add(review)
+    # The pattern check runs now, so a flagged quote shows its warning even with the AI down.
+    quote_review.pattern_check(quote, review)
+    db.flush()
+    job, needs_run = quote_review.queue_review(db, quote, review, user)
 
     if request.status == RequestStatus.OPEN:
         request.status = RequestStatus.QUOTED
@@ -293,28 +275,15 @@ def insert_quote(
         .values(quotes_count=models.SolarRequest.quotes_count + 1)
     )
     db.commit()
-    return quote, job
+    return quote, job, needs_run
 
 
 # --- Showing --------------------------------------------------------------------------------
 
 
 def _review_out(db: Session, quote: models.Quote) -> QuoteReviewOut | None:
-    review = db.scalars(
-        select(models.QuoteReview).where(models.QuoteReview.quote_id == quote.id)
-    ).first()
-    if review is None:
-        return None
-    job = db.get(models.AiJob, review.ai_job_id) if review.ai_job_id else None
-    return QuoteReviewOut(
-        llm_status=job.status if job else JobStatus.QUEUED,
-        missing_items=[MissingItem.model_validate(m) for m in review.missing_items],
-        warnings=list(review.warnings or []),
-        injection_detected=review.injection_detected,
-        injection_excerpt=review.injection_excerpt,
-        llm_notes=review.llm_notes,
-        reviewed_at=review.reviewed_at,
-    )
+    review = quote_review.latest_review(db, quote)
+    return quote_review.review_out(db, review) if review else None
 
 
 def quote_out(db: Session, quote: models.Quote, score: QuoteScoreOut | None = None) -> QuoteOut:
@@ -362,19 +331,51 @@ def _score_out(score: QuoteScore, facts: QuoteFacts) -> QuoteScoreOut:
     )
 
 
+@dataclass(frozen=True)
+class Ranked:
+    """Quotes on a request in submission order, their facts, and the ranking from code."""
+
+    quotes: list[models.Quote]
+    facts: dict[str, QuoteFacts]
+    ranking: Ranking
+
+    @property
+    def by_id(self) -> dict[str, models.Quote]:
+        return {str(q.id): q for q in self.quotes}
+
+
+def ranked_quotes(db: Session, request: models.SolarRequest) -> Ranked:
+    quotes = list(
+        db.scalars(
+            select(models.Quote)
+            .where(
+                models.Quote.request_id == request.id,
+                models.Quote.status != QuoteStatus.WITHDRAWN,
+            )
+            .order_by(models.Quote.submitted_at, models.Quote.id)
+            .limit(MAX_QUOTES_COMPARED)
+        )
+    )
+    facts = {str(q.id): _facts(q, q.vendor, _financials(db, q)) for q in quotes}
+    return Ranked(quotes, facts, rank_quotes(list(facts.values())))
+
+
+def quotes_fingerprint(quotes: list[models.Quote]) -> str:
+    """Changes whenever a quote is added, revised or decided, so old advice shows as stale."""
+    parts = sorted(f"{q.id}:{q.revision}:{q.status}" for q in quotes)
+    return hashlib.sha256("|".join(parts).encode()).hexdigest()
+
+
+def score_out(score: QuoteScore, facts: QuoteFacts) -> QuoteScoreOut:
+    return _score_out(score, facts)
+
+
 def compare_quotes(db: Session, user: models.User, request_id: uuid.UUID) -> QuoteComparison:
     request = db.get(models.SolarRequest, request_id)
     if request is None or request.household_id != user.id:
         raise _NOT_FOUND
-    quotes = db.scalars(
-        select(models.Quote)
-        .where(models.Quote.request_id == request.id, models.Quote.status != QuoteStatus.WITHDRAWN)
-        .order_by(models.Quote.submitted_at)
-        .limit(MAX_QUOTES_COMPARED)
-    ).all()
-    facts = {str(q.id): _facts(q, q.vendor, _financials(db, q)) for q in quotes}
-    ranking = rank_quotes(list(facts.values()))
-    by_id = {str(q.id): q for q in quotes}
+    ranked = ranked_quotes(db, request)
+    ranking, facts, by_id = ranked.ranking, ranked.facts, ranked.by_id
 
     rule_set = required(db.get(models.RuleSet, request.rule_set_id), "rule set")
     citations = citations_for(db, rule_set.id)

@@ -34,13 +34,18 @@ def _steps(steps: list[Step]) -> list[dict[str, Any]]:
     return [asdict(step) for step in steps]
 
 
-def request_estimate(request: models.SolarRequest) -> models.Calculation:
-    """Size, subsidy and savings for a new request, before any vendor has quoted."""
+def request_estimate(
+    request: models.SolarRequest, usable_fraction: Decimal | None = None
+) -> models.Calculation:
+    """Size, subsidy and savings for a request, before any vendor has quoted.
+
+    `usable_fraction` comes from the roof photo assessment; without it the rule default applies.
+    """
     if request.roof_area_sqm is None:
         raise ValueError("an estimate needs the roof area")
     category = _category(request.state_category)
 
-    size = suggest_size(request.monthly_units, request.roof_area_sqm)
+    size = suggest_size(request.monthly_units, request.roof_area_sqm, usable_fraction)
     subsidy = calculate_subsidy(size.size_kw, category)
     savings = calculate_payback(0, subsidy.amount_inr, size.size_kw, request.monthly_units)
 
@@ -60,6 +65,7 @@ def request_estimate(request: models.SolarRequest) -> models.Calculation:
             {
                 "monthly_units": request.monthly_units,
                 "roof_area_sqm": request.roof_area_sqm,
+                "usable_fraction": usable_fraction,
                 "state_category": category,
             }
         ),

@@ -596,8 +596,14 @@ class RecommendationOut(Cited):
     request_id: UUID
     recommended_quote_id: UUID
     ranking: list[RankedQuote]
-    reasons: list[str]
+    reasons: list[str] = Field(description="Why the top quote leads, in plain words.")
+    other_notes: dict[str, str] = Field(
+        default_factory=dict, description="One line per other quote, keyed by quote id."
+    )
     caveats: str | None
+    written_by: Literal["ai", "template"] = Field(
+        description="`template` when the AI was unavailable or its text failed the checks."
+    )
     stale: bool = Field(description="True when quotes changed since this was written.")
     created_at: datetime
 
