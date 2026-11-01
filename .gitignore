@@ -21,6 +21,8 @@ __pycache__/
 !.env.example
 
 # Local data
+*.db
+uploads/
 minio-data/
 
 # Test output

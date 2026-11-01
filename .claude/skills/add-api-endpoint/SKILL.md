@@ -11,11 +11,11 @@ Target: $ARGUMENTS
 The API surface is section 08 of `SuryaSetu Architecture.html`. Work in this order, tests first.
 
 1. **Schemas.** Add request and response Pydantic models to `api/app/schemas.py`.
-2. **Test.** Add to `api/tests/test_<module>.py` with `httpx.AsyncClient` against real Postgres. Cover success, invalid input (422), not signed in (401), wrong role or another user's data (403 or 404), and state conflicts (409). Run it and see it fail.
+2. **Test.** Add to `api/tests/test_<module>.py` with FastAPI's `TestClient` on a temporary SQLite database. Cover success, invalid input (422), not signed in (401), wrong role or another user's data (403 or 404), and state conflicts (409). Run it and see it fail.
 3. **Service.** `api/app/services/<module>.py` holds rules and transactions, with no FastAPI imports. Calculations come from `rules`.
 4. **Router.** `api/app/routers/<module>.py` does dependency injection and the service call only.
 5. **Register** it in `api/app/main.py`.
-6. **Regenerate** web types with `npm run api:types`.
+6. **Regenerate** the contract with `npm run api:openapi`; the web types are generated from `api/openapi.json`.
 
 ## Rules
 
@@ -29,13 +29,13 @@ The API surface is section 08 of `SuryaSetu Architecture.html`. Work in this ord
 ## States
 
 ```
-Request: DRAFT → OPEN → QUOTED → ACCEPTED → INSTALLED (stretch)
-         OPEN or QUOTED → CANCELLED or EXPIRED
-Quote:   SUBMITTED → ACCEPTED | REJECTED | WITHDRAWN
+Request: draft → open → quoted → accepted → completed
+         open or quoted → cancelled or expired
+Quote:   draft → submitted → revised → accepted | rejected | withdrawn | expired
 ```
 
-Accept runs in one transaction: `SELECT … FOR UPDATE` on the request, confirm it is `QUOTED`, accept the quote, reject the others, mark the request `ACCEPTED`, then publish the SSE events after commit. Test two simultaneous accepts, and expect one 200 and one 409.
+Accept runs in one transaction: lock the request (`SELECT … FOR UPDATE` on PostgreSQL; SQLite serialises writers), confirm it is `quoted`, accept the quote, reject the others, mark the request `accepted`, then publish the SSE events after commit. The partial unique index on accepted quotes is the final guard. Test two simultaneous accepts, and expect one 200 and one 409.
 
 ## Uploads
 
-`POST /uploads/presign` returns a presigned PUT URL and object key, so the API never carries photo bytes. Restrict content type and size in the presigned policy. The worker confirms the file signature before use.
+`POST /uploads` takes a multipart file and a `purpose`, saves it under `UPLOAD_DIR`, and records a `files` row with its sha256. `schemas.check_upload` restricts type and size, and the server confirms the file signature before use. Production swaps this for presigned object storage.

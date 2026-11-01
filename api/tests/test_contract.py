@@ -1,19 +1,19 @@
-"""The API contract: every route in section 08 of the architecture, its auth, and its schemas.
+"""The API contract: every route in the work plan, its auth, and its schemas.
 
-These tests need no database. Behaviour tests against Postgres arrive with each endpoint.
+These tests need no database. Behaviour tests arrive with each endpoint.
 """
 
 from decimal import Decimal
-from typing import Any, get_args
+from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
 from api.app import schemas
+from api.app.enums import FilePurpose
 from api.app.export_openapi import DEFAULT_PATH, render
 from api.app.main import app
-from rules.checklist import REQUIRED_INCLUSIONS
 from rules.loader import load_rules
 
 client = TestClient(app)
@@ -21,7 +21,8 @@ client = TestClient(app)
 ROUTES = {
     ("post", "/auth/otp"),
     ("post", "/auth/verify"),
-    ("post", "/uploads/presign"),
+    ("post", "/uploads"),
+    ("get", "/files/{file_id}"),
     ("post", "/voice/transcribe"),
     ("post", "/requests"),
     ("get", "/requests/mine"),
@@ -42,26 +43,32 @@ PUBLIC = {"/auth/otp", "/auth/verify", "/rules/current", "/health"}
 
 REQUEST_ID = "00000000-0000-4000-8000-000000000001"
 VALID_REQUEST: dict[str, Any] = {
-    "location": {"lat": 23.0225, "lng": 72.5714},
-    "state_category": "general",
+    "lat": 23.0225,
+    "lng": 72.5714,
+    "location_source": "map_pin",
     "monthly_units": 330,
     "budget_inr": 200000,
-    "roof_area_m2": "40",
+    "roof_area_sqm": "40",
     "roof_type": "rcc_flat",
 }
 VALID_QUOTE: dict[str, Any] = {
     "system_kw": "3",
-    "price_inr": 185000,
+    "price_total_inr": 185000,
+    "gst_included": True,
     "panel_brand": "Waaree",
-    "panel_watt": 545,
-    "dcr": True,
+    "panel_wattage": 545,
+    "panel_count": 6,
+    "dcr_compliant": True,
     "inverter_brand": "Growatt",
-    "inverter_kw": "3",
-    "warranty_panel_yrs": 25,
-    "warranty_inverter_yrs": 10,
-    "warranty_work_yrs": 5,
+    "inverter_capacity_kw": "3",
+    "panel_performance_warranty_yrs": 25,
+    "inverter_warranty_yrs": 10,
+    "workmanship_warranty_yrs": 5,
     "timeline_days": 21,
-    "inclusions": ["net_metering_fee", "mounting_structure"],
+    "line_items": [
+        {"item_type": "net_meter", "amount_inr": 5000},
+        {"item_type": "amc", "included": False},
+    ],
 }
 
 
@@ -140,9 +147,15 @@ def test_health() -> None:
     assert client.get("/health").json() == {"status": "ok"}
 
 
+def test_statuses_use_the_lowercase_values_from_the_schema_doc() -> None:
+    statuses = app.openapi()["components"]["schemas"]["RequestStatus"]["enum"]
+    assert statuses == ["draft", "open", "quoted", "accepted", "completed", "cancelled", "expired"]
+
+
 def test_request_create_accepts_a_valid_body() -> None:
     body = schemas.RequestCreate.model_validate(VALID_REQUEST)
-    assert body.roof_area_m2 == Decimal(40)
+    assert body.roof_area_sqm == Decimal(40)
+    assert body.input_method == "form"
 
 
 @pytest.mark.parametrize(
@@ -150,10 +163,12 @@ def test_request_create_accepts_a_valid_body() -> None:
     [
         ("monthly_units", 0),
         ("budget_inr", -1),
-        ("roof_area_m2", "0"),
-        ("location", {"lat": 100, "lng": 72}),
-        ("state_category", "north"),
-        ("photo_keys", ["a", "b", "c", "d"]),
+        ("roof_area_sqm", "0"),
+        ("lat", 100),
+        ("location_source", "guess"),
+        ("pincode", "38001"),
+        ("photo_file_ids", [REQUEST_ID] * 4),
+        ("state_category", "special"),
     ],
 )
 def test_request_create_rejects_bad_input(field: str, value: object) -> None:
@@ -163,17 +178,18 @@ def test_request_create_rejects_bad_input(field: str, value: object) -> None:
 
 def test_quote_create_accepts_a_valid_body() -> None:
     quote = schemas.QuoteCreate.model_validate(VALID_QUOTE)
-    assert quote.inclusions == {"net_metering_fee", "mounting_structure"}
+    assert [i.item_type for i in quote.line_items] == ["net_meter", "amc"]
+    assert quote.line_items[1].included is False
 
 
 @pytest.mark.parametrize(
     ("field", "value"),
     [
-        ("price_inr", 0),
-        ("price_inr", 1.5),
+        ("price_total_inr", 0),
+        ("price_total_inr", 1.5),
         ("system_kw", "0"),
         ("timeline_days", 0),
-        ("inclusions", ["free_lunch"]),
+        ("line_items", [{"item_type": "free_lunch"}]),
         ("notes", "x" * 2001),
     ],
 )
@@ -182,46 +198,54 @@ def test_quote_create_rejects_bad_input(field: str, value: object) -> None:
         schemas.QuoteCreate.model_validate({**VALID_QUOTE, field: value})
 
 
-def test_every_checklist_item_can_be_ticked_on_the_quote_form() -> None:
-    assert set(REQUIRED_INCLUSIONS) <= set(get_args(schemas.Inclusion))
-
-
-def test_vendor_cannot_send_its_own_score() -> None:
+@pytest.mark.parametrize("field", ["total_score", "injection_flag", "status"])
+def test_vendor_cannot_send_its_own_score_flag_or_status(field: str) -> None:
     with pytest.raises(ValidationError):
-        schemas.QuoteCreate.model_validate({**VALID_QUOTE, "score": 100})
+        schemas.QuoteCreate.model_validate({**VALID_QUOTE, field: 100})
 
 
 def test_vendor_view_of_a_request_hides_household_details() -> None:
     fields = set(schemas.VendorRequestView.model_fields)
 
-    assert "approx_location" in fields
-    assert not fields & {"location", "phone", "address_text", "household_id"}
-    assert set(schemas.HouseholdContact.model_fields) >= {"name", "phone", "location"}
+    assert {"approx_lat", "approx_lng"} <= fields
+    assert not fields & {"lat", "lng", "phone", "address_text", "pincode", "household_id"}
+    assert set(schemas.HouseholdContact.model_fields) >= {"full_name", "phone", "lat", "lng"}
 
 
 def test_map_pins_carry_only_the_approximate_location() -> None:
     fields = set(schemas.OpenRequestPin.model_fields)
-    assert "approx_location" in fields
-    assert not fields & {"location", "phone", "address_text"}
+    assert {"approx_lat", "approx_lng"} <= fields
+    assert not fields & {"lat", "lng", "phone", "address_text", "pincode"}
 
 
 @pytest.mark.parametrize(
-    ("kind", "content_type", "size"),
+    ("purpose", "content_type", "size"),
     [
-        ("photo", "audio/webm", 1000),
-        ("audio", "image/jpeg", 1000),
-        ("photo", "image/jpeg", schemas.MAX_UPLOAD_BYTES["photo"] + 1),
-        ("photo", "text/html", 1000),
+        (FilePurpose.TERRACE_PHOTO, "audio/webm", 1000),
+        (FilePurpose.VOICE_AUDIO, "image/jpeg", 1000),
+        (FilePurpose.TERRACE_PHOTO, "image/jpeg", 0),
+        (FilePurpose.TERRACE_PHOTO, "image/jpeg", 8 * 1024 * 1024 + 1),
+        (FilePurpose.TERRACE_PHOTO, "text/html", 1000),
+        (FilePurpose.LOGO, "image/png", 1000),
     ],
 )
-def test_presign_rejects_wrong_type_or_size(kind: str, content_type: str, size: int) -> None:
-    with pytest.raises(ValidationError):
-        schemas.PresignRequest(kind=kind, content_type=content_type, size_bytes=size)  # type: ignore[arg-type]
+def test_uploads_reject_wrong_type_or_size(
+    purpose: FilePurpose, content_type: str, size: int
+) -> None:
+    with pytest.raises(ValueError, match=str(purpose) + "|" + content_type):
+        schemas.check_upload(purpose, content_type, size)
 
 
-def test_presign_accepts_a_photo() -> None:
-    body = schemas.PresignRequest(kind="photo", content_type="image/jpeg", size_bytes=900_000)
-    assert body.kind == "photo"
+@pytest.mark.parametrize(
+    ("purpose", "content_type"),
+    [
+        (FilePurpose.TERRACE_PHOTO, "image/jpeg"),
+        (FilePurpose.ELECTRICITY_BILL, "application/pdf"),
+        (FilePurpose.VOICE_AUDIO, "audio/webm"),
+    ],
+)
+def test_uploads_accept_the_expected_types(purpose: FilePurpose, content_type: str) -> None:
+    schemas.check_upload(purpose, content_type, 900_000)
 
 
 def test_bbox_parses_west_south_east_north() -> None:

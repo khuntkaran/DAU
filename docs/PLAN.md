@@ -9,7 +9,7 @@ Status values: `todo`, `doing`, `done`, `blocked`.
 | # | Item | Why | Status |
 |---|---|---|---|
 | P1 | Apply `.claude/settings.proposed.json` | Hooks and plugins are off until this is done | blocked |
-| P2 | Install Docker Desktop | Postgres with PostGIS, Redis and MinIO cannot run without it | blocked |
+| P2 | ~~Install Docker Desktop~~ | Not needed: local mode is SQLite and a local `uploads/` folder | dropped |
 | P3 | Gemini and Groq free keys in `.env` | Real AI features and the final hand test | blocked |
 | P4 | Confirm rule values marked `verify` in `rules/` | The brief requires public rules with sources | todo |
 
@@ -37,23 +37,25 @@ Everyone works in parallel against this after it is agreed.
 
 | Task | Owner | Check | Status |
 |---|---|---|---|
-| `docker-compose.yml` for all six services | Architect | `docker compose up` healthy | blocked by P2 |
-| SQLAlchemy models and first migration | Backend | `npm run db:migrate` | blocked by P2 |
-| Pydantic schemas and OpenAPI for all routes | Backend | `api/tests/test_contract.py` | done |
+| Config, SQLite engine, enums (work plan 1.1, 1.2, 1.4) | Partner A | `npm run verify` | done |
+| SQLAlchemy models for the 21 P0 tables (1.3) | Partner A | `api/tests/test_models.py` | done |
+| Pydantic schemas and OpenAPI for all routes (1.4, 1.5) | Partner A | `api/tests/test_contract.py` | done |
+| Rules return `steps[]` for the calculation panel (2.2) | Partner A | Golden tests | todo |
+| Seed script with `--reset` (2.4) | Partner A | Fresh database from scratch | todo |
 
 ### Phase 3: Core flow, worth 30% of the score
 
 | Task | Owner | Check | Status |
 |---|---|---|---|
-| OTP auth with roles | Backend | API tests | blocked by P2 |
-| Requests with sizing and subsidy, map query | Backend | API tests | blocked by P2 |
-| Quotes and transactional accept | Backend | Double-accept race test | blocked by P2 |
-| Presigned uploads | Backend | API tests | blocked by P2 |
+| OTP auth with roles (3.1) | Partner A | API tests | todo |
+| Multipart uploads (3.2) | Partner A | API tests | todo |
+| Requests with sizing and subsidy, map query (3.3, 3.4) | Partner A | API tests | todo |
+| Quotes and transactional accept (3.5, 3.6) | Partner A | Double-accept race test | todo |
 | Next.js setup, theme, i18n, API client | Frontend | Vitest and build | todo |
 | Household flow: pin, photo, form, compare, accept | Frontend | Vitest | todo |
 | Vendor flow: map and quote form | Frontend | Vitest | todo |
-| Seed: 30 vendors, 3 requests, 1 injection quote | Backend | `npm run db:seed` | blocked by P2 |
-| Request → quote → accept E2E | QA | Playwright | blocked by P2 |
+| Seed data: vendors, requests, planted quotes (2.5 to 2.9) | Partner B | Seed script loads it | todo |
+| Request → quote → accept E2E | QA | Playwright | todo |
 
 ### Phase 4: AI
 
@@ -89,3 +91,7 @@ Everyone works in parallel against this after it is agreed.
 - 2026-11-01: The contract adds `GET /requests/mine`, `GET /quotes/mine` and `GET /requests/{id}/recommendation` to section 08, because the household and vendor screens need them.
 - 2026-11-01: `Decimal` fields such as kW reach the web app as strings, so no precision is lost. Money stays `int` rupees.
 - 2026-11-01: `GET /requests/{id}/quotes` is not paginated so all quotes can be compared side by side; the service caps a request at 50 quotes.
+- 2026-11-01: The team's documents in `docs/previous/` now lead: SQLite locally with models that also run on PostgreSQL, the P0 tables and column names from `db-schema.html`, and the phases from `work-plan.html`. AI jobs run in `api/` with `BackgroundTasks`; uploads are multipart to `uploads/`. `rules/` stays at the root because it is already built and tested. This replaces the Docker, Redis and MinIO setup above for local work.
+- 2026-11-01: The work plan says 22 P0 tables, but its list and `db-schema.html` name 21. All 21 are built.
+- 2026-11-01: Statuses are lowercase, as in `db-schema.html`. Quote line items map to the rules checklist in `api/app/services/quotes.py`.
+- 2026-11-01: Unbuilt routes answer 501 rather than the plan's mock JSON, so the frontend never shows invented numbers.

@@ -7,8 +7,9 @@ from fastapi import Depends, Query
 from fastapi.exceptions import RequestValidationError
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from api.app.enums import Role
 from api.app.errors import ApiError
-from api.app.schemas import BBox, Role
+from api.app.schemas import BBox
 
 _bearer = HTTPBearer(auto_error=False)
 

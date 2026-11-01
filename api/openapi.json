@@ -110,37 +110,47 @@
         }
       }
     },
-    "/uploads/presign": {
+    "/uploads": {
       "post": {
         "tags": [
-          "uploads"
+          "files"
         ],
-        "summary": "Presign Upload",
-        "description": "Returns a presigned PUT URL. The browser uploads straight to storage, never via the API.",
-        "operationId": "presign_upload_uploads_presign_post",
+        "summary": "Upload File",
+        "description": "Multipart upload to the local `uploads/` folder, with a `files` row and its sha256.\n\nStands in for presigned object storage in production. Type and size limits are in\n`schemas.check_upload`.",
+        "operationId": "upload_file_uploads_post",
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/PresignRequest"
+                "$ref": "#/components/schemas/Body_upload_file_uploads_post"
               }
             }
           },
           "required": true
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PresignResponse"
+                  "$ref": "#/components/schemas/FileOut"
                 }
               }
             }
           },
           "401": {
             "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
             "content": {
               "application/json": {
                 "schema": {
@@ -158,6 +168,16 @@
                 }
               }
             }
+          },
+          "415": {
+            "description": "Unsupported Media Type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -165,6 +185,78 @@
             "HTTPBearer": []
           }
         ]
+      }
+    },
+    "/files/{file_id}": {
+      "get": {
+        "tags": [
+          "files"
+        ],
+        "summary": "Get File",
+        "description": "Only the owner, or a party to the file's request, can read it.",
+        "operationId": "get_file_files__file_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "file_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "File Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The file bytes."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
       }
     },
     "/voice/transcribe": {
@@ -886,7 +978,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Recommendation"
+                  "$ref": "#/components/schemas/RecommendationOut"
                 }
               }
             }
@@ -1318,6 +1410,334 @@
         ],
         "title": "AcceptResult"
       },
+      "AssessmentStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "done",
+          "failed"
+        ],
+        "title": "AssessmentStatus"
+      },
+      "AttachmentKind": {
+        "type": "string",
+        "enum": [
+          "terrace_photo",
+          "electricity_bill",
+          "other"
+        ],
+        "title": "AttachmentKind"
+      },
+      "AttachmentOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "file_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "File Id"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/AttachmentKind"
+          },
+          "is_primary": {
+            "type": "boolean",
+            "title": "Is Primary"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "file_id",
+          "kind",
+          "is_primary",
+          "url"
+        ],
+        "title": "AttachmentOut"
+      },
+      "Body_upload_file_uploads_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "purpose": {
+            "$ref": "#/components/schemas/FilePurpose"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "purpose"
+        ],
+        "title": "Body_upload_file_uploads_post"
+      },
+      "BuildingType": {
+        "type": "string",
+        "enum": [
+          "independent",
+          "rwa_ghs"
+        ],
+        "title": "BuildingType"
+      },
+      "CalcStep": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "formula": {
+            "type": "string",
+            "title": "Formula"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          },
+          "rule_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rule Key",
+            "description": "Key into `citations`; empty for arithmetic."
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "formula",
+          "value"
+        ],
+        "title": "CalcStep",
+        "description": "One line of working, rendered in the UI with an ⓘ link to its rule."
+      },
+      "CalculationOut": {
+        "properties": {
+          "rule_version": {
+            "type": "string",
+            "title": "Rule Version"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/CitationOut"
+            },
+            "type": "array",
+            "title": "Citations"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/CalculationScope"
+          },
+          "system_kw": {
+            "type": "string",
+            "title": "System Kw"
+          },
+          "recommended_kw": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recommended Kw"
+          },
+          "kw_band_min": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kw Band Min"
+          },
+          "kw_band_max": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kw Band Max"
+          },
+          "roof_cap_kw": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Roof Cap Kw"
+          },
+          "gross_cost_inr": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gross Cost Inr"
+          },
+          "subsidy_inr": {
+            "type": "integer",
+            "title": "Subsidy Inr"
+          },
+          "net_cost_inr": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Net Cost Inr"
+          },
+          "annual_generation_kwh": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Annual Generation Kwh"
+          },
+          "monthly_savings_inr": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monthly Savings Inr"
+          },
+          "annual_savings_inr": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Annual Savings Inr"
+          },
+          "bill_reduction_pct": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bill Reduction Pct"
+          },
+          "payback_years": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payback Years",
+            "description": "Empty when the system saves nothing."
+          },
+          "savings_25y_inr": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Savings 25Y Inr"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/CalcStep"
+            },
+            "type": "array",
+            "title": "Steps"
+          },
+          "engine_version": {
+            "type": "string",
+            "title": "Engine Version"
+          },
+          "computed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Computed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rule_version",
+          "citations",
+          "id",
+          "scope",
+          "system_kw",
+          "recommended_kw",
+          "kw_band_min",
+          "kw_band_max",
+          "roof_cap_kw",
+          "gross_cost_inr",
+          "subsidy_inr",
+          "net_cost_inr",
+          "annual_generation_kwh",
+          "monthly_savings_inr",
+          "annual_savings_inr",
+          "bill_reduction_pct",
+          "payback_years",
+          "savings_25y_inr",
+          "steps",
+          "engine_version",
+          "computed_at"
+        ],
+        "title": "CalculationOut",
+        "description": "A row of `calculations`: the request estimate, or one quote's financials."
+      },
+      "CalculationScope": {
+        "type": "string",
+        "enum": [
+          "request_estimate",
+          "quote_financials"
+        ],
+        "title": "CalculationScope"
+      },
       "CitationOut": {
         "properties": {
           "key": {
@@ -1412,53 +1832,6 @@
         ],
         "title": "ErrorResponse"
       },
-      "Estimate": {
-        "properties": {
-          "rule_version": {
-            "type": "string",
-            "title": "Rule Version"
-          },
-          "citations": {
-            "items": {
-              "$ref": "#/components/schemas/CitationOut"
-            },
-            "type": "array",
-            "title": "Citations"
-          },
-          "raw_kw": {
-            "type": "string",
-            "title": "Raw Kw"
-          },
-          "size_kw": {
-            "type": "string",
-            "title": "Size Kw"
-          },
-          "max_kw": {
-            "type": "string",
-            "title": "Max Kw"
-          },
-          "capped_by_roof": {
-            "type": "boolean",
-            "title": "Capped By Roof"
-          },
-          "subsidy_inr": {
-            "type": "integer",
-            "title": "Subsidy Inr"
-          }
-        },
-        "type": "object",
-        "required": [
-          "rule_version",
-          "citations",
-          "raw_kw",
-          "size_kw",
-          "max_kw",
-          "capped_by_roof",
-          "subsidy_inr"
-        ],
-        "title": "Estimate",
-        "description": "Calculated by `rules.sizing` and `rules.subsidy` when the request is created."
-      },
       "Event": {
         "properties": {
           "type": {
@@ -1518,31 +1891,85 @@
         "title": "Event",
         "description": "One SSE message. The `event:` line carries `type`; the `data:` line carries this JSON."
       },
-      "GeoPoint": {
+      "FileOut": {
         "properties": {
-          "lat": {
-            "type": "number",
-            "maximum": 90.0,
-            "minimum": -90.0,
-            "title": "Lat"
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
           },
-          "lng": {
-            "type": "number",
-            "maximum": 180.0,
-            "minimum": -180.0,
-            "title": "Lng"
+          "purpose": {
+            "$ref": "#/components/schemas/FilePurpose"
+          },
+          "mime_type": {
+            "type": "string",
+            "title": "Mime Type"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "width": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width"
+          },
+          "height": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url",
+            "description": "`GET /files/{id}` with the bearer token."
           }
         },
         "type": "object",
         "required": [
-          "lat",
-          "lng"
+          "id",
+          "purpose",
+          "mime_type",
+          "size_bytes",
+          "sha256",
+          "url"
         ],
-        "title": "GeoPoint"
+        "title": "FileOut"
+      },
+      "FilePurpose": {
+        "type": "string",
+        "enum": [
+          "terrace_photo",
+          "electricity_bill",
+          "voice_audio",
+          "quote_document",
+          "quote_pdf",
+          "comparison_report",
+          "vendor_document",
+          "logo",
+          "installation_photo"
+        ],
+        "title": "FilePurpose"
       },
       "HouseholdContact": {
         "properties": {
-          "name": {
+          "full_name": {
             "anyOf": [
               {
                 "type": "string"
@@ -1551,14 +1978,19 @@
                 "type": "null"
               }
             ],
-            "title": "Name"
+            "title": "Full Name"
           },
           "phone": {
             "type": "string",
             "title": "Phone"
           },
-          "location": {
-            "$ref": "#/components/schemas/GeoPoint"
+          "lat": {
+            "type": "number",
+            "title": "Lat"
+          },
+          "lng": {
+            "type": "number",
+            "title": "Lng"
           },
           "address_text": {
             "anyOf": [
@@ -1574,13 +2006,32 @@
         },
         "type": "object",
         "required": [
-          "name",
+          "full_name",
           "phone",
-          "location",
+          "lat",
+          "lng",
           "address_text"
         ],
         "title": "HouseholdContact",
         "description": "Shared with a vendor only after that vendor's quote is accepted."
+      },
+      "InputMethod": {
+        "type": "string",
+        "enum": [
+          "form",
+          "voice",
+          "bill"
+        ],
+        "title": "InputMethod"
+      },
+      "InverterType": {
+        "type": "string",
+        "enum": [
+          "string",
+          "micro",
+          "hybrid"
+        ],
+        "title": "InverterType"
       },
       "JobAccepted": {
         "properties": {
@@ -1589,17 +2040,30 @@
             "format": "uuid",
             "title": "Job Id"
           },
-          "type": {
+          "job_type": {
             "$ref": "#/components/schemas/JobType"
           },
           "status": {
             "$ref": "#/components/schemas/JobStatus"
+          },
+          "entity_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity Id",
+            "description": "The row the job will fill in."
           }
         },
         "type": "object",
         "required": [
           "job_id",
-          "type",
+          "job_type",
           "status"
         ],
         "title": "JobAccepted",
@@ -1612,11 +2076,34 @@
             "format": "uuid",
             "title": "Id"
           },
-          "type": {
+          "job_type": {
             "$ref": "#/components/schemas/JobType"
           },
           "status": {
             "$ref": "#/components/schemas/JobStatus"
+          },
+          "entity_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity Type"
+          },
+          "entity_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity Id"
           },
           "attempts": {
             "type": "integer",
@@ -1630,21 +2117,21 @@
                     "$ref": "#/components/schemas/VoiceResult"
                   },
                   {
-                    "$ref": "#/components/schemas/PhotoAssessment"
+                    "$ref": "#/components/schemas/RoofAssessmentOut"
                   },
                   {
-                    "$ref": "#/components/schemas/QuoteReview"
+                    "$ref": "#/components/schemas/QuoteReviewOut"
                   },
                   {
-                    "$ref": "#/components/schemas/Recommendation"
+                    "$ref": "#/components/schemas/RecommendationOut"
                   }
                 ],
                 "discriminator": {
                   "propertyName": "kind",
                   "mapping": {
-                    "photo_assess": "#/components/schemas/PhotoAssessment",
-                    "quote_review": "#/components/schemas/QuoteReview",
-                    "recommend": "#/components/schemas/Recommendation",
+                    "photo_assess": "#/components/schemas/RoofAssessmentOut",
+                    "quote_review": "#/components/schemas/QuoteReviewOut",
+                    "recommend": "#/components/schemas/RecommendationOut",
                     "voice_extract": "#/components/schemas/VoiceResult"
                   }
                 }
@@ -1666,10 +2153,10 @@
             ],
             "title": "Error"
           },
-          "created_at": {
+          "queued_at": {
             "type": "string",
             "format": "date-time",
-            "title": "Created At"
+            "title": "Queued At"
           },
           "finished_at": {
             "anyOf": [
@@ -1687,10 +2174,12 @@
         "type": "object",
         "required": [
           "id",
-          "type",
+          "job_type",
           "status",
+          "entity_type",
+          "entity_id",
           "attempts",
-          "created_at"
+          "queued_at"
         ],
         "title": "JobOut"
       },
@@ -1700,7 +2189,8 @@
           "queued",
           "running",
           "succeeded",
-          "failed"
+          "failed",
+          "cancelled"
         ],
         "title": "JobStatus"
       },
@@ -1709,100 +2199,361 @@
         "enum": [
           "photo_assess",
           "voice_extract",
+          "bill_extract",
+          "quote_extract",
           "quote_review",
-          "recommend"
+          "recommend",
+          "chat"
         ],
         "title": "JobType"
       },
-      "MediaOut": {
+      "Lang": {
+        "type": "string",
+        "enum": [
+          "en",
+          "hi",
+          "gu"
+        ],
+        "title": "Lang"
+      },
+      "Level": {
+        "type": "string",
+        "enum": [
+          "low",
+          "medium",
+          "high"
+        ],
+        "title": "Level"
+      },
+      "LineItemIn": {
+        "properties": {
+          "item_type": {
+            "$ref": "#/components/schemas/LineItemType"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "nos",
+                  "m",
+                  "set",
+                  "lot"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "unit_price_inr": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Price Inr"
+          },
+          "amount_inr": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Inr"
+          },
+          "included": {
+            "type": "boolean",
+            "title": "Included",
+            "description": "False lists the item as excluded.",
+            "default": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "item_type"
+        ],
+        "title": "LineItemIn"
+      },
+      "LineItemOut": {
         "properties": {
           "id": {
             "type": "string",
             "format": "uuid",
             "title": "Id"
           },
-          "kind": {
-            "type": "string",
-            "enum": [
-              "photo",
-              "audio"
-            ],
-            "title": "Kind"
+          "item_type": {
+            "$ref": "#/components/schemas/LineItemType"
           },
-          "url": {
-            "type": "string",
-            "title": "Url",
-            "description": "Short-lived signed GET URL."
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "unit_price_inr": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Price Inr"
+          },
+          "amount_inr": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Inr"
+          },
+          "included": {
+            "type": "boolean",
+            "title": "Included"
           }
         },
         "type": "object",
         "required": [
           "id",
-          "kind",
-          "url"
+          "item_type",
+          "description",
+          "quantity",
+          "unit",
+          "unit_price_inr",
+          "amount_inr",
+          "included"
         ],
-        "title": "MediaOut"
+        "title": "LineItemOut"
       },
-      "Obstruction": {
+      "LineItemType": {
+        "type": "string",
+        "enum": [
+          "panels",
+          "inverter",
+          "mounting_structure",
+          "cabling",
+          "earthing",
+          "lightning_arrester",
+          "acdb_dcdb",
+          "net_meter",
+          "discom_fees",
+          "installation",
+          "transport",
+          "amc",
+          "insurance",
+          "other"
+        ],
+        "title": "LineItemType"
+      },
+      "LocationSource": {
+        "type": "string",
+        "enum": [
+          "map_pin",
+          "gps",
+          "search"
+        ],
+        "title": "LocationSource"
+      },
+      "MissingItem": {
         "properties": {
-          "type": {
+          "item": {
             "type": "string",
-            "enum": [
-              "water_tank",
-              "staircase_room",
-              "parapet",
-              "tree_shade",
-              "dish_antenna",
-              "solar_heater",
-              "other"
-            ],
-            "title": "Type"
-          },
-          "x": {
-            "type": "number",
-            "maximum": 1.0,
-            "minimum": 0.0,
-            "title": "X",
-            "description": "Box position and size as fractions of the image."
-          },
-          "y": {
-            "type": "number",
-            "maximum": 1.0,
-            "minimum": 0.0,
-            "title": "Y"
-          },
-          "w": {
-            "type": "number",
-            "maximum": 1.0,
-            "minimum": 0.0,
-            "title": "W"
-          },
-          "h": {
-            "type": "number",
-            "maximum": 1.0,
-            "minimum": 0.0,
-            "title": "H"
+            "title": "Item"
           },
           "severity": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "why": {
             "type": "string",
-            "enum": [
-              "low",
-              "medium",
-              "high"
-            ],
-            "title": "Severity"
+            "title": "Why"
           }
         },
         "type": "object",
         "required": [
-          "type",
-          "x",
-          "y",
-          "w",
-          "h",
-          "severity"
+          "item",
+          "severity",
+          "why"
         ],
-        "title": "Obstruction"
+        "title": "MissingItem"
+      },
+      "ObstructionOut": {
+        "properties": {
+          "obstruction_type": {
+            "$ref": "#/components/schemas/ObstructionType"
+          },
+          "bbox_x": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bbox X",
+            "description": "Box position and size as fractions of the image."
+          },
+          "bbox_y": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bbox Y"
+          },
+          "bbox_w": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bbox W"
+          },
+          "bbox_h": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bbox H"
+          },
+          "severity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Level"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "obstruction_type",
+          "bbox_x",
+          "bbox_y",
+          "bbox_w",
+          "bbox_h",
+          "severity",
+          "confidence",
+          "note"
+        ],
+        "title": "ObstructionOut"
+      },
+      "ObstructionType": {
+        "type": "string",
+        "enum": [
+          "water_tank",
+          "staircase_room",
+          "parapet",
+          "tree_shade",
+          "dish_antenna",
+          "solar_water_heater",
+          "other"
+        ],
+        "title": "ObstructionType"
       },
       "OpenRequestPin": {
         "properties": {
@@ -1811,12 +2562,32 @@
             "format": "uuid",
             "title": "Id"
           },
-          "approx_location": {
-            "$ref": "#/components/schemas/GeoPoint"
+          "request_code": {
+            "type": "string",
+            "title": "Request Code"
+          },
+          "approx_lat": {
+            "type": "number",
+            "title": "Approx Lat"
+          },
+          "approx_lng": {
+            "type": "number",
+            "title": "Approx Lng"
           },
           "distance_km": {
             "type": "string",
             "title": "Distance Km"
+          },
+          "district": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "District"
           },
           "monthly_units": {
             "type": "integer",
@@ -1826,35 +2597,52 @@
             "type": "integer",
             "title": "Budget Inr"
           },
-          "size_kw": {
+          "recommended_kw": {
             "type": "string",
-            "title": "Size Kw"
+            "title": "Recommended Kw"
           },
-          "roof_area_m2": {
-            "type": "string",
-            "title": "Roof Area M2"
+          "roof_area_sqm": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Roof Area Sqm"
           },
           "quotes_count": {
             "type": "integer",
             "title": "Quotes Count"
           },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Created At"
+          "submitted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submitted At"
           }
         },
         "type": "object",
         "required": [
           "id",
-          "approx_location",
+          "request_code",
+          "approx_lat",
+          "approx_lng",
           "distance_km",
+          "district",
           "monthly_units",
           "budget_inr",
-          "size_kw",
-          "roof_area_m2",
+          "recommended_kw",
+          "roof_area_sqm",
           "quotes_count",
-          "created_at"
+          "submitted_at"
         ],
         "title": "OpenRequestPin"
       },
@@ -1971,6 +2759,15 @@
         ],
         "title": "Page[VendorQuoteSummary]"
       },
+      "PanelTechnology": {
+        "type": "string",
+        "enum": [
+          "mono_perc",
+          "topcon",
+          "bifacial"
+        ],
+        "title": "PanelTechnology"
+      },
       "PaybackRules": {
         "properties": {
           "default_tariff_inr_per_kwh": {
@@ -1984,92 +2781,6 @@
           "default_tariff_inr_per_kwh"
         ],
         "title": "PaybackRules"
-      },
-      "PhotoAssessment": {
-        "properties": {
-          "kind": {
-            "type": "string",
-            "const": "photo_assess",
-            "title": "Kind",
-            "default": "photo_assess"
-          },
-          "status": {
-            "$ref": "#/components/schemas/JobStatus"
-          },
-          "usable_fraction": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Usable Fraction"
-          },
-          "usable_area_m2": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Usable Area M2"
-          },
-          "max_kw": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Max Kw"
-          },
-          "shade_risk": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "low",
-                  "medium",
-                  "high"
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Shade Risk"
-          },
-          "obstructions": {
-            "items": {
-              "$ref": "#/components/schemas/Obstruction"
-            },
-            "type": "array",
-            "title": "Obstructions"
-          },
-          "summary": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Summary"
-          }
-        },
-        "type": "object",
-        "required": [
-          "status"
-        ],
-        "title": "PhotoAssessment",
-        "description": "`usable_fraction` and the obstructions come from the LLM; the areas and kW cap from code."
       },
       "PrefillFields": {
         "properties": {
@@ -2112,19 +2823,23 @@
           "roof_type": {
             "anyOf": [
               {
-                "type": "string",
-                "enum": [
-                  "rcc_flat",
-                  "sloped",
-                  "tin_sheet",
-                  "other"
-                ]
+                "$ref": "#/components/schemas/RoofType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "roof_area_sqm": {
+            "anyOf": [
+              {
+                "type": "string"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Roof Type"
+            "title": "Roof Area Sqm"
           },
           "floors": {
             "anyOf": [
@@ -2154,74 +2869,6 @@
         "type": "object",
         "title": "PrefillFields",
         "description": "What the LLM heard. The household confirms each value; nothing is posted automatically."
-      },
-      "PresignRequest": {
-        "properties": {
-          "kind": {
-            "type": "string",
-            "enum": [
-              "photo",
-              "audio",
-              "quote_doc"
-            ],
-            "title": "Kind"
-          },
-          "content_type": {
-            "type": "string",
-            "title": "Content Type"
-          },
-          "size_bytes": {
-            "type": "integer",
-            "exclusiveMinimum": 0.0,
-            "title": "Size Bytes"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "kind",
-          "content_type",
-          "size_bytes"
-        ],
-        "title": "PresignRequest"
-      },
-      "PresignResponse": {
-        "properties": {
-          "object_key": {
-            "type": "string",
-            "title": "Object Key"
-          },
-          "upload_url": {
-            "type": "string",
-            "title": "Upload Url"
-          },
-          "method": {
-            "type": "string",
-            "const": "PUT",
-            "title": "Method",
-            "default": "PUT"
-          },
-          "headers": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "type": "object",
-            "title": "Headers",
-            "description": "Send these headers with the PUT unchanged."
-          },
-          "expires_in_s": {
-            "type": "integer",
-            "title": "Expires In S"
-          }
-        },
-        "type": "object",
-        "required": [
-          "object_key",
-          "upload_url",
-          "headers",
-          "expires_in_s"
-        ],
-        "title": "PresignResponse"
       },
       "QuoteComparison": {
         "properties": {
@@ -2287,10 +2934,26 @@
             ],
             "title": "System Kw"
           },
-          "price_inr": {
+          "price_total_inr": {
             "type": "integer",
             "exclusiveMinimum": 0.0,
-            "title": "Price Inr"
+            "title": "Price Total Inr"
+          },
+          "gst_included": {
+            "type": "boolean",
+            "title": "Gst Included"
+          },
+          "gst_amount_inr": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gst Amount Inr"
           },
           "panel_brand": {
             "type": "string",
@@ -2298,23 +2961,100 @@
             "minLength": 1,
             "title": "Panel Brand"
           },
-          "panel_watt": {
-            "type": "integer",
-            "maximum": 1000.0,
-            "minimum": 100.0,
-            "title": "Panel Watt"
-          },
-          "dcr": {
+          "panel_model": {
             "anyOf": [
               {
-                "type": "boolean"
+                "type": "string",
+                "maxLength": 80
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Dcr",
-            "description": "Domestic content panels. Leave empty if unknown."
+            "title": "Panel Model"
+          },
+          "panel_technology": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PanelTechnology"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "panel_wattage": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 1000.0,
+                "minimum": 100.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Panel Wattage"
+          },
+          "panel_count": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 1000.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Panel Count"
+          },
+          "panel_efficiency_pct": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 40.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Panel Efficiency Pct"
+          },
+          "dcr_compliant": {
+            "type": "boolean",
+            "title": "Dcr Compliant",
+            "description": "Domestic content panels, required for the subsidy."
+          },
+          "panel_product_warranty_yrs": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 40.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Panel Product Warranty Yrs"
+          },
+          "panel_performance_warranty_yrs": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 40.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Panel Performance Warranty Yrs"
           },
           "inverter_brand": {
             "type": "string",
@@ -2322,7 +3062,29 @@
             "minLength": 1,
             "title": "Inverter Brand"
           },
-          "inverter_kw": {
+          "inverter_model": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inverter Model"
+          },
+          "inverter_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InverterType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "inverter_capacity_kw": {
             "anyOf": [
               {
                 "type": "number",
@@ -2331,27 +3093,51 @@
               },
               {
                 "type": "string"
+              },
+              {
+                "type": "null"
               }
             ],
-            "title": "Inverter Kw"
+            "title": "Inverter Capacity Kw"
           },
-          "warranty_panel_yrs": {
-            "type": "integer",
-            "maximum": 40.0,
-            "minimum": 0.0,
-            "title": "Warranty Panel Yrs"
+          "inverter_warranty_yrs": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 40.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inverter Warranty Yrs"
           },
-          "warranty_inverter_yrs": {
-            "type": "integer",
-            "maximum": 40.0,
-            "minimum": 0.0,
-            "title": "Warranty Inverter Yrs"
+          "workmanship_warranty_yrs": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 40.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workmanship Warranty Yrs"
           },
-          "warranty_work_yrs": {
-            "type": "integer",
-            "maximum": 40.0,
-            "minimum": 0.0,
-            "title": "Warranty Work Yrs"
+          "amc_years": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 40.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amc Years"
           },
           "timeline_days": {
             "type": "integer",
@@ -2359,23 +3145,37 @@
             "minimum": 1.0,
             "title": "Timeline Days"
           },
-          "inclusions": {
+          "valid_until": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid Until"
+          },
+          "payment_terms": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Terms"
+          },
+          "line_items": {
             "items": {
-              "type": "string",
-              "enum": [
-                "net_metering_fee",
-                "mounting_structure",
-                "earthing_and_lightning_arrester",
-                "amc",
-                "insurance",
-                "cabling",
-                "acdb_dcdb",
-                "transport"
-              ]
+              "$ref": "#/components/schemas/LineItemIn"
             },
             "type": "array",
-            "uniqueItems": true,
-            "title": "Inclusions"
+            "maxItems": 40,
+            "title": "Line Items"
           },
           "notes": {
             "anyOf": [
@@ -2395,14 +3195,11 @@
         "type": "object",
         "required": [
           "system_kw",
-          "price_inr",
+          "price_total_inr",
+          "gst_included",
           "panel_brand",
-          "panel_watt",
+          "dcr_compliant",
           "inverter_brand",
-          "inverter_kw",
-          "warranty_panel_yrs",
-          "warranty_inverter_yrs",
-          "warranty_work_yrs",
           "timeline_days"
         ],
         "title": "QuoteCreate"
@@ -2425,67 +3222,16 @@
         ],
         "title": "QuoteCreated"
       },
-      "QuoteFinancials": {
-        "properties": {
-          "rule_version": {
-            "type": "string",
-            "title": "Rule Version"
-          },
-          "citations": {
-            "items": {
-              "$ref": "#/components/schemas/CitationOut"
-            },
-            "type": "array",
-            "title": "Citations"
-          },
-          "subsidy_inr": {
-            "type": "integer",
-            "title": "Subsidy Inr"
-          },
-          "net_cost_inr": {
-            "type": "integer",
-            "title": "Net Cost Inr"
-          },
-          "annual_generation_kwh": {
-            "type": "string",
-            "title": "Annual Generation Kwh"
-          },
-          "annual_saving_inr": {
-            "type": "integer",
-            "title": "Annual Saving Inr"
-          },
-          "payback_years": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Payback Years",
-            "description": "Empty when the system saves nothing."
-          }
-        },
-        "type": "object",
-        "required": [
-          "rule_version",
-          "citations",
-          "subsidy_inr",
-          "net_cost_inr",
-          "annual_generation_kwh",
-          "annual_saving_inr",
-          "payback_years"
-        ],
-        "title": "QuoteFinancials",
-        "description": "Calculated by `rules.subsidy` and `rules.payback` when the quote is submitted."
-      },
       "QuoteOut": {
         "properties": {
           "id": {
             "type": "string",
             "format": "uuid",
             "title": "Id"
+          },
+          "quote_code": {
+            "type": "string",
+            "title": "Quote Code"
           },
           "request_id": {
             "type": "string",
@@ -2502,69 +3248,211 @@
             "type": "string",
             "title": "System Kw"
           },
-          "price_inr": {
+          "price_total_inr": {
             "type": "integer",
-            "title": "Price Inr"
+            "title": "Price Total Inr"
           },
-          "panel_brand": {
-            "type": "string",
-            "title": "Panel Brand"
+          "gst_included": {
+            "type": "boolean",
+            "title": "Gst Included"
           },
-          "panel_watt": {
-            "type": "integer",
-            "title": "Panel Watt"
-          },
-          "dcr": {
+          "gst_amount_inr": {
             "anyOf": [
               {
-                "type": "boolean"
+                "type": "integer"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Dcr"
+            "title": "Gst Amount Inr"
+          },
+          "panel_brand": {
+            "type": "string",
+            "title": "Panel Brand"
+          },
+          "panel_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Panel Model"
+          },
+          "panel_technology": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PanelTechnology"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "panel_wattage": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Panel Wattage"
+          },
+          "panel_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Panel Count"
+          },
+          "panel_efficiency_pct": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Panel Efficiency Pct"
+          },
+          "dcr_compliant": {
+            "type": "boolean",
+            "title": "Dcr Compliant"
+          },
+          "panel_product_warranty_yrs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Panel Product Warranty Yrs"
+          },
+          "panel_performance_warranty_yrs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Panel Performance Warranty Yrs"
           },
           "inverter_brand": {
             "type": "string",
             "title": "Inverter Brand"
           },
-          "inverter_kw": {
-            "type": "string",
-            "title": "Inverter Kw"
+          "inverter_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inverter Model"
           },
-          "warranty_panel_yrs": {
-            "type": "integer",
-            "title": "Warranty Panel Yrs"
+          "inverter_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InverterType"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
-          "warranty_inverter_yrs": {
-            "type": "integer",
-            "title": "Warranty Inverter Yrs"
+          "inverter_capacity_kw": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inverter Capacity Kw"
           },
-          "warranty_work_yrs": {
-            "type": "integer",
-            "title": "Warranty Work Yrs"
+          "inverter_warranty_yrs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inverter Warranty Yrs"
+          },
+          "workmanship_warranty_yrs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workmanship Warranty Yrs"
+          },
+          "amc_years": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amc Years"
           },
           "timeline_days": {
             "type": "integer",
             "title": "Timeline Days"
           },
-          "inclusions": {
+          "valid_until": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid Until"
+          },
+          "payment_terms": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Terms"
+          },
+          "line_items": {
             "items": {
-              "type": "string",
-              "enum": [
-                "net_metering_fee",
-                "mounting_structure",
-                "earthing_and_lightning_arrester",
-                "amc",
-                "insurance",
-                "cabling",
-                "acdb_dcdb",
-                "transport"
-              ]
+              "$ref": "#/components/schemas/LineItemOut"
             },
             "type": "array",
-            "title": "Inclusions"
+            "title": "Line Items"
           },
           "notes": {
             "anyOf": [
@@ -2577,16 +3465,31 @@
             ],
             "title": "Notes"
           },
+          "injection_flag": {
+            "type": "boolean",
+            "title": "Injection Flag"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
           "financials": {
-            "$ref": "#/components/schemas/QuoteFinancials"
+            "$ref": "#/components/schemas/CalculationOut"
           },
           "review": {
-            "$ref": "#/components/schemas/QuoteReview"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QuoteReviewOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "score": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/QuoteScore"
+                "$ref": "#/components/schemas/QuoteScoreOut"
               },
               {
                 "type": "null"
@@ -2594,30 +3497,52 @@
             ]
           },
           "submitted_at": {
-            "type": "string",
-            "format": "date-time",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Submitted At"
           }
         },
         "type": "object",
         "required": [
           "id",
+          "quote_code",
           "request_id",
           "vendor",
           "status",
           "system_kw",
-          "price_inr",
+          "price_total_inr",
+          "gst_included",
+          "gst_amount_inr",
           "panel_brand",
-          "panel_watt",
-          "dcr",
+          "panel_model",
+          "panel_technology",
+          "panel_wattage",
+          "panel_count",
+          "panel_efficiency_pct",
+          "dcr_compliant",
+          "panel_product_warranty_yrs",
+          "panel_performance_warranty_yrs",
           "inverter_brand",
-          "inverter_kw",
-          "warranty_panel_yrs",
-          "warranty_inverter_yrs",
-          "warranty_work_yrs",
+          "inverter_model",
+          "inverter_type",
+          "inverter_capacity_kw",
+          "inverter_warranty_yrs",
+          "workmanship_warranty_yrs",
+          "amc_years",
           "timeline_days",
-          "inclusions",
+          "valid_until",
+          "payment_terms",
+          "line_items",
           "notes",
+          "injection_flag",
+          "revision",
           "financials",
           "review",
           "score",
@@ -2625,7 +3550,7 @@
         ],
         "title": "QuoteOut"
       },
-      "QuoteReview": {
+      "QuoteReviewOut": {
         "properties": {
           "kind": {
             "type": "string",
@@ -2633,19 +3558,26 @@
             "title": "Kind",
             "default": "quote_review"
           },
-          "status": {
+          "llm_status": {
             "$ref": "#/components/schemas/JobStatus"
           },
           "missing_items": {
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/MissingItem"
             },
             "type": "array",
             "title": "Missing Items"
           },
-          "injection_flag": {
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "injection_detected": {
             "type": "boolean",
-            "title": "Injection Flag"
+            "title": "Injection Detected"
           },
           "injection_excerpt": {
             "anyOf": [
@@ -2668,45 +3600,66 @@
               }
             ],
             "title": "Llm Notes"
+          },
+          "reviewed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Reviewed At"
           }
         },
         "type": "object",
         "required": [
-          "status",
+          "llm_status",
           "missing_items",
-          "injection_flag"
+          "warnings",
+          "injection_detected",
+          "injection_excerpt",
+          "llm_notes",
+          "reviewed_at"
         ],
-        "title": "QuoteReview",
-        "description": "`missing_items` and the injection flag come from code. `llm_notes` is explanation only."
+        "title": "QuoteReviewOut",
+        "description": "`missing_items`, `warnings` and the injection check come from code; `llm_notes` is text."
       },
-      "QuoteScore": {
+      "QuoteScoreOut": {
         "properties": {
-          "score": {
+          "total_score": {
             "type": "string",
-            "title": "Score"
+            "title": "Total Score",
+            "description": "0 to 100, from `rules.scoring`."
           },
-          "breakdown": {
+          "weights": {
             "additionalProperties": {
-              "type": "string"
+              "type": "integer"
             },
             "type": "object",
-            "title": "Breakdown"
+            "title": "Weights"
+          },
+          "explanation": {
+            "items": {
+              "$ref": "#/components/schemas/ScoreLine"
+            },
+            "type": "array",
+            "title": "Explanation"
           }
         },
         "type": "object",
         "required": [
-          "score",
-          "breakdown"
+          "total_score",
+          "weights",
+          "explanation"
         ],
-        "title": "QuoteScore"
+        "title": "QuoteScoreOut"
       },
       "QuoteStatus": {
         "type": "string",
         "enum": [
-          "SUBMITTED",
-          "ACCEPTED",
-          "REJECTED",
-          "WITHDRAWN"
+          "draft",
+          "submitted",
+          "revised",
+          "accepted",
+          "rejected",
+          "withdrawn",
+          "expired"
         ],
         "title": "QuoteStatus"
       },
@@ -2734,7 +3687,7 @@
         ],
         "title": "RankedQuote"
       },
-      "Recommendation": {
+      "RecommendationOut": {
         "properties": {
           "rule_version": {
             "type": "string",
@@ -2753,21 +3706,19 @@
             "title": "Kind",
             "default": "recommend"
           },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
           "request_id": {
             "type": "string",
             "format": "uuid",
             "title": "Request Id"
           },
           "recommended_quote_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
+            "type": "string",
+            "format": "uuid",
             "title": "Recommended Quote Id"
           },
           "ranking": {
@@ -2784,13 +3735,16 @@
             "type": "array",
             "title": "Reasons"
           },
-          "other_notes": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "type": "object",
-            "title": "Other Notes",
-            "description": "One line per other quote, keyed by quote id."
+          "caveats": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Caveats"
           },
           "stale": {
             "type": "boolean",
@@ -2807,21 +3761,34 @@
         "required": [
           "rule_version",
           "citations",
+          "id",
           "request_id",
           "recommended_quote_id",
           "ranking",
           "reasons",
-          "other_notes",
+          "caveats",
           "stale",
           "created_at"
         ],
-        "title": "Recommendation",
-        "description": "Ranking from `rules.scoring`. The LLM writes the reasons and notes from the score table."
+        "title": "RecommendationOut",
+        "description": "Ranking from `rules.scoring`. The LLM writes the reasons from the score table only."
       },
       "RequestCreate": {
         "properties": {
-          "location": {
-            "$ref": "#/components/schemas/GeoPoint"
+          "lat": {
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "title": "Lat"
+          },
+          "lng": {
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "Lng"
+          },
+          "location_source": {
+            "$ref": "#/components/schemas/LocationSource"
           },
           "address_text": {
             "anyOf": [
@@ -2835,25 +3802,42 @@
             ],
             "title": "Address Text"
           },
-          "discom": {
+          "district": {
             "anyOf": [
               {
                 "type": "string",
-                "maxLength": 50
+                "maxLength": 80
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Discom"
+            "title": "District"
           },
-          "state_category": {
-            "type": "string",
-            "enum": [
-              "general",
-              "special"
+          "pincode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{6}$"
+              },
+              {
+                "type": "null"
+              }
             ],
-            "title": "State Category"
+            "title": "Pincode"
+          },
+          "discom_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discom Id",
+            "description": "Sets the subsidy category. Without it, the general rates apply."
           },
           "monthly_units": {
             "type": "integer",
@@ -2878,7 +3862,17 @@
             "exclusiveMinimum": 0.0,
             "title": "Budget Inr"
           },
-          "roof_area_m2": {
+          "roof_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RoofType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "roof_area_sqm": {
             "anyOf": [
               {
                 "type": "number",
@@ -2889,17 +3883,7 @@
                 "type": "string"
               }
             ],
-            "title": "Roof Area M2"
-          },
-          "roof_type": {
-            "type": "string",
-            "enum": [
-              "rcc_flat",
-              "sloped",
-              "tin_sheet",
-              "other"
-            ],
-            "title": "Roof Type"
+            "title": "Roof Area Sqm"
           },
           "floors": {
             "anyOf": [
@@ -2914,24 +3898,19 @@
             ],
             "title": "Floors"
           },
-          "photo_keys": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "maxItems": 3,
-            "title": "Photo Keys"
-          },
-          "audio_key": {
+          "building_type": {
             "anyOf": [
               {
-                "type": "string"
+                "$ref": "#/components/schemas/BuildingType"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Audio Key"
+            ]
+          },
+          "input_method": {
+            "$ref": "#/components/schemas/InputMethod",
+            "default": "form"
           },
           "notes": {
             "anyOf": [
@@ -2944,17 +3923,50 @@
               }
             ],
             "title": "Notes"
+          },
+          "photo_file_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Photo File Ids"
+          },
+          "bill_file_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bill File Id"
+          },
+          "voice_input_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voice Input Id"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "location",
-          "state_category",
+          "lat",
+          "lng",
+          "location_source",
           "monthly_units",
           "budget_inr",
-          "roof_area_m2",
-          "roof_type"
+          "roof_area_sqm"
         ],
         "title": "RequestCreate"
       },
@@ -2965,16 +3977,26 @@
             "format": "uuid",
             "title": "Id"
           },
+          "request_code": {
+            "type": "string",
+            "title": "Request Code"
+          },
           "status": {
             "$ref": "#/components/schemas/RequestStatus"
           },
-          "state_category": {
-            "type": "string",
-            "enum": [
-              "general",
-              "special"
+          "district": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
             ],
-            "title": "State Category"
+            "title": "District"
+          },
+          "state_category": {
+            "$ref": "#/components/schemas/StateCategory"
           },
           "monthly_units": {
             "type": "integer",
@@ -2984,19 +4006,26 @@
             "type": "integer",
             "title": "Budget Inr"
           },
-          "roof_area_m2": {
-            "type": "string",
-            "title": "Roof Area M2"
-          },
           "roof_type": {
-            "type": "string",
-            "enum": [
-              "rcc_flat",
-              "sloped",
-              "tin_sheet",
-              "other"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RoofType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "roof_area_sqm": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
             ],
-            "title": "Roof Type"
+            "title": "Roof Area Sqm"
           },
           "floors": {
             "anyOf": [
@@ -3009,34 +4038,51 @@
             ],
             "title": "Floors"
           },
-          "estimate": {
-            "$ref": "#/components/schemas/Estimate"
-          },
-          "photo_assessment": {
+          "building_type": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/PhotoAssessment"
+                "$ref": "#/components/schemas/BuildingType"
               },
               {
                 "type": "null"
               }
             ]
           },
-          "photos": {
+          "estimate": {
+            "$ref": "#/components/schemas/CalculationOut"
+          },
+          "roof_assessment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RoofAssessmentOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "attachments": {
             "items": {
-              "$ref": "#/components/schemas/MediaOut"
+              "$ref": "#/components/schemas/AttachmentOut"
             },
             "type": "array",
-            "title": "Photos"
+            "title": "Attachments"
           },
           "quotes_count": {
             "type": "integer",
             "title": "Quotes Count"
           },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Created At"
+          "submitted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submitted At"
           },
           "expires_at": {
             "anyOf": [
@@ -3050,14 +4096,27 @@
             ],
             "title": "Expires At"
           },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
           "view": {
             "type": "string",
             "const": "owner",
             "title": "View",
             "default": "owner"
           },
-          "location": {
-            "$ref": "#/components/schemas/GeoPoint"
+          "lat": {
+            "type": "number",
+            "title": "Lat"
+          },
+          "lng": {
+            "type": "number",
+            "title": "Lng"
+          },
+          "location_source": {
+            "$ref": "#/components/schemas/LocationSource"
           },
           "address_text": {
             "anyOf": [
@@ -3070,7 +4129,7 @@
             ],
             "title": "Address Text"
           },
-          "discom": {
+          "pincode": {
             "anyOf": [
               {
                 "type": "string"
@@ -3079,7 +4138,19 @@
                 "type": "null"
               }
             ],
-            "title": "Discom"
+            "title": "Pincode"
+          },
+          "discom_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discom Id"
           },
           "monthly_bill_inr": {
             "anyOf": [
@@ -3091,6 +4162,9 @@
               }
             ],
             "title": "Monthly Bill Inr"
+          },
+          "input_method": {
+            "$ref": "#/components/schemas/InputMethod"
           },
           "notes": {
             "anyOf": [
@@ -3114,30 +4188,51 @@
               }
             ],
             "title": "Accepted Quote Id"
+          },
+          "closed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed At"
           }
         },
         "type": "object",
         "required": [
           "id",
+          "request_code",
           "status",
+          "district",
           "state_category",
           "monthly_units",
           "budget_inr",
-          "roof_area_m2",
           "roof_type",
+          "roof_area_sqm",
           "floors",
+          "building_type",
           "estimate",
-          "photo_assessment",
-          "photos",
+          "roof_assessment",
+          "attachments",
           "quotes_count",
-          "created_at",
+          "submitted_at",
           "expires_at",
-          "location",
+          "created_at",
+          "lat",
+          "lng",
+          "location_source",
           "address_text",
-          "discom",
+          "pincode",
+          "discom_id",
           "monthly_bill_inr",
+          "input_method",
           "notes",
-          "accepted_quote_id"
+          "accepted_quote_id",
+          "closed_at"
         ],
         "title": "RequestOut",
         "description": "The household's own view."
@@ -3145,13 +4240,13 @@
       "RequestStatus": {
         "type": "string",
         "enum": [
-          "DRAFT",
-          "OPEN",
-          "QUOTED",
-          "ACCEPTED",
-          "INSTALLED",
-          "CANCELLED",
-          "EXPIRED"
+          "draft",
+          "open",
+          "quoted",
+          "accepted",
+          "completed",
+          "cancelled",
+          "expired"
         ],
         "title": "RequestStatus"
       },
@@ -3162,6 +4257,10 @@
             "format": "uuid",
             "title": "Id"
           },
+          "request_code": {
+            "type": "string",
+            "title": "Request Code"
+          },
           "status": {
             "$ref": "#/components/schemas/RequestStatus"
           },
@@ -3169,9 +4268,9 @@
             "type": "integer",
             "title": "Monthly Units"
           },
-          "size_kw": {
+          "system_kw": {
             "type": "string",
-            "title": "Size Kw"
+            "title": "System Kw"
           },
           "quotes_count": {
             "type": "integer",
@@ -3186,13 +4285,125 @@
         "type": "object",
         "required": [
           "id",
+          "request_code",
           "status",
           "monthly_units",
-          "size_kw",
+          "system_kw",
           "quotes_count",
           "created_at"
         ],
         "title": "RequestSummary"
+      },
+      "Role": {
+        "type": "string",
+        "enum": [
+          "household",
+          "vendor",
+          "admin"
+        ],
+        "title": "Role"
+      },
+      "RoofAssessmentOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "photo_assess",
+            "title": "Kind",
+            "default": "photo_assess"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AssessmentStatus"
+          },
+          "usable_fraction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Usable Fraction"
+          },
+          "usable_area_sqm": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Usable Area Sqm"
+          },
+          "max_kw_by_area": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Kw By Area"
+          },
+          "shade_risk": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Level"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "obstructions": {
+            "items": {
+              "$ref": "#/components/schemas/ObstructionOut"
+            },
+            "type": "array",
+            "title": "Obstructions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "usable_fraction",
+          "usable_area_sqm",
+          "max_kw_by_area",
+          "shade_risk",
+          "summary",
+          "obstructions"
+        ],
+        "title": "RoofAssessmentOut",
+        "description": "`usable_fraction` and obstructions come from the LLM; areas and the kW cap from code."
+      },
+      "RoofType": {
+        "type": "string",
+        "enum": [
+          "rcc_flat",
+          "sloped",
+          "tin_sheet",
+          "asbestos"
+        ],
+        "title": "RoofType"
       },
       "RulesOut": {
         "properties": {
@@ -3242,6 +4453,34 @@
           "citations"
         ],
         "title": "RulesOut"
+      },
+      "ScoreLine": {
+        "properties": {
+          "criterion": {
+            "type": "string",
+            "title": "Criterion"
+          },
+          "input": {
+            "type": "string",
+            "title": "Input"
+          },
+          "formula": {
+            "type": "string",
+            "title": "Formula"
+          },
+          "points": {
+            "type": "string",
+            "title": "Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "criterion",
+          "input",
+          "formula",
+          "points"
+        ],
+        "title": "ScoreLine"
       },
       "ScoreWeights": {
         "properties": {
@@ -3352,6 +4591,14 @@
         ],
         "title": "Slabs"
       },
+      "StateCategory": {
+        "type": "string",
+        "enum": [
+          "general",
+          "special"
+        ],
+        "title": "StateCategory"
+      },
       "SubsidyRules": {
         "properties": {
           "general": {
@@ -3415,15 +4662,9 @@
             "title": "Id"
           },
           "role": {
-            "type": "string",
-            "enum": [
-              "household",
-              "vendor",
-              "admin"
-            ],
-            "title": "Role"
+            "$ref": "#/components/schemas/Role"
           },
-          "name": {
+          "full_name": {
             "anyOf": [
               {
                 "type": "string"
@@ -3432,39 +4673,33 @@
                 "type": "null"
               }
             ],
-            "title": "Name"
+            "title": "Full Name"
           },
           "phone": {
             "type": "string",
             "title": "Phone"
           },
-          "lang": {
-            "type": "string",
-            "enum": [
-              "en",
-              "hi",
-              "gu"
-            ],
-            "title": "Lang"
+          "preferred_lang": {
+            "$ref": "#/components/schemas/Lang"
           }
         },
         "type": "object",
         "required": [
           "id",
           "role",
-          "name",
+          "full_name",
           "phone",
-          "lang"
+          "preferred_lang"
         ],
         "title": "UserOut"
       },
       "VendorContact": {
         "properties": {
-          "company": {
+          "company_name": {
             "type": "string",
-            "title": "Company"
+            "title": "Company Name"
           },
-          "contact_name": {
+          "contact_person": {
             "anyOf": [
               {
                 "type": "string"
@@ -3473,18 +4708,37 @@
                 "type": "null"
               }
             ],
-            "title": "Contact Name"
+            "title": "Contact Person"
           },
-          "phone": {
-            "type": "string",
-            "title": "Phone"
+          "contact_phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Phone"
+          },
+          "contact_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Email"
           }
         },
         "type": "object",
         "required": [
-          "company",
-          "contact_name",
-          "phone"
+          "company_name",
+          "contact_person",
+          "contact_phone",
+          "contact_email"
         ],
         "title": "VendorContact"
       },
@@ -3495,25 +4749,40 @@
             "format": "uuid",
             "title": "Id"
           },
+          "quote_code": {
+            "type": "string",
+            "title": "Quote Code"
+          },
           "request_id": {
             "type": "string",
             "format": "uuid",
             "title": "Request Id"
           },
+          "request_code": {
+            "type": "string",
+            "title": "Request Code"
+          },
           "status": {
             "$ref": "#/components/schemas/QuoteStatus"
           },
-          "price_inr": {
+          "price_total_inr": {
             "type": "integer",
-            "title": "Price Inr"
+            "title": "Price Total Inr"
           },
           "system_kw": {
             "type": "string",
             "title": "System Kw"
           },
           "submitted_at": {
-            "type": "string",
-            "format": "date-time",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Submitted At"
           },
           "contact": {
@@ -3531,9 +4800,11 @@
         "type": "object",
         "required": [
           "id",
+          "quote_code",
           "request_id",
+          "request_code",
           "status",
-          "price_inr",
+          "price_total_inr",
           "system_kw",
           "submitted_at"
         ],
@@ -3546,16 +4817,26 @@
             "format": "uuid",
             "title": "Id"
           },
+          "request_code": {
+            "type": "string",
+            "title": "Request Code"
+          },
           "status": {
             "$ref": "#/components/schemas/RequestStatus"
           },
-          "state_category": {
-            "type": "string",
-            "enum": [
-              "general",
-              "special"
+          "district": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
             ],
-            "title": "State Category"
+            "title": "District"
+          },
+          "state_category": {
+            "$ref": "#/components/schemas/StateCategory"
           },
           "monthly_units": {
             "type": "integer",
@@ -3565,19 +4846,26 @@
             "type": "integer",
             "title": "Budget Inr"
           },
-          "roof_area_m2": {
-            "type": "string",
-            "title": "Roof Area M2"
-          },
           "roof_type": {
-            "type": "string",
-            "enum": [
-              "rcc_flat",
-              "sloped",
-              "tin_sheet",
-              "other"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RoofType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "roof_area_sqm": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
             ],
-            "title": "Roof Type"
+            "title": "Roof Area Sqm"
           },
           "floors": {
             "anyOf": [
@@ -3590,34 +4878,51 @@
             ],
             "title": "Floors"
           },
-          "estimate": {
-            "$ref": "#/components/schemas/Estimate"
-          },
-          "photo_assessment": {
+          "building_type": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/PhotoAssessment"
+                "$ref": "#/components/schemas/BuildingType"
               },
               {
                 "type": "null"
               }
             ]
           },
-          "photos": {
+          "estimate": {
+            "$ref": "#/components/schemas/CalculationOut"
+          },
+          "roof_assessment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RoofAssessmentOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "attachments": {
             "items": {
-              "$ref": "#/components/schemas/MediaOut"
+              "$ref": "#/components/schemas/AttachmentOut"
             },
             "type": "array",
-            "title": "Photos"
+            "title": "Attachments"
           },
           "quotes_count": {
             "type": "integer",
             "title": "Quotes Count"
           },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Created At"
+          "submitted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submitted At"
           },
           "expires_at": {
             "anyOf": [
@@ -3631,14 +4936,24 @@
             ],
             "title": "Expires At"
           },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
           "view": {
             "type": "string",
             "const": "vendor",
             "title": "View",
             "default": "vendor"
           },
-          "approx_location": {
-            "$ref": "#/components/schemas/GeoPoint"
+          "approx_lat": {
+            "type": "number",
+            "title": "Approx Lat"
+          },
+          "approx_lng": {
+            "type": "number",
+            "title": "Approx Lng"
           },
           "distance_km": {
             "type": "string",
@@ -3671,20 +4986,25 @@
         "type": "object",
         "required": [
           "id",
+          "request_code",
           "status",
+          "district",
           "state_category",
           "monthly_units",
           "budget_inr",
-          "roof_area_m2",
           "roof_type",
+          "roof_area_sqm",
           "floors",
+          "building_type",
           "estimate",
-          "photo_assessment",
-          "photos",
+          "roof_assessment",
+          "attachments",
           "quotes_count",
-          "created_at",
+          "submitted_at",
           "expires_at",
-          "approx_location",
+          "created_at",
+          "approx_lat",
+          "approx_lng",
           "distance_km",
           "my_quote_id"
         ],
@@ -3698,11 +5018,11 @@
             "format": "uuid",
             "title": "Id"
           },
-          "company": {
+          "company_name": {
             "type": "string",
-            "title": "Company"
+            "title": "Company Name"
           },
-          "mnre_reg_no": {
+          "mnre_registration_no": {
             "anyOf": [
               {
                 "type": "string"
@@ -3711,9 +5031,9 @@
                 "type": "null"
               }
             ],
-            "title": "Mnre Reg No"
+            "title": "Mnre Registration No"
           },
-          "rating": {
+          "avg_rating": {
             "anyOf": [
               {
                 "type": "string"
@@ -3722,22 +5042,36 @@
                 "type": "null"
               }
             ],
-            "title": "Rating"
+            "title": "Avg Rating"
           },
-          "verified": {
-            "type": "boolean",
-            "title": "Verified"
+          "rating_count": {
+            "type": "integer",
+            "title": "Rating Count"
+          },
+          "verification_status": {
+            "$ref": "#/components/schemas/VerificationStatus"
           }
         },
         "type": "object",
         "required": [
           "id",
-          "company",
-          "mnre_reg_no",
-          "rating",
-          "verified"
+          "company_name",
+          "mnre_registration_no",
+          "avg_rating",
+          "rating_count",
+          "verification_status"
         ],
         "title": "VendorSummary"
+      },
+      "VerificationStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "verified",
+          "rejected",
+          "suspended"
+        ],
+        "title": "VerificationStatus"
       },
       "VerifyRequest": {
         "properties": {
@@ -3768,7 +5102,7 @@
             "title": "Role",
             "description": "Required the first time a phone signs in; ignored afterwards."
           },
-          "name": {
+          "full_name": {
             "anyOf": [
               {
                 "type": "string",
@@ -3779,16 +5113,10 @@
                 "type": "null"
               }
             ],
-            "title": "Name"
+            "title": "Full Name"
           },
-          "lang": {
-            "type": "string",
-            "enum": [
-              "en",
-              "hi",
-              "gu"
-            ],
-            "title": "Lang",
+          "preferred_lang": {
+            "$ref": "#/components/schemas/Lang",
             "default": "en"
           }
         },
@@ -3800,6 +5128,16 @@
         ],
         "title": "VerifyRequest"
       },
+      "VoiceLanguage": {
+        "type": "string",
+        "enum": [
+          "en",
+          "hi",
+          "gu",
+          "auto"
+        ],
+        "title": "VoiceLanguage"
+      },
       "VoiceResult": {
         "properties": {
           "kind": {
@@ -3808,54 +5146,47 @@
             "title": "Kind",
             "default": "voice_extract"
           },
-          "lang": {
+          "voice_input_id": {
             "type": "string",
-            "enum": [
-              "en",
-              "hi",
-              "gu"
-            ],
-            "title": "Lang"
+            "format": "uuid",
+            "title": "Voice Input Id"
+          },
+          "language": {
+            "$ref": "#/components/schemas/VoiceLanguage"
           },
           "transcript": {
             "type": "string",
             "title": "Transcript"
           },
-          "fields": {
+          "extracted_fields": {
             "$ref": "#/components/schemas/PrefillFields"
           }
         },
         "type": "object",
         "required": [
-          "lang",
+          "voice_input_id",
+          "language",
           "transcript",
-          "fields"
+          "extracted_fields"
         ],
         "title": "VoiceResult"
       },
       "VoiceTranscribeRequest": {
         "properties": {
-          "object_key": {
+          "audio_file_id": {
             "type": "string",
-            "maxLength": 300,
-            "minLength": 1,
-            "title": "Object Key"
+            "format": "uuid",
+            "title": "Audio File Id"
           },
-          "lang": {
-            "type": "string",
-            "enum": [
-              "en",
-              "hi",
-              "gu"
-            ],
-            "title": "Lang"
+          "language": {
+            "$ref": "#/components/schemas/VoiceLanguage"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "object_key",
-          "lang"
+          "audio_file_id",
+          "language"
         ],
         "title": "VoiceTranscribeRequest"
       },

@@ -1,6 +1,7 @@
 """Settings from the environment. Each variable here is also listed in `.env.example`."""
 
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -8,6 +9,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
+    database_url: str = "sqlite:///./suryasetu.db"
+    upload_dir: Path = Path("./uploads")
     web_origins: str = "http://localhost:3000"
 
     @property

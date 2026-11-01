@@ -37,7 +37,7 @@ Load Leaflet with `next/dynamic` and `ssr: false`, because it needs `window`. Us
 
 ## Photos
 
-Resize on the client, request a presigned URL, and PUT directly to storage. Draw obstruction boxes from the assessment over the image.
+Resize on the client, then send it to `POST /uploads` as multipart with `purpose=terrace_photo`, and pass the returned file id in `photo_file_ids`. Draw obstruction boxes from the assessment over the image.
 
 ## Quote comparison
 

@@ -1,4 +1,4 @@
-"""HTTP contract from section 08 of the architecture. The web types are generated from this.
+"""HTTP contract. Field names follow docs/previous/db-schema.html; web types are generated from it.
 
 Money is whole rupees in `int`. Capacity is `Decimal` kW, which JSON carries as a string.
 Every number in a response comes from `rules/`. The LLM only fills text fields.
@@ -6,13 +6,36 @@ Every number in a response comes from `rules/`. The LLM only fills text fields.
 
 from datetime import date, datetime
 from decimal import Decimal
-from enum import StrEnum
 from typing import Annotated, Generic, Literal, Self, TypeVar
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field
 
-from rules.loader import PaybackRules, ScoringRules, SizingRules, StateCategory, SubsidyRules
+from api.app.enums import (
+    AssessmentStatus,
+    AttachmentKind,
+    BuildingType,
+    CalculationScope,
+    FilePurpose,
+    InputMethod,
+    InverterType,
+    JobStatus,
+    JobType,
+    Lang,
+    Level,
+    LineItemType,
+    LocationSource,
+    ObstructionType,
+    PanelTechnology,
+    QuoteStatus,
+    RequestStatus,
+    Role,
+    RoofType,
+    StateCategory,
+    VerificationStatus,
+    VoiceLanguage,
+)
+from rules.loader import PaybackRules, ScoringRules, SizingRules, SubsidyRules
 
 # --- Shared -------------------------------------------------------------------------------
 
@@ -27,53 +50,11 @@ class Output(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-Role = Literal["household", "vendor", "admin"]
-Lang = Literal["en", "hi", "gu"]
-RoofType = Literal["rcc_flat", "sloped", "tin_sheet", "other"]
-Inclusion = Literal[
-    "net_metering_fee",
-    "mounting_structure",
-    "earthing_and_lightning_arrester",
-    "amc",
-    "insurance",
-    "cabling",
-    "acdb_dcdb",
-    "transport",
-]
 Rupees = Annotated[int, Field(strict=True, gt=0)]
-Kw = Annotated[Decimal, Field(gt=0, le=100, max_digits=6, decimal_places=2)]
+Kw = Annotated[Decimal, Field(gt=0, le=100, max_digits=5, decimal_places=2)]
 Years = Annotated[int, Field(ge=0, le=40)]
-
-
-class RequestStatus(StrEnum):
-    DRAFT = "DRAFT"
-    OPEN = "OPEN"
-    QUOTED = "QUOTED"
-    ACCEPTED = "ACCEPTED"
-    INSTALLED = "INSTALLED"
-    CANCELLED = "CANCELLED"
-    EXPIRED = "EXPIRED"
-
-
-class QuoteStatus(StrEnum):
-    SUBMITTED = "SUBMITTED"
-    ACCEPTED = "ACCEPTED"
-    REJECTED = "REJECTED"
-    WITHDRAWN = "WITHDRAWN"
-
-
-class JobStatus(StrEnum):
-    QUEUED = "queued"
-    RUNNING = "running"
-    SUCCEEDED = "succeeded"
-    FAILED = "failed"
-
-
-class JobType(StrEnum):
-    PHOTO_ASSESS = "photo_assess"
-    VOICE_EXTRACT = "voice_extract"
-    QUOTE_REVIEW = "quote_review"
-    RECOMMEND = "recommend"
+Lat = Annotated[float, Field(ge=-90, le=90)]
+Lng = Annotated[float, Field(ge=-180, le=180)]
 
 
 class ErrorBody(Output):
@@ -110,11 +91,6 @@ class Cited(Output):
     citations: list[CitationOut]
 
 
-class GeoPoint(BaseModel):
-    lat: float = Field(ge=-90, le=90)
-    lng: float = Field(ge=-180, le=180)
-
-
 class BBox(BaseModel):
     """Map viewport as `west,south,east,north` in degrees, the order Leaflet's toBBoxString uses."""
 
@@ -144,8 +120,9 @@ class JobAccepted(Output):
     """Returned with 202. Follow progress on `GET /jobs/{id}` or the SSE stream."""
 
     job_id: UUID
-    type: JobType
+    job_type: JobType
     status: JobStatus
+    entity_id: UUID | None = Field(None, description="The row the job will fill in.")
 
 
 # --- Auth -----------------------------------------------------------------------------------
@@ -164,19 +141,19 @@ class OtpSent(Output):
 class VerifyRequest(Input):
     phone: Phone
     code: str = Field(pattern=r"^\d{6}$")
-    role: Literal["household", "vendor"] | None = Field(
+    role: Literal[Role.HOUSEHOLD, Role.VENDOR] | None = Field(
         None, description="Required the first time a phone signs in; ignored afterwards."
     )
-    name: str | None = Field(None, min_length=1, max_length=100)
-    lang: Lang = "en"
+    full_name: str | None = Field(None, min_length=1, max_length=100)
+    preferred_lang: Lang = Lang.EN
 
 
 class UserOut(Output):
     id: UUID
     role: Role
-    name: str | None
+    full_name: str | None
     phone: str
-    lang: Lang
+    preferred_lang: Lang
 
 
 class TokenResponse(Output):
@@ -186,57 +163,52 @@ class TokenResponse(Output):
     user: UserOut
 
 
-# --- Uploads --------------------------------------------------------------------------------
+# --- Files ----------------------------------------------------------------------------------
 
-UploadKind = Literal["photo", "audio", "quote_doc"]
-ALLOWED_CONTENT_TYPES: dict[str, frozenset[str]] = {
-    "photo": frozenset({"image/jpeg", "image/png", "image/webp"}),
-    "audio": frozenset({"audio/webm", "audio/ogg", "audio/mpeg", "audio/wav", "audio/mp4"}),
-    "quote_doc": frozenset({"application/pdf", "image/jpeg", "image/png"}),
+_IMAGES = frozenset({"image/jpeg", "image/png", "image/webp"})
+ALLOWED_CONTENT_TYPES: dict[FilePurpose, frozenset[str]] = {
+    FilePurpose.TERRACE_PHOTO: _IMAGES,
+    FilePurpose.ELECTRICITY_BILL: _IMAGES | {"application/pdf"},
+    FilePurpose.VOICE_AUDIO: frozenset(
+        {"audio/webm", "audio/ogg", "audio/mpeg", "audio/wav", "audio/mp4"}
+    ),
+    FilePurpose.QUOTE_DOCUMENT: _IMAGES | {"application/pdf"},
 }
-MAX_UPLOAD_BYTES: dict[str, int] = {
-    "photo": 8 * 1024 * 1024,
-    "audio": 10 * 1024 * 1024,
-    "quote_doc": 10 * 1024 * 1024,
+MAX_UPLOAD_BYTES: dict[FilePurpose, int] = {
+    FilePurpose.TERRACE_PHOTO: 8 * 1024 * 1024,
+    FilePurpose.ELECTRICITY_BILL: 8 * 1024 * 1024,
+    FilePurpose.VOICE_AUDIO: 10 * 1024 * 1024,
+    FilePurpose.QUOTE_DOCUMENT: 10 * 1024 * 1024,
 }
 
 
-class PresignRequest(Input):
-    kind: UploadKind
-    content_type: str
-    size_bytes: int = Field(gt=0)
-
-    @model_validator(mode="after")
-    def _type_and_size_fit_the_kind(self) -> Self:
-        if self.content_type not in ALLOWED_CONTENT_TYPES[self.kind]:
-            raise ValueError(f"{self.content_type} is not allowed for {self.kind}")
-        if self.size_bytes > MAX_UPLOAD_BYTES[self.kind]:
-            raise ValueError(
-                f"{self.kind} uploads are limited to {MAX_UPLOAD_BYTES[self.kind]} bytes"
-            )
-        return self
+def check_upload(purpose: FilePurpose, content_type: str, size_bytes: int) -> None:
+    """Raises ValueError when a file does not fit its purpose. The upload route calls this."""
+    if purpose not in ALLOWED_CONTENT_TYPES:
+        raise ValueError(f"{purpose} files cannot be uploaded here")
+    if content_type not in ALLOWED_CONTENT_TYPES[purpose]:
+        raise ValueError(f"{content_type} is not allowed for {purpose}")
+    if not 0 < size_bytes <= MAX_UPLOAD_BYTES[purpose]:
+        raise ValueError(f"{purpose} files must be 1 to {MAX_UPLOAD_BYTES[purpose]} bytes")
 
 
-class PresignResponse(Output):
-    object_key: str
-    upload_url: str
-    method: Literal["PUT"] = "PUT"
-    headers: dict[str, str] = Field(description="Send these headers with the PUT unchanged.")
-    expires_in_s: int
-
-
-class MediaOut(Output):
+class FileOut(Output):
     id: UUID
-    kind: Literal["photo", "audio"]
-    url: str = Field(description="Short-lived signed GET URL.")
+    purpose: FilePurpose
+    mime_type: str
+    size_bytes: int
+    sha256: str
+    width: int | None = None
+    height: int | None = None
+    url: str = Field(description="`GET /files/{id}` with the bearer token.")
 
 
 # --- Voice ----------------------------------------------------------------------------------
 
 
 class VoiceTranscribeRequest(Input):
-    object_key: str = Field(min_length=1, max_length=300)
-    lang: Lang
+    audio_file_id: UUID
+    language: VoiceLanguage
 
 
 class PrefillFields(Output):
@@ -246,110 +218,159 @@ class PrefillFields(Output):
     monthly_bill_inr: int | None = Field(None, gt=0)
     budget_inr: int | None = Field(None, gt=0)
     roof_type: RoofType | None = None
+    roof_area_sqm: Decimal | None = Field(None, gt=0)
     floors: int | None = Field(None, ge=0, le=100)
     address_hint: str | None = None
 
 
 class VoiceResult(Output):
     kind: Literal["voice_extract"] = "voice_extract"
-    lang: Lang
+    voice_input_id: UUID
+    language: VoiceLanguage
     transcript: str
-    fields: PrefillFields
+    extracted_fields: PrefillFields
+
+
+# --- Calculations ---------------------------------------------------------------------------
+
+
+class CalcStep(Output):
+    """One line of working, rendered in the UI with an ⓘ link to its rule."""
+
+    label: str
+    formula: str
+    value: str
+    rule_key: str | None = Field(None, description="Key into `citations`; empty for arithmetic.")
+
+
+class CalculationOut(Cited):
+    """A row of `calculations`: the request estimate, or one quote's financials."""
+
+    id: UUID
+    scope: CalculationScope
+    system_kw: Decimal
+    recommended_kw: Decimal | None
+    kw_band_min: Decimal | None
+    kw_band_max: Decimal | None
+    roof_cap_kw: Decimal | None
+    gross_cost_inr: int | None
+    subsidy_inr: int
+    net_cost_inr: int | None
+    annual_generation_kwh: int | None
+    monthly_savings_inr: int | None
+    annual_savings_inr: int | None
+    bill_reduction_pct: Decimal | None
+    payback_years: Decimal | None = Field(description="Empty when the system saves nothing.")
+    savings_25y_inr: int | None
+    steps: list[CalcStep]
+    engine_version: str
+    computed_at: datetime
 
 
 # --- Requests -------------------------------------------------------------------------------
 
 
 class RequestCreate(Input):
-    location: GeoPoint
+    lat: Lat
+    lng: Lng
+    location_source: LocationSource
     address_text: str | None = Field(None, max_length=300)
-    discom: str | None = Field(None, max_length=50)
-    state_category: StateCategory
+    district: str | None = Field(None, max_length=80)
+    pincode: str | None = Field(None, pattern=r"^\d{6}$")
+    discom_id: UUID | None = Field(
+        None, description="Sets the subsidy category. Without it, the general rates apply."
+    )
     monthly_units: int = Field(gt=0, le=100_000)
     monthly_bill_inr: int | None = Field(None, gt=0)
     budget_inr: Rupees
-    roof_area_m2: Decimal = Field(gt=0, le=10_000, max_digits=7, decimal_places=2)
-    roof_type: RoofType
+    roof_type: RoofType | None = None
+    roof_area_sqm: Decimal = Field(gt=0, le=10_000, max_digits=7, decimal_places=2)
     floors: int | None = Field(None, ge=0, le=100)
-    photo_keys: list[str] = Field(default_factory=list, max_length=3)
-    audio_key: str | None = None
+    building_type: BuildingType | None = None
+    input_method: InputMethod = InputMethod.FORM
     notes: str | None = Field(None, max_length=1000)
+    photo_file_ids: list[UUID] = Field(default_factory=list, max_length=3)
+    bill_file_id: UUID | None = None
+    voice_input_id: UUID | None = None
 
 
-class Estimate(Cited):
-    """Calculated by `rules.sizing` and `rules.subsidy` when the request is created."""
-
-    raw_kw: Decimal
-    size_kw: Decimal
-    max_kw: Decimal
-    capped_by_roof: bool
-    subsidy_inr: int
-
-
-class Obstruction(Output):
-    type: Literal[
-        "water_tank",
-        "staircase_room",
-        "parapet",
-        "tree_shade",
-        "dish_antenna",
-        "solar_heater",
-        "other",
-    ]
-    x: float = Field(ge=0, le=1, description="Box position and size as fractions of the image.")
-    y: float = Field(ge=0, le=1)
-    w: float = Field(ge=0, le=1)
-    h: float = Field(ge=0, le=1)
-    severity: Literal["low", "medium", "high"]
+class ObstructionOut(Output):
+    obstruction_type: ObstructionType
+    bbox_x: Decimal | None = Field(description="Box position and size as fractions of the image.")
+    bbox_y: Decimal | None
+    bbox_w: Decimal | None
+    bbox_h: Decimal | None
+    severity: Level | None
+    confidence: Decimal | None
+    note: str | None
 
 
-class PhotoAssessment(Output):
-    """`usable_fraction` and the obstructions come from the LLM; the areas and kW cap from code."""
+class RoofAssessmentOut(Output):
+    """`usable_fraction` and obstructions come from the LLM; areas and the kW cap from code."""
 
     kind: Literal["photo_assess"] = "photo_assess"
-    status: JobStatus
-    usable_fraction: Decimal | None = None
-    usable_area_m2: Decimal | None = None
-    max_kw: Decimal | None = None
-    shade_risk: Literal["low", "medium", "high"] | None = None
-    obstructions: list[Obstruction] = Field(default_factory=list)
-    summary: str | None = None
+    id: UUID
+    status: AssessmentStatus
+    usable_fraction: Decimal | None
+    usable_area_sqm: Decimal | None
+    max_kw_by_area: Decimal | None
+    shade_risk: Level | None
+    summary: str | None
+    obstructions: list[ObstructionOut]
+
+
+class AttachmentOut(Output):
+    id: UUID
+    file_id: UUID
+    kind: AttachmentKind
+    is_primary: bool
+    url: str
 
 
 class RequestBase(Output):
     id: UUID
+    request_code: str
     status: RequestStatus
+    district: str | None
     state_category: StateCategory
     monthly_units: int
     budget_inr: int
-    roof_area_m2: Decimal
-    roof_type: RoofType
+    roof_type: RoofType | None
+    roof_area_sqm: Decimal | None
     floors: int | None
-    estimate: Estimate
-    photo_assessment: PhotoAssessment | None
-    photos: list[MediaOut]
+    building_type: BuildingType | None
+    estimate: CalculationOut
+    roof_assessment: RoofAssessmentOut | None
+    attachments: list[AttachmentOut]
     quotes_count: int
-    created_at: datetime
+    submitted_at: datetime | None
     expires_at: datetime | None
+    created_at: datetime
 
 
 class RequestOut(RequestBase):
     """The household's own view."""
 
     view: Literal["owner"] = "owner"
-    location: GeoPoint
+    lat: float
+    lng: float
+    location_source: LocationSource
     address_text: str | None
-    discom: str | None
+    pincode: str | None
+    discom_id: UUID | None
     monthly_bill_inr: int | None
+    input_method: InputMethod
     notes: str | None
     accepted_quote_id: UUID | None
+    closed_at: datetime | None
 
 
 class RequestSummary(Output):
     id: UUID
+    request_code: str
     status: RequestStatus
     monthly_units: int
-    size_kw: Decimal
+    system_kw: Decimal
     quotes_count: int
     created_at: datetime
 
@@ -357,9 +378,10 @@ class RequestSummary(Output):
 class HouseholdContact(Output):
     """Shared with a vendor only after that vendor's quote is accepted."""
 
-    name: str | None
+    full_name: str | None
     phone: str
-    location: GeoPoint
+    lat: float
+    lng: float
     address_text: str | None
 
 
@@ -367,7 +389,8 @@ class VendorRequestView(RequestBase):
     """A vendor's view. The location is rounded to about 500 m and there is no phone number."""
 
     view: Literal["vendor"] = "vendor"
-    approx_location: GeoPoint
+    approx_lat: float
+    approx_lng: float
     distance_km: Decimal
     my_quote_id: UUID | None
     contact: HouseholdContact | None = Field(
@@ -377,32 +400,68 @@ class VendorRequestView(RequestBase):
 
 class OpenRequestPin(Output):
     id: UUID
-    approx_location: GeoPoint
+    request_code: str
+    approx_lat: float
+    approx_lng: float
     distance_km: Decimal
+    district: str | None
     monthly_units: int
     budget_inr: int
-    size_kw: Decimal
-    roof_area_m2: Decimal
+    recommended_kw: Decimal
+    roof_area_sqm: Decimal | None
     quotes_count: int
-    created_at: datetime
+    submitted_at: datetime | None
 
 
 # --- Quotes ---------------------------------------------------------------------------------
 
 
+class LineItemIn(Input):
+    item_type: LineItemType
+    description: str | None = Field(None, max_length=200)
+    quantity: Decimal | None = Field(None, gt=0, max_digits=8, decimal_places=2)
+    unit: Literal["nos", "m", "set", "lot"] | None = None
+    unit_price_inr: int | None = Field(None, ge=0)
+    amount_inr: int | None = Field(None, ge=0)
+    included: bool = Field(True, description="False lists the item as excluded.")
+
+
+class LineItemOut(Output):
+    id: UUID
+    item_type: LineItemType
+    description: str | None
+    quantity: Decimal | None
+    unit: str | None
+    unit_price_inr: int | None
+    amount_inr: int | None
+    included: bool
+
+
 class QuoteCreate(Input):
     system_kw: Kw
-    price_inr: Rupees
+    price_total_inr: Rupees
+    gst_included: bool
+    gst_amount_inr: int | None = Field(None, ge=0)
     panel_brand: str = Field(min_length=1, max_length=80)
-    panel_watt: int = Field(ge=100, le=1000)
-    dcr: bool | None = Field(None, description="Domestic content panels. Leave empty if unknown.")
+    panel_model: str | None = Field(None, max_length=80)
+    panel_technology: PanelTechnology | None = None
+    panel_wattage: int | None = Field(None, ge=100, le=1000)
+    panel_count: int | None = Field(None, ge=1, le=1000)
+    panel_efficiency_pct: Decimal | None = Field(None, gt=0, le=40)
+    dcr_compliant: bool = Field(description="Domestic content panels, required for the subsidy.")
+    panel_product_warranty_yrs: Years | None = None
+    panel_performance_warranty_yrs: Years | None = None
     inverter_brand: str = Field(min_length=1, max_length=80)
-    inverter_kw: Kw
-    warranty_panel_yrs: Years
-    warranty_inverter_yrs: Years
-    warranty_work_yrs: Years
+    inverter_model: str | None = Field(None, max_length=80)
+    inverter_type: InverterType | None = None
+    inverter_capacity_kw: Kw | None = None
+    inverter_warranty_yrs: Years | None = None
+    workmanship_warranty_yrs: Years | None = None
+    amc_years: Years | None = None
     timeline_days: int = Field(ge=1, le=365)
-    inclusions: set[Inclusion] = Field(default_factory=set)
+    valid_until: date | None = None
+    payment_terms: str | None = Field(None, max_length=500)
+    line_items: list[LineItemIn] = Field(default_factory=list, max_length=40)
     notes: str | None = Field(
         None, max_length=2000, description="Untrusted. Shown to the household, never used to rank."
     )
@@ -410,66 +469,89 @@ class QuoteCreate(Input):
 
 class VendorSummary(Output):
     id: UUID
-    company: str
-    mnre_reg_no: str | None
-    rating: Decimal | None
-    verified: bool
+    company_name: str
+    mnre_registration_no: str | None
+    avg_rating: Decimal | None
+    rating_count: int
+    verification_status: VerificationStatus
 
 
 class VendorContact(Output):
-    company: str
-    contact_name: str | None
-    phone: str
+    company_name: str
+    contact_person: str | None
+    contact_phone: str | None
+    contact_email: str | None
 
 
-class QuoteFinancials(Cited):
-    """Calculated by `rules.subsidy` and `rules.payback` when the quote is submitted."""
-
-    subsidy_inr: int
-    net_cost_inr: int
-    annual_generation_kwh: Decimal
-    annual_saving_inr: int
-    payback_years: Decimal | None = Field(description="Empty when the system saves nothing.")
+class MissingItem(Output):
+    item: str
+    severity: Level
+    why: str
 
 
-class QuoteReview(Output):
-    """`missing_items` and the injection flag come from code. `llm_notes` is explanation only."""
+class QuoteReviewOut(Output):
+    """`missing_items`, `warnings` and the injection check come from code; `llm_notes` is text."""
 
     kind: Literal["quote_review"] = "quote_review"
-    status: JobStatus
-    missing_items: list[str]
-    injection_flag: bool
-    injection_excerpt: str | None = None
-    llm_notes: str | None = None
+    llm_status: JobStatus
+    missing_items: list[MissingItem]
+    warnings: list[str]
+    injection_detected: bool
+    injection_excerpt: str | None
+    llm_notes: str | None
+    reviewed_at: datetime
 
 
-class QuoteScore(Output):
-    score: Decimal
-    breakdown: dict[str, Decimal]
+class ScoreLine(Output):
+    criterion: str
+    input: str
+    formula: str
+    points: Decimal
+
+
+class QuoteScoreOut(Output):
+    total_score: Decimal = Field(description="0 to 100, from `rules.scoring`.")
+    weights: dict[str, int]
+    explanation: list[ScoreLine]
 
 
 class QuoteOut(Output):
     id: UUID
+    quote_code: str
     request_id: UUID
     vendor: VendorSummary
     status: QuoteStatus
     system_kw: Decimal
-    price_inr: int
+    price_total_inr: int
+    gst_included: bool
+    gst_amount_inr: int | None
     panel_brand: str
-    panel_watt: int
-    dcr: bool | None
+    panel_model: str | None
+    panel_technology: PanelTechnology | None
+    panel_wattage: int | None
+    panel_count: int | None
+    panel_efficiency_pct: Decimal | None
+    dcr_compliant: bool
+    panel_product_warranty_yrs: int | None
+    panel_performance_warranty_yrs: int | None
     inverter_brand: str
-    inverter_kw: Decimal
-    warranty_panel_yrs: int
-    warranty_inverter_yrs: int
-    warranty_work_yrs: int
+    inverter_model: str | None
+    inverter_type: InverterType | None
+    inverter_capacity_kw: Decimal | None
+    inverter_warranty_yrs: int | None
+    workmanship_warranty_yrs: int | None
+    amc_years: int | None
     timeline_days: int
-    inclusions: list[Inclusion]
+    valid_until: date | None
+    payment_terms: str | None
+    line_items: list[LineItemOut]
     notes: str | None
-    financials: QuoteFinancials
-    review: QuoteReview
-    score: QuoteScore | None
-    submitted_at: datetime
+    injection_flag: bool
+    revision: int
+    financials: CalculationOut
+    review: QuoteReviewOut | None
+    score: QuoteScoreOut | None
+    submitted_at: datetime | None
 
 
 class QuoteCreated(Output):
@@ -487,11 +569,13 @@ class QuoteComparison(Cited):
 
 class VendorQuoteSummary(Output):
     id: UUID
+    quote_code: str
     request_id: UUID
+    request_code: str
     status: QuoteStatus
-    price_inr: int
+    price_total_inr: int
     system_kw: Decimal
-    submitted_at: datetime
+    submitted_at: datetime | None
     contact: HouseholdContact | None = Field(None, description="Set once this quote is accepted.")
 
 
@@ -501,15 +585,16 @@ class RankedQuote(Output):
     score: Decimal
 
 
-class Recommendation(Cited):
-    """Ranking from `rules.scoring`. The LLM writes the reasons and notes from the score table."""
+class RecommendationOut(Cited):
+    """Ranking from `rules.scoring`. The LLM writes the reasons from the score table only."""
 
     kind: Literal["recommend"] = "recommend"
+    id: UUID
     request_id: UUID
-    recommended_quote_id: UUID | None
+    recommended_quote_id: UUID
     ranking: list[RankedQuote]
     reasons: list[str]
-    other_notes: dict[str, str] = Field(description="One line per other quote, keyed by quote id.")
+    caveats: str | None
     stale: bool = Field(description="True when quotes changed since this was written.")
     created_at: datetime
 
@@ -525,18 +610,21 @@ class AcceptResult(Output):
 # --- Jobs, events, rules --------------------------------------------------------------------
 
 JobOutput = Annotated[
-    VoiceResult | PhotoAssessment | QuoteReview | Recommendation, Field(discriminator="kind")
+    VoiceResult | RoofAssessmentOut | QuoteReviewOut | RecommendationOut,
+    Field(discriminator="kind"),
 ]
 
 
 class JobOut(Output):
     id: UUID
-    type: JobType
+    job_type: JobType
     status: JobStatus
+    entity_type: str | None
+    entity_id: UUID | None
     attempts: int
     output: JobOutput | None = None
     error: str | None = None
-    created_at: datetime
+    queued_at: datetime
     finished_at: datetime | None = None
 
 

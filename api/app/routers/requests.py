@@ -11,7 +11,7 @@ from api.app.schemas import (
     QuoteComparison,
     QuoteCreate,
     QuoteCreated,
-    Recommendation,
+    RecommendationOut,
     RequestCreate,
     RequestOut,
     RequestSummary,
@@ -88,8 +88,8 @@ async def request_recommendation(request_id: UUID, user: Household) -> JobAccept
 
 @router.get(
     "/{request_id}/recommendation",
-    response_model=Recommendation,
+    response_model=RecommendationOut,
     responses=error_responses(401, 403, 404),
 )
-async def get_recommendation(request_id: UUID, user: Household) -> Recommendation:
+async def get_recommendation(request_id: UUID, user: Household) -> RecommendationOut:
     raise not_implemented()

@@ -1,6 +1,6 @@
 ---
 name: ai-feature
-description: Build or change an AI feature with Gemini or Groq, including terrace photo assessment, quote review, vendor recommendation and voice input in English, Hindi or Gujarati. Use for any LLM prompt, provider, arq job, rate limiting or prompt injection work.
+description: Build or change an AI feature with Gemini or Groq, including terrace photo assessment, quote review, vendor recommendation and voice input in English, Hindi or Gujarati. Use for any LLM prompt, provider, background job, rate limiting or prompt injection work.
 ---
 
 # AI features
@@ -22,11 +22,12 @@ Judging rewards features that are useful, explained, and whose numbers are calcu
 
 ## Structure
 
-- `worker/jobs/`: `photo_assess`, `voice_extract`, `quote_review`, `recommend`, each idempotent on `(entity_id, job_type, input_hash)`.
-- `worker/llm/gateway.py`: the only caller of providers.
-- `worker/llm/ratelimit.py`: Redis token buckets per `(provider, model)` for RPM, TPM and RPD.
-- `worker/llm/guard.py`: injection detector and output checks.
-- `worker/llm/providers/`: `gemini`, `groq` and `fake`, selected by `AI_PROVIDER`.
+- `api/app/jobs/`: `photo_assess`, `voice_extract`, `quote_review`, `recommend`, each idempotent on `(entity_id, job_type, input_hash)`.
+- Jobs run with FastAPI `BackgroundTasks` and record their state in `ai_jobs`. Redis and a separate worker are the production plan.
+- `api/app/llm/gateway.py`: the only caller of providers.
+- `api/app/llm/ratelimit.py`: in-memory token buckets per `(provider, model)` for RPM, TPM and RPD.
+- `api/app/llm/guard.py`: injection detector and output checks.
+- `api/app/llm/providers/`: `gemini`, `groq` and `fake`, selected by `AI_PROVIDER`.
 
 ## Calling a model
 
@@ -38,7 +39,7 @@ Judging rewards features that are useful, explained, and whose numbers are calcu
 
 ## Staying within limits
 
-1. Workers take a token before each call. With none left, the job is re-queued with a delay, not failed.
+1. Jobs take a token before each call. With none left, the job waits and retries instead of failing.
 2. `high` priority covers voice and on-demand compare and gets 70% of the bucket. `low` covers photo assessment and quote review.
 3. Cache on `sha256(input + prompt_version)`. Send 1024 px images. Batch new quotes for one request into one call.
 4. Debounce the recommendation for 2 minutes after the last quote.
