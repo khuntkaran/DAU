@@ -5,14 +5,14 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { ROLE_HOME } from '@/routes/paths';
-import { ApiError, IS_MOCK } from '@/shared/api/client';
+import { ApiError } from '@/shared/api/client';
 import { useSession, writeSession } from '@/shared/api/session';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 import type { Role } from '@/shared/types/common';
 import { LanguagePicker } from '@/shared/ui/LanguagePicker';
 import { Button, Field } from '@/shared/ui/primitives';
 import { requestOtp, verifyOtp } from '../api';
-import { DEMO_PHONES } from '../types';
+import { DEMO_PHONES, SHOW_DEMO_LOGIN } from '../types';
 
 const DEMO_ROLES: { role: Role; labelKey: string }[] = [
   { role: 'household', labelKey: 'login.asHousehold' },
@@ -29,9 +29,21 @@ const FEATURES = [
 const ERROR_KEYS: Record<string, string> = {
   invalid_code: 'login.invalidCode',
   otp_expired: 'login.codeExpired',
+  code_expired: 'login.codeExpired',
   too_many_attempts: 'login.tooManyAttempts',
+  too_many_codes: 'login.tooManyCodes',
   account_suspended: 'login.suspended',
 };
+
+/**
+ * Keeps ten digits. A full number pasted with its country code keeps the right ten,
+ * which is also why this is not a maxLength attribute: that would cut a paste short.
+ */
+export function toPhoneDigits(value: string) {
+  const digits = value.replace(/\D/g, '');
+  const hasCountryCode = value.trim().startsWith('+91') || (digits.length === 12 && digits.startsWith('91'));
+  return (hasCountryCode ? digits.slice(2) : digits).slice(0, 10);
+}
 
 export function LoginPage() {
   const { t } = useI18n();
@@ -42,6 +54,9 @@ export function LoginPage() {
   const [codeSent, setCodeSent] = useState(false);
   const [error, setError] = useState<string>();
   const [busy, setBusy] = useState(false);
+  const [isNewAccount, setIsNewAccount] = useState(false);
+  const [role, setRole] = useState<'household' | 'vendor'>('household');
+  const [fullName, setFullName] = useState('');
 
   useEffect(() => {
     if (session) router.replace(ROLE_HOME[session.user.role]);
@@ -55,8 +70,8 @@ export function LoginPage() {
       await requestOtp({ phone: toPhone });
       setPhone(toPhone);
       setCodeSent(true);
-    } catch {
-      setError(t('common.error'));
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : t('common.error'));
     } finally {
       setBusy(false);
     }
@@ -66,12 +81,17 @@ export function LoginPage() {
     setBusy(true);
     setError(undefined);
     try {
-      writeSession(await verifyOtp({ phone, code }));
+      const profile = isNewAccount ? { role, full_name: fullName.trim() } : {};
+      writeSession(await verifyOtp({ phone, code, ...profile }));
     } catch (failure) {
-      const key = failure instanceof ApiError ? ERROR_KEYS[failure.code] : undefined;
-      setError(t(key ?? 'common.error'));
-      if (failure instanceof ApiError && failure.code !== 'invalid_code') setCodeSent(false);
       setBusy(false);
+      if (failure instanceof ApiError && failure.code === 'role_required') {
+        setIsNewAccount(true);
+        return;
+      }
+      const key = failure instanceof ApiError ? ERROR_KEYS[failure.code] : undefined;
+      setError(key ? t(key) : failure instanceof Error ? failure.message : t('common.error'));
+      if (failure instanceof ApiError && failure.code !== 'invalid_code') setCodeSent(false);
     }
   }
 
@@ -90,6 +110,7 @@ export function LoginPage() {
     setCodeSent(false);
     setCode('');
     setError(undefined);
+    setIsNewAccount(false);
   }
 
   return (
@@ -139,7 +160,7 @@ export function LoginPage() {
               value={phone}
               disabled={codeSent}
               error={codeSent ? undefined : error}
-              onChange={(event) => setPhone(event.target.value)}
+              onChange={(event) => setPhone(toPhoneDigits(event.target.value))}
             />
             {codeSent && (
               <Field
@@ -147,11 +168,31 @@ export function LoginPage() {
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 autoFocus
-                help={IS_MOCK ? t('login.demoHint') : undefined}
+                help={SHOW_DEMO_LOGIN ? t('login.demoHint') : undefined}
                 value={code}
                 error={error}
                 onChange={(event) => setCode(event.target.value)}
               />
+            )}
+            {isNewAccount && (
+              <div className="space-y-4 rounded-xl bg-canvas p-4">
+                <p className="text-sm font-medium text-ink">{t('login.newAccount')}</p>
+                <div>
+                  <label htmlFor="account-role" className="mb-1.5 block text-sm font-medium text-ink">
+                    {t('login.iAm')}
+                  </label>
+                  <select
+                    id="account-role"
+                    value={role}
+                    onChange={(event) => setRole(event.target.value as 'household' | 'vendor')}
+                    className="min-h-11 w-full rounded-xl border border-line bg-surface px-3 text-ink"
+                  >
+                    <option value="household">{t('login.asHousehold')}</option>
+                    <option value="vendor">{t('login.asVendor')}</option>
+                  </select>
+                </div>
+                <Field label={t('login.fullName')} value={fullName} onChange={(event) => setFullName(event.target.value)} />
+              </div>
             )}
             <Button type="submit" className="w-full" disabled={busy}>
               {t(codeSent ? 'login.verify' : 'login.sendOtp')}
@@ -163,7 +204,7 @@ export function LoginPage() {
             )}
           </form>
 
-          {IS_MOCK && !codeSent && (
+          {SHOW_DEMO_LOGIN && !codeSent && (
             <div className="mt-8 rounded-xl border border-line bg-canvas p-4">
               <p className="flex items-center gap-2 text-sm font-semibold text-ink">
                 <ShieldCheck aria-hidden className="size-4 text-primary" />

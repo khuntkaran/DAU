@@ -55,7 +55,12 @@ export function RoofAssessmentPanel({ requestId }: { requestId: string }) {
   return (
     <Card>
       <h2 className="mb-3 text-lg font-semibold text-ink">{t('roof.title')}</h2>
-      {failed && <p className="text-muted">{t('roof.failed')}</p>}
+      {failed && <p className="mb-3 text-muted">{t('roof.failed')}</p>}
+      {failed && data?.photo_url && (
+        <div className="max-w-md">
+          <PhotoWithBoxes assessment={data} />
+        </div>
+      )}
       {pending && (
         <p role="status" className="animate-pulse text-muted">
           {t('roof.pending')}

@@ -5,11 +5,13 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { useAsync } from '@/shared/hooks/useAsync';
 import { useI18n } from '@/shared/i18n/I18nProvider';
-import { formatInr, formatKw } from '@/shared/lib/format';
+import { formatInr, formatKw, formatMoney } from '@/shared/lib/format';
 import { Button, EmptyState, ErrorState, Loading, StatusBadge } from '@/shared/ui/primitives';
 import { RecommendationCard } from '@/tasks/recommendation/ui/RecommendationCard';
 import { acceptQuote, listQuotes } from '../api';
 import type { Quote, ScoreKey } from '../types';
+
+const KNOWN_WARNINGS = ['non_dcr_panels', 'exceeds_roof_cap'];
 
 const SCORE_KEYS: ScoreKey[] = [
   'net_cost_per_kw',
@@ -34,7 +36,7 @@ function useRows(): Row[] {
     { labelKey: 'compare.subsidy', value: (quote) => formatInr(quote.financials.subsidy_inr) },
     {
       labelKey: 'compare.netCost',
-      value: (quote) => formatInr(quote.financials.net_cost_inr),
+      value: (quote) => formatMoney(quote.financials.net_cost_inr),
       lowerIsBetter: (quote) => quote.financials.net_cost_inr,
     },
     {
@@ -82,7 +84,7 @@ function MissingChips({ quote }: { quote: Quote }) {
     <ul className="flex flex-wrap gap-1">
       {warnings.map((warning) => (
         <li key={warning} className="rounded bg-danger-soft px-1.5 py-0.5 text-xs font-medium text-danger">
-          ⚠ {t(`warning.${warning}`)}
+          ⚠ {KNOWN_WARNINGS.includes(warning) ? t(`warning.${warning}`) : warning}
         </li>
       ))}
       {missing.map(({ item, severity }) => (

@@ -223,7 +223,6 @@
   "mine.intro": "अपने अनुरोध और आने वाले कोटेशन देखें।",
   "mine.statRequests": "अनुरोध",
   "mine.statQuotes": "मिले कोटेशन",
-  "mine.statSubsidy": "अनुमानित सब्सिडी",
   "compare.top": "सर्वोच्च स्कोर",
   "admin.intro": "मार्केटप्लेस की स्थिति और किन बातों पर ध्यान देना है।",
   "admin.active": "सक्रिय",
@@ -281,5 +280,17 @@
   "audit.vendor.suspend": "विक्रेता निलंबित",
   "audit.vendor.reinstate": "विक्रेता बहाल",
   "audit.request.cancel": "अनुरोध रद्द",
-  "audit.quote.review": "चिह्नित कोटेशन की समीक्षा"
+  "audit.quote.review": "चिह्नित कोटेशन की समीक्षा",
+  "estimate.paybackLater": "आपकी लागत और लागत वसूली हर कोटेशन पर दिखेगी, जब विक्रेता कीमत भेजेंगे।",
+  "mine.statCapacity": "कुल क्षमता",
+  "vendor.myQuotes": "मेरे कोटेशन",
+  "quote.dcrChoose": "चुनें",
+  "recommend.noReasons": "यह कोड से निकाला गया सर्वोच्च स्कोर है। AI द्वारा लिखे कारण अभी उपलब्ध नहीं हैं।",
+  "login.newAccount": "यह नंबर नया है। हमें बताएँ कि आप कौन हैं।",
+  "login.iAm": "मैं हूँ",
+  "login.fullName": "आपका नाम",
+  "login.tooManyCodes": "बहुत अधिक कोड माँगे गए। बाद में कोशिश करें।",
+  "admin.sampleNotice": "ये एडमिन पेज नमूना डेटा दिखाते हैं, क्योंकि बैकएंड में अभी एडमिन API नहीं है। यहाँ के बदलाव असली अनुरोधों या विक्रेताओं पर लागू नहीं होते।",
+  "missing.net_metering_fee": "नेट मीटर और डिस्कॉम शुल्क",
+  "missing.earthing_and_lightning_arrester": "अर्थिंग और लाइटनिंग अरेस्टर"
 }

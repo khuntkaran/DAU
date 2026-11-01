@@ -25,7 +25,8 @@ export interface MissingItem {
 /** Missing items and injection checks come from code. llm_notes never holds numbers. */
 export interface QuoteReview {
   missing_items: MissingItem[];
-  warnings: QuoteWarning[];
+  /** Known warnings are keys. Anything new from the API arrives as plain text. */
+  warnings: (QuoteWarning | string)[];
   injection_detected: boolean;
   injection_excerpt: string | null;
   llm_notes: string | null;

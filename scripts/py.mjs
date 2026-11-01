@@ -6,7 +6,12 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const python = [join(root, '.venv', 'Scripts', 'python.exe'), join(root, '.venv', 'bin', 'python')].find(existsSync);
+// The .venv committed to Git was built on another machine, so a local one outside the repo wins.
+const python = [
+  join(root, '..', '.venv-api', 'Scripts', 'python.exe'),
+  join(root, '.venv', 'Scripts', 'python.exe'),
+  join(root, '.venv', 'bin', 'python'),
+].find(existsSync);
 
 if (!python) {
   console.error('.venv not found. Run: python -m venv .venv');

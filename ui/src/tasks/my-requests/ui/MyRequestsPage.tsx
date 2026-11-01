@@ -1,19 +1,19 @@
 'use client';
 
-import { ChevronRight, ClipboardList, IndianRupee, MessageSquareQuote, Plus } from 'lucide-react';
+import { ChevronRight, ClipboardList, MessageSquareQuote, Plus, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { PATHS } from '@/routes/paths';
 import { useAsync } from '@/shared/hooks/useAsync';
 import { useI18n } from '@/shared/i18n/I18nProvider';
-import { formatInr, formatKw, joinParts } from '@/shared/lib/format';
+import { formatKw, joinParts } from '@/shared/lib/format';
 import { EmptyState, ErrorState, Loading, PageTitle, StatCard, StatusBadge, buttonStyles } from '@/shared/ui/primitives';
 import { listMyRequests } from '../api';
 
 export function MyRequestsPage() {
   const { t } = useI18n();
   const { data, error, loading, reload } = useAsync(listMyRequests, []);
-  const quotes = data?.reduce((sum, request) => sum + request.quote_count, 0) ?? 0;
-  const subsidy = data?.reduce((sum, request) => sum + request.estimate.subsidy_inr, 0) ?? 0;
+  const quotes = data?.reduce((sum, request) => sum + request.quotes_count, 0) ?? 0;
+  const capacity = data?.reduce((sum, request) => sum + request.system_kw, 0) ?? 0;
 
   return (
     <>
@@ -35,7 +35,7 @@ export function MyRequestsPage() {
         <dl className="mb-6 grid gap-4 sm:grid-cols-3">
           <StatCard icon={ClipboardList} label={t('mine.statRequests')} value={data.length} />
           <StatCard icon={MessageSquareQuote} label={t('mine.statQuotes')} value={quotes} />
-          <StatCard icon={IndianRupee} label={t('mine.statSubsidy')} value={formatInr(subsidy)} />
+          <StatCard icon={Zap} label={t('mine.statCapacity')} value={formatKw(capacity)} />
         </dl>
       )}
       <ul className="space-y-3">
@@ -52,11 +52,9 @@ export function MyRequestsPage() {
                 </div>
                 <p className="mt-1 text-sm text-muted">
                   {joinParts([
-                    request.address_text ?? request.district,
                     `${request.monthly_units} ${t('common.units')}`,
-                    formatKw(request.estimate.system_kw),
-                    formatInr(request.estimate.subsidy_inr),
-                    `${request.quote_count} ${t('mine.quotes')}`,
+                    formatKw(request.system_kw),
+                    `${request.quotes_count} ${t('mine.quotes')}`,
                   ])}
                 </p>
               </div>

@@ -4,7 +4,7 @@ Source: `docs/previous/work-plan.html`, Partner B tasks, with types from `docs/p
 
 Partner B owns the screens, the map, voice recording, the comparison view, sample data and the demo script.
 
-Status: `todo`, `doing`, `done`. A task is `done` when its check has passed on this machine. Until Partner A's API exists, "done" means working against the mock API.
+Status: `todo`, `doing`, `done`. A task is `done` when its check has passed on this machine. The UI now runs on the real API, except for the gaps listed below.
 
 ## Folder layout
 
@@ -20,7 +20,7 @@ ui/src/
   shared/               Client, session, i18n, common types, design system
 ```
 
-Set `NEXT_PUBLIC_API_MODE=live` and `NEXT_PUBLIC_API_URL` to use the real API. No screen changes.
+The app calls the real API at `NEXT_PUBLIC_API_URL`. Unit tests set `NEXT_PUBLIC_API_MODE=mock`.
 
 ## Task list
 
@@ -30,7 +30,7 @@ Set `NEXT_PUBLIC_API_MODE=live` and `NEXT_PUBLIC_API_URL` to use the real API. N
 | 1.7 | Leaflet map, loaded without SSR | `tasks/new-request/ui/MapPicker.tsx` | done |
 | 1.8 | i18n in `en`, `hi`, `gu`, language switcher | `shared/i18n` | done |
 | 1.9 | API client | `shared/api/client.ts` | done |
-| 1.9 | Generate types from the real OpenAPI | `shared/types` | todo, needs the API |
+| 1.9 | Generate types from the real OpenAPI | `shared/api/schema.d.ts` | done |
 | 2.5 | Seed: DISCOMs and tariff slabs | `seed/data/discoms.json` | todo |
 | 2.6 | Seed: 20-30 vendors | `seed/data/vendors.json` | todo |
 | 2.7 | Seed: 5 households, 6 requests | `seed/data/users.json`, `requests.json` | todo |
@@ -59,17 +59,16 @@ Set `NEXT_PUBLIC_API_MODE=live` and `NEXT_PUBLIC_API_URL` to use the real API. N
 
 ## Verified on 2026-11-01
 
-- `npm run verify` in `ui/`: typecheck and lint clean, 143 tests pass. `npm run build` succeeds.
-- `npm run test:e2e` in `ui/`: 105 of 105 browser checks pass in headless Chrome on mock data, with no console errors. The journey is the whole request → quote → accept path, plus location, voice and every admin action.
+- `npm run verify` in `ui/`: typecheck and lint clean, 152 tests pass. `npm run build` succeeds.
+- `npm run test:e2e` in `ui/`: 113 of 113 browser checks pass in headless Chrome against the real API and a seeded database, with no console errors. The journey is the whole request → quote → accept path, plus location and voice. Admin checks run on sample data.
 
 How each screen works and which file does what: [ui-guide.html](ui-guide.html). A test fails if that page goes out of date with `ui/src`.
 
 ## Not verified yet
 
-- **Nothing has run against a real API.** The live mode has only unit tests of the client.
 - **Voice.** Headless Chrome cannot hear, so tests supply the transcript. Real speech needs a person to try it in Chrome or Edge. Gujarati and Hindi number words are read for common forms only.
 - **GPS.** Tests supply the position. Accuracy depends on the device: phones are precise, and laptops without GPS only estimate.
-- **AI results are samples.** The mock does not look at photos, and its recommendation text is a template.
+- **AI features are not built on the backend.** Photo assessment, recommendation reasons and injection detection do not exist yet, so the UI says so rather than showing invented results.
 - **Real phones and Safari.** Phone width was tested in desktop Chrome only.
 - **Hindi and Gujarati wording** needs a native speaker's review. Text from the API, such as reasons and summaries, stays in English in the mock.
 
@@ -97,6 +96,19 @@ The UI expects these, in the shape of each task's `types.ts`:
 Voice uses the browser for now, so `/voice/transcribe` is not called. Its contract takes an uploaded audio key, and it can replace browser speech once Whisper works.
 
 `/requests/{id}/assessment`, `/vendor/requests/{id}` and all `/admin` routes are not in the architecture's API table. The UI needs them, or the same data inside existing responses.
+
+## Backend gaps found while connecting the UI
+
+| Gap | Effect in the UI | Needed |
+|---|---|---|
+| `POST` and `GET /requests/{id}/recommendation` return 501 | Shows the top score with no reasons | The recommend job |
+| `injection_detected` is always false | No warning banner on real quotes, though scoring still ignores notes | The injection guard, a bonus criterion |
+| `roof_assessment` is always null | Shows the photo and "AI review is unavailable" | The photo job |
+| `POST /voice/transcribe` returns 501 | The browser does the speech recognition | The voice job |
+| No `/admin` routes | Admin pages show labelled sample data | The routes listed above |
+| Vendor contact appears only in the accept response | The UI keeps it in local storage, so it is missing on another device | Add it to `GET /requests/{id}/quotes` |
+| Request estimates have no cost or payback | Those two figures appear only on quotes | Optional: a benchmark cost |
+| No seeded terrace photos | Seeded requests have no photo | Work plan task 2.9 |
 
 ## Points to agree with Partner A
 

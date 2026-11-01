@@ -21,3 +21,15 @@ export interface OpenRequest {
   suggested_kw: number;
   my_quote_status: QuoteStatus | null;
 }
+
+/** A quote this vendor sent. The phone appears once the household accepts it. */
+export interface VendorQuote {
+  id: string;
+  quote_code: string;
+  request_id: string;
+  request_code: string;
+  status: QuoteStatus;
+  price_total_inr: number;
+  system_kw: number;
+  contact_phone: string | null;
+}

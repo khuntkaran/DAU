@@ -26,6 +26,7 @@ export interface NewRequestInput extends LatLng {
   budget_inr: number;
   roof_area_sqm: number;
   photo_file_id: string | null;
+  input_method?: 'form' | 'voice';
 }
 
 /** The response holds the estimate and its citations straight away. */

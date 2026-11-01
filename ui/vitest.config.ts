@@ -8,6 +8,7 @@ export default defineConfig({
   oxc: { jsx: { runtime: 'automatic' } },
   test: {
     environment: 'jsdom',
+    env: { NEXT_PUBLIC_API_MODE: 'mock' },
     globals: true,
     setupFiles: ['./src/test-setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],

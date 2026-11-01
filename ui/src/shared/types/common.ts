@@ -47,11 +47,12 @@ export interface Calculation {
   kw_band_min: number | null;
   kw_band_max: number | null;
   roof_cap_kw: number | null;
-  gross_cost_inr: number;
+  /** Null on an estimate until a vendor's price exists. */
+  gross_cost_inr: number | null;
   subsidy_inr: number;
-  net_cost_inr: number;
-  annual_generation_kwh: number;
-  annual_saving_inr: number;
+  net_cost_inr: number | null;
+  annual_generation_kwh: number | null;
+  annual_saving_inr: number | null;
   payback_years: number | null;
   rule_version: string;
   steps: CalculationStep[];
@@ -60,7 +61,7 @@ export interface Calculation {
 export interface SolarRequest {
   id: string;
   request_code: string;
-  household_id: string;
+  household_id?: string;
   status: RequestStatus;
   lat: number;
   lng: number;

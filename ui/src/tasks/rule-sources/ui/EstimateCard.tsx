@@ -3,7 +3,7 @@
 import { Sun } from 'lucide-react';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 import { useAsync } from '@/shared/hooks/useAsync';
-import { formatInr, formatKw } from '@/shared/lib/format';
+import { formatInr, formatKw, formatMoney } from '@/shared/lib/format';
 import type { Calculation } from '@/shared/types/common';
 import { Card, Stat } from '@/shared/ui/primitives';
 import { getCurrentRules } from '../api';
@@ -20,12 +20,12 @@ export function EstimateCard({ estimate }: { estimate: Calculation }) {
         <Sun aria-hidden className="size-5 text-sun" />
         {t('estimate.title')}
       </h2>
-      <dl className="grid grid-cols-2 gap-4 rounded-xl bg-canvas p-4 md:grid-cols-5">
+      <dl className="grid grid-cols-2 gap-4 rounded-xl bg-canvas p-4 md:grid-flow-col md:auto-cols-fr md:grid-cols-none">
         <Stat label={t('estimate.size')} value={formatKw(estimate.system_kw)} />
         <Stat label={t('estimate.subsidy')} value={formatInr(estimate.subsidy_inr)} strong />
-        <Stat label={t('estimate.netCost')} value={formatInr(estimate.net_cost_inr)} />
-        <Stat label={t('estimate.saving')} value={formatInr(estimate.annual_saving_inr)} />
-        <Stat label={t('estimate.payback')} value={payback} />
+        {estimate.net_cost_inr !== null && <Stat label={t('estimate.netCost')} value={formatInr(estimate.net_cost_inr)} />}
+        <Stat label={t('estimate.saving')} value={formatMoney(estimate.annual_saving_inr)} />
+        {estimate.payback_years !== null && <Stat label={t('estimate.payback')} value={payback} />}
       </dl>
       <details className="mt-4 border-t border-line pt-3">
         <summary className="cursor-pointer text-sm font-semibold text-primary-strong">
@@ -41,6 +41,7 @@ export function EstimateCard({ estimate }: { estimate: Calculation }) {
             </li>
           ))}
         </ol>
+        {estimate.payback_years === null && <p className="mt-3 text-sm text-muted">{t('estimate.paybackLater')}</p>}
         <p className="mt-3 text-sm text-muted">{t('estimate.note')}</p>
       </details>
     </Card>

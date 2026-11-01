@@ -223,7 +223,6 @@
   "mine.intro": "તમારી વિનંતીઓ અને આવતા ક્વોટેશન જુઓ.",
   "mine.statRequests": "વિનંતીઓ",
   "mine.statQuotes": "મળેલા ક્વોટેશન",
-  "mine.statSubsidy": "અંદાજિત સબસિડી",
   "compare.top": "ટોચનો સ્કોર",
   "admin.intro": "માર્કેટપ્લેસની સ્થિતિ અને શેના પર ધ્યાન આપવાનું છે.",
   "admin.active": "સક્રિય",
@@ -281,5 +280,17 @@
   "audit.vendor.suspend": "વિક્રેતા સ્થગિત",
   "audit.vendor.reinstate": "વિક્રેતા પુનઃસ્થાપિત",
   "audit.request.cancel": "વિનંતી રદ",
-  "audit.quote.review": "ચિહ્નિત ક્વોટેશનની સમીક્ષા"
+  "audit.quote.review": "ચિહ્નિત ક્વોટેશનની સમીક્ષા",
+  "estimate.paybackLater": "તમારો ખર્ચ અને ખર્ચ વસૂલાત દરેક ક્વોટેશન પર દેખાશે, જ્યારે વિક્રેતાઓ કિંમત મોકલશે.",
+  "mine.statCapacity": "કુલ ક્ષમતા",
+  "vendor.myQuotes": "મારા ક્વોટેશન",
+  "quote.dcrChoose": "પસંદ કરો",
+  "recommend.noReasons": "આ કોડથી ગણાયેલો સૌથી ઊંચો સ્કોર છે. AI દ્વારા લખાયેલાં કારણો હજી ઉપલબ્ધ નથી.",
+  "login.newAccount": "આ નંબર નવો છે. તમે કોણ છો તે જણાવો.",
+  "login.iAm": "હું છું",
+  "login.fullName": "તમારું નામ",
+  "login.tooManyCodes": "ઘણા કોડ મંગાવ્યા છે. પછીથી પ્રયાસ કરો.",
+  "admin.sampleNotice": "આ એડમિન પેજ નમૂના ડેટા બતાવે છે, કારણ કે બેકએન્ડમાં હજી એડમિન API નથી. અહીંના ફેરફારો વાસ્તવિક વિનંતીઓ કે વિક્રેતાઓને અસર કરતા નથી.",
+  "missing.net_metering_fee": "નેટ મીટર અને ડિસ્કોમ ફી",
+  "missing.earthing_and_lightning_arrester": "અર્થિંગ અને લાઇટનિંગ એરેસ્ટર"
 }

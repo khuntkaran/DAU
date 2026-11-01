@@ -14,7 +14,8 @@
     "lint": "eslint src",
     "test": "vitest run",
     "verify": "npm run typecheck && npm run lint && npm run test",
-    "test:e2e": "node e2e/flow.mjs"
+    "test:e2e": "node e2e/flow.mjs",
+    "api:types": "npx --yes openapi-typescript@7 ../api/openapi.json -o src/shared/api/schema.d.ts"
   },
   "dependencies": {
     "leaflet": "^1.9.4",

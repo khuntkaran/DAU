@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { readSession, writeSession } from '@/shared/api/session';
 import { I18nProvider } from '@/shared/i18n/I18nProvider';
 import { clearPendingOtps } from '../mock';
-import { LoginPage } from './LoginPage';
+import { LoginPage, toPhoneDigits } from './LoginPage';
 
 const replace = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ replace }) }));
@@ -30,6 +30,30 @@ describe('LoginPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Send code' }));
     expect(screen.getByText('Enter a 10-digit phone number.')).toBeInTheDocument();
     expect(screen.queryByLabelText('6-digit code')).not.toBeInTheDocument();
+  });
+
+  it('stops at ten digits', async () => {
+    setup();
+    const field = screen.getByLabelText('Phone number');
+    await userEvent.type(field, '98765432109999');
+    expect(field).toHaveValue('9876543210');
+  });
+
+  it('ignores anything that is not a digit', async () => {
+    setup();
+    const field = screen.getByLabelText('Phone number');
+    await userEvent.type(field, '98a7-6 5');
+    expect(field).toHaveValue('98765');
+  });
+
+  it.each([
+    ['+91 98765 43210', '9876543210'],
+    ['+919876543210', '9876543210'],
+    ['919876543210', '9876543210'],
+    ['9198765432', '9198765432'],
+    ['91987654321', '9198765432'],
+  ])('reads %s as %s', (input, expected) => {
+    expect(toPhoneDigits(input)).toBe(expected);
   });
 
   it('signs in with phone and code', async () => {

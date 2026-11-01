@@ -37,6 +37,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { role, full_name: fullName } = session.user;
   const home = ROLE_HOME[role];
   const nav = ROLE_NAV[role];
+  // The API has no admin routes yet, so these pages still show sample data.
+  const isAdminArea = pathname.startsWith(PATHS.admin.home);
 
   function signOut() {
     writeSession(null);
@@ -100,7 +102,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
 
         <header className="flex items-center justify-end gap-3 border-b border-line bg-surface px-4 py-2.5 sm:px-8">
-          {IS_MOCK && (
+          {(IS_MOCK || isAdminArea) && (
             <span className="mr-auto rounded-full bg-sun-soft px-2.5 py-1 text-xs font-semibold text-sun-strong">
               {t('app.mockData')}
             </span>
@@ -108,7 +110,12 @@ export function AppShell({ children }: { children: ReactNode }) {
           <LanguagePicker />
         </header>
 
-        <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-8 sm:py-8">{children}</main>
+        <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-8 sm:py-8">
+          {isAdminArea && !IS_MOCK && (
+            <p className="mb-6 rounded-xl bg-sun-soft p-3 text-sm text-ink">{t('admin.sampleNotice')}</p>
+          )}
+          {children}
+        </main>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ApiError, apiRequest } from './client';
-import { writeSession } from './session';
+import { ApiError, apiRequest, fetchAllPages } from './client';
+import { readSession, writeSession } from './session';
 
 function respondWith(status: number, body: unknown) {
   return vi.fn(async () => new Response(JSON.stringify(body), { status }));
@@ -35,6 +35,26 @@ describe('apiRequest', () => {
       code: 'already_accepted',
       message: 'Taken',
     });
+  });
+
+  it('signs out when the token has expired', async () => {
+    writeSession({
+      token: 'old',
+      user: { id: 'u', role: 'vendor', full_name: 'V', phone: '1', preferred_lang: 'en' },
+    });
+    vi.stubGlobal('fetch', respondWith(401, { error: { code: 'invalid_token', message: 'Expired' } }));
+    await expect(apiRequest('/requests/mine')).rejects.toMatchObject({ status: 401 });
+    expect(readSession()).toBeNull();
+  });
+
+  it('follows cursors to the last page', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(Response.json({ items: [1, 2], next_cursor: 'abc' }))
+      .mockResolvedValueOnce(Response.json({ items: [3], next_cursor: null }));
+    vi.stubGlobal('fetch', fetchMock);
+    await expect(fetchAllPages('/requests/open?bbox=1')).resolves.toEqual([1, 2, 3]);
+    expect(fetchMock.mock.calls[1]?.[0]).toContain('/requests/open?bbox=1&cursor=abc');
   });
 
   it('reports a network failure', async () => {

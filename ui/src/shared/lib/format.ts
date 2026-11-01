@@ -6,6 +6,11 @@ export function formatInr(amount: number): string {
   return `₹${INR.format(amount)}`;
 }
 
+/** For values the API may not have yet. */
+export function formatMoney(amount: number | null): string {
+  return amount === null ? '—' : formatInr(amount);
+}
+
 export function formatCount(value: number): string {
   return COUNT.format(value);
 }

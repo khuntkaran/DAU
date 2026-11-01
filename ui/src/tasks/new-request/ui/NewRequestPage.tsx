@@ -51,6 +51,7 @@ export function NewRequestPage() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitError, setSubmitError] = useState<string>();
   const [busy, setBusy] = useState(false);
+  const [usedVoice, setUsedVoice] = useState(false);
   const [created, setCreated] = useState<NewRequestResponse | null>(null);
 
   async function useMyLocation() {
@@ -106,6 +107,7 @@ export function NewRequestPage() {
   }
 
   function applyVoice(fields: VoiceFields) {
+    setUsedVoice(Object.values(fields).some((value) => value !== null));
     if (fields.monthly_units !== null) setMonthlyUnits(String(fields.monthly_units));
     if (fields.budget_inr !== null) setBudget(String(fields.budget_inr));
     if (fields.roof_area_sqm !== null) setRoofArea(String(fields.roof_area_sqm));
@@ -138,6 +140,7 @@ export function NewRequestPage() {
         budget_inr: Number(budget),
         roof_area_sqm: Number(roofArea),
         photo_file_id: uploaded?.file_id ?? null,
+        input_method: usedVoice ? 'voice' : 'form',
       });
       setCreated(request);
     } catch {

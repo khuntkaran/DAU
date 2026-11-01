@@ -55,9 +55,10 @@ describe('request → quote → accept', () => {
     expect(before.household_phone).toBeNull();
     expect(before.exact_location).toBeNull();
 
-    const accepted = await acceptQuote(quote!.id);
-    expect(accepted.status).toBe('accepted');
-    expect(accepted.vendor_phone).toBeTruthy();
+    await acceptQuote(quote!.id);
+    const [accepted] = await listQuotes(request.id);
+    expect(accepted?.status).toBe('accepted');
+    expect(accepted?.vendor_phone).toBeTruthy();
     expect(getState().requests.find(({ id }) => id === request.id)?.status).toBe('accepted');
 
     const after = await getVendorRequest(request.id);

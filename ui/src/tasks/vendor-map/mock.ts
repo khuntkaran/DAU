@@ -1,7 +1,7 @@
 import { DEMO_VENDOR_ID } from '@/shared/mock/seed';
 import { delay, getState } from '@/shared/mock/store';
 import type { SolarRequest } from '@/shared/types/common';
-import type { BoundingBox, OpenRequest } from './types';
+import type { BoundingBox, OpenRequest, VendorQuote } from './types';
 
 /** 0.005 degrees is about 500 m, as the privacy rule requires. */
 export function roundLocation(value: number) {
@@ -25,6 +25,23 @@ export function toOpenRequest(request: SolarRequest): OpenRequest {
     suggested_kw: request.estimate.system_kw,
     my_quote_status: mine?.quote.status ?? null,
   };
+}
+
+export async function listMyQuotes(): Promise<VendorQuote[]> {
+  await delay();
+  const { quotes, requests } = getState();
+  return quotes
+    .filter(({ quote }) => quote.vendor_id === DEMO_VENDOR_ID)
+    .map(({ quote }) => ({
+      id: quote.id,
+      quote_code: quote.quote_code,
+      request_id: quote.request_id,
+      request_code: requests.find(({ id }) => id === quote.request_id)?.request_code ?? '',
+      status: quote.status,
+      price_total_inr: quote.price_total_inr,
+      system_kw: quote.system_kw,
+      contact_phone: null,
+    }));
 }
 
 export async function listOpenRequests(box: BoundingBox): Promise<OpenRequest[]> {

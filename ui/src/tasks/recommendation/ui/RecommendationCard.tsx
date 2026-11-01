@@ -58,11 +58,15 @@ export function RecommendationCard({ requestId }: { requestId: string }) {
       {state.phase === 'done' && (
         <>
           <p className="mt-2 text-xl font-bold text-primary-strong">{winner?.vendor_name}</p>
-          <ul className="mt-2 list-disc space-y-1 pl-5 text-ink">
-            {state.result.reasons.map((reason) => (
-              <li key={reason}>{reason}</li>
-            ))}
-          </ul>
+          {state.result.reasons.length > 0 ? (
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-ink">
+              {state.result.reasons.map((reason) => (
+                <li key={reason}>{reason}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-2 text-muted">{t('recommend.noReasons')}</p>
+          )}
           {state.result.caveats && <p className="mt-2 text-sm text-muted">{state.result.caveats}</p>}
           <p className="mt-3 text-sm text-muted">{t('recommend.ranking')}</p>
         </>

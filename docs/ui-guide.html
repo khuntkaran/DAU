@@ -100,11 +100,17 @@ ol.flow.ai > li::before { background: var(--sun); color: #1c2a26; }
 
     <section id="run">
       <h2>Run it</h2>
-      <pre>cd ui
-npm install      # first time only
-npm run dev      # http://localhost:3000</pre>
-      <p>Sign in with phones <code>9000000001</code> (household), <code>9000000002</code> (vendor) or <code>9000000003</code> (admin). The demo buttons on the sign-in page only fill in the phone number. Every sign-in still needs the code <code>123456</code>.</p>
-      <div class="note"><strong>All data is sample data for now.</strong> The backend does not exist yet, so the app runs on a mock API inside the browser. Your changes are saved in that browser's local storage. To start again, run <code>localStorage.clear()</code> in the browser console.</div>
+      <pre>npm run dev      # from the repo root
+                 # API on http://localhost:8000
+                 # UI on http://localhost:3000</pre>
+      <p>First time on a machine, install and seed:</p>
+      <pre>copy .env.example .env      # then set JWT_SECRET to a long random value
+python -m venv ..\.venv-api
+..\.venv-api\Scripts\pip install -r requirements-dev.txt
+cd ui &amp;&amp; npm install &amp;&amp; cd ..
+npm run db:seed -- --reset</pre>
+      <p>Sign in with phones <code>9000000001</code> (household), <code>9000000101</code> (vendor) or <code>9000000900</code> (admin) and code <code>123456</code>. The demo buttons on the sign-in page only fill in the phone number.</p>
+      <div class="note"><strong>Data is real, except admin.</strong> Household and vendor screens use the FastAPI backend and its SQLite database. Run <code>npm run db:seed -- --reset</code> to start again. Admin pages still show sample data, and say so, because the backend has no admin API yet.</div>
     </section>
 
     <section id="how">
@@ -117,11 +123,11 @@ npm run dev      # http://localhost:3000</pre>
         <div class="arrow">↓</div>
         <div class="layer"><code>src/tasks/&lt;task&gt;/ui/</code><small>The screen the user sees</small></div>
         <div class="arrow">↓</div>
-        <div class="layer switch"><code>src/tasks/&lt;task&gt;/api.ts</code><small>The switch: checks <code>NEXT_PUBLIC_API_MODE</code></small></div>
+        <div class="layer switch"><code>src/tasks/&lt;task&gt;/api.ts</code><small>Calls the API and maps its response</small></div>
         <div class="arrow">↓</div>
         <div class="fork">
-          <div class="layer"><code>mock.ts</code><small>Used now. Sample data in the browser</small></div>
-          <div class="layer"><code>shared/api/client.ts</code><small>Used later. Calls Partner A's API</small></div>
+          <div class="layer"><code>mock.ts</code><small>Used by unit tests and admin pages</small></div>
+          <div class="layer"><code>shared/api/client.ts</code><small>Used by the app. Calls the FastAPI backend</small></div>
         </div>
       </div>
       <h3>Every task folder has the same four parts</h3>
@@ -285,6 +291,7 @@ npm run dev      # http://localhost:3000</pre>
           <tr><td><code>ui/src/tasks/vendor-map/types.ts</code></td><td>Open request with no phone or exact location</td></tr>
           <tr><td><code>ui/src/tasks/vendor-map/ui/VendorMapPage.tsx</code></td><td>Map, list and details panel</td></tr>
           <tr><td><code>ui/src/tasks/vendor-map/ui/RequestsMap.tsx</code></td><td>Leaflet map with request pins</td></tr>
+          <tr><td><code>ui/src/tasks/vendor-map/ui/MyQuotes.tsx</code></td><td>This vendor's quotes, with the contact once accepted</td></tr>
         </tbody></table></div>
 
       <div class="task"><h3>quote-form</h3><p>The vendor's quote. Work plan 3.10.</p>
@@ -332,6 +339,8 @@ npm run dev      # http://localhost:3000</pre>
         <tbody>
           <tr><td><code>ui/src/routes/paths.ts</code></td><td>All URLs, each role's home page and menu</td></tr>
           <tr><td><code>ui/src/shared/api/client.ts</code></td><td>Calls the real API, adds the login token, handles errors, decides mock or live</td></tr>
+          <tr><td><code>ui/src/shared/api/mappers.ts</code></td><td>Turns API responses into the types the screens use</td></tr>
+          <tr><td><code>ui/src/shared/api/schema.d.ts</code></td><td>Types generated from <code>api/openapi.json</code> with <code>npm run api:types</code></td></tr>
           <tr><td><code>ui/src/shared/api/session.ts</code></td><td>Stores and reads the signed-in user</td></tr>
           <tr><td><code>ui/src/shared/hooks/useAsync.ts</code></td><td>Loading, error, data and reload for a screen</td></tr>
           <tr><td><code>ui/src/shared/lib/format.ts</code></td><td>Rupee, kW, distance and date formatting</td></tr>
@@ -359,15 +368,15 @@ npm run dev      # http://localhost:3000</pre>
       <h2>Who calculates what</h2>
       <p>The brief requires subsidy, cost and payback to be calculated in code, and never guessed by the LLM. The UI only displays them.</p>
       <div class="table-wrap"><table>
-        <thead><tr><th scope="col">Output</th><th scope="col">Now, in the demo</th><th scope="col">With the real backend</th></tr></thead>
+        <thead><tr><th scope="col">Output</th><th scope="col">Comes from</th><th scope="col">Status</th></tr></thead>
         <tbody>
-          <tr><td>Size, subsidy, payback</td><td><code>shared/mock/engine.ts</code></td><td><code>rules/</code></td></tr>
-          <tr><td>Missing items, warnings</td><td><code>shared/mock/engine.ts</code></td><td><code>rules/checklist.py</code></td></tr>
-          <tr><td>Scores and ranking</td><td><code>shared/mock/engine.ts</code></td><td><code>rules/scoring.py</code></td></tr>
-          <tr><td>Photo findings</td><td>Fixed sample, the photo is not read</td><td>Gemini vision</td></tr>
-          <tr><td>Spoken text</td><td>Browser speech recognition, real</td><td>Browser, or Groq Whisper once the API is ready</td></tr>
-          <tr><td>Fields from speech</td><td><code>tasks/voice-input/parse.ts</code>, real</td><td>Same, or the LLM job</td></tr>
-          <tr><td>Recommendation reasons</td><td>Template text</td><td>LLM, from the score table only</td></tr>
+          <tr><td>Size, subsidy, payback</td><td><code>rules/</code> through the API</td><td>Live</td></tr>
+          <tr><td>Missing items, warnings</td><td><code>rules/checklist.py</code> through the API</td><td>Live</td></tr>
+          <tr><td>Scores and ranking</td><td><code>rules/scoring.py</code> through the API</td><td>Live</td></tr>
+          <tr><td>Photo findings</td><td>Gemini vision</td><td>Not built</td></tr>
+          <tr><td>Spoken text</td><td>Browser speech recognition</td><td>Live. Groq Whisper can replace it</td></tr>
+          <tr><td>Fields from speech</td><td><code>tasks/voice-input/parse.ts</code></td><td>Live</td></tr>
+          <tr><td>Recommendation reasons</td><td>LLM, from the score table only</td><td>Not built</td></tr>
         </tbody>
       </table></div>
       <p>Tests hold the mock to the same golden example as <code>rules/tests/test_golden.py</code>: 330 units, 3 kW, ₹78,000 subsidy, ₹25,740 saved a year, 4.2 year payback.</p>
@@ -379,17 +388,17 @@ npm run dev      # http://localhost:3000</pre>
         <thead><tr><th scope="col">Suite</th><th scope="col">Command</th><th scope="col">Covers</th></tr></thead>
         <tbody>
           <tr><td>UI unit tests</td><td><code>cd ui &amp;&amp; npm run verify</code></td><td>Typecheck, lint, and tests beside each component</td></tr>
-          <tr><td>Full journey</td><td><code>cd ui &amp;&amp; npm run test:e2e</code></td><td>A real browser against the running app. Screenshots go to <code>ui/e2e/output/</code></td></tr>
+          <tr><td>Full journey</td><td><code>cd ui &amp;&amp; npm run test:e2e</code></td><td>A real browser against the running app and API. Reseed first. Screenshots go to <code>ui/e2e/output/</code></td></tr>
           <tr><td>Rules engine</td><td><code>npm run verify</code> at the repo root</td><td>Subsidy, sizing, payback, scoring</td></tr>
           <tr><td>Claude Code hooks</td><td><code>npm run test:hooks</code> at the repo root</td><td>The automatic checks</td></tr>
         </tbody>
       </table></div>
       <h3>Last run</h3>
       <div id="results">
-        <p>Run on 2026-11-01 on sample data, in headless Chrome on Windows.</p>
+        <p>Run on 2026-11-01 against the real API and a freshly seeded database, in headless Chrome on Windows.</p>
         <div class="stats">
-          <div class="stat"><b>105 / 105</b><span>Browser checks</span></div>
-          <div class="stat"><b>143 / 143</b><span>UI unit tests</span></div>
+          <div class="stat"><b>113 / 113</b><span>Browser checks</span></div>
+          <div class="stat"><b>152 / 152</b><span>UI unit tests</span></div>
           <div class="stat"><b>61 / 61</b><span>Rules engine tests</span></div>
           <div class="stat"><b>25 / 25</b><span>Hook tests</span></div>
         </div>
@@ -400,10 +409,10 @@ npm run dev      # http://localhost:3000</pre>
             <tr><td>Household: new request</td><td>8</td><td><span class="pill yes">Pass</span></td></tr>
             <tr><td>Household: exact location</td><td>9</td><td><span class="pill yes">Pass</span></td></tr>
             <tr><td>Household: voice input</td><td>8</td><td><span class="pill yes">Pass</span></td></tr>
-            <tr><td>Household: estimate and photo check</td><td>9</td><td><span class="pill yes">Pass</span></td></tr>
-            <tr><td>Vendor: map and quote</td><td>8</td><td><span class="pill yes">Pass</span></td></tr>
-            <tr><td>Household: compare, recommend, accept</td><td>19</td><td><span class="pill yes">Pass</span></td></tr>
-            <tr><td>After acceptance</td><td>3</td><td><span class="pill yes">Pass</span></td></tr>
+            <tr><td>Household: estimate and photo check, real API</td><td>13</td><td><span class="pill yes">Pass</span></td></tr>
+            <tr><td>Vendor: map and quote, real API</td><td>10</td><td><span class="pill yes">Pass</span></td></tr>
+            <tr><td>Household: compare, recommend, accept, real API</td><td>20</td><td><span class="pill yes">Pass</span></td></tr>
+            <tr><td>After acceptance, real API</td><td>4</td><td><span class="pill yes">Pass</span></td></tr>
             <tr><td>Admin dashboard and actions</td><td>10</td><td><span class="pill yes">Pass</span></td></tr>
             <tr><td>Languages</td><td>3</td><td><span class="pill yes">Pass</span></td></tr>
             <tr><td>Phone width, 360 px</td><td>10</td><td><span class="pill yes">Pass</span></td></tr>
@@ -414,7 +423,7 @@ npm run dev      # http://localhost:3000</pre>
         <div class="table-wrap"><table>
           <thead><tr><th scope="col">Area</th><th scope="col">Why</th></tr></thead>
           <tbody>
-            <tr><td>The real API, Gemini and Whisper</td><td>The backend still returns "not implemented"</td></tr>
+            <tr><td>Gemini and Whisper</td><td>The backend AI jobs are not built yet</td></tr>
             <tr><td>Real speech recognition</td><td>Headless Chrome cannot hear, so the test supplies the transcript. The transcript handling and number reading are real</td></tr>
             <tr><td>A real GPS position</td><td>The test supplies the position. A laptop without GPS can only give an estimate</td></tr>
             <tr><td>A real terrace photo</td><td>Needs real photos. The sample AI result does not read the photo</td></tr>
@@ -426,14 +435,21 @@ npm run dev      # http://localhost:3000</pre>
     </section>
 
     <section id="live">
-      <h2>Moving to the real API</h2>
-      <ol>
-        <li>The API must add the <code>/admin</code> routes listed in <a href="UI-PLAN.md">UI-PLAN.md</a>, and enforce the OTP limits itself.</li>
-        <li>Create <code>ui/.env.local</code> with <code>NEXT_PUBLIC_API_MODE=live</code> and <code>NEXT_PUBLIC_API_URL</code>. See <code>ui/.env.example</code>.</li>
-        <li>Compare each task's <code>types.ts</code> with Partner A's OpenAPI, and fix any differences there.</li>
-        <li>Once every task works live, delete <code>ui/src/shared/mock/</code> and each <code>mock.ts</code>.</li>
-      </ol>
-      <p>The endpoint list and open questions for Partner A are in <a href="UI-PLAN.md">UI-PLAN.md</a>.</p>
+      <h2>Connection to the API</h2>
+      <p>Every task's <code>api.ts</code> calls the real API and maps its response in one place, so screens never see the raw format. Types come from <code>api/openapi.json</code>. After the backend contract changes, run <code>npm run api:types</code> in <code>ui/</code>, and any mismatch shows up as a type error.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th scope="col">Area</th><th scope="col">Status</th></tr></thead>
+        <tbody>
+          <tr><td>Login, requests, uploads, map, quotes, accept, rules</td><td><span class="pill yes">Real API</span></td></tr>
+          <tr><td>Ranking</td><td><span class="pill yes">Real API</span> scores from <code>rules/</code></td></tr>
+          <tr><td>Recommendation reasons</td><td><span class="pill no">Not built</span> The endpoint returns 501, so the top score shows with no reasons</td></tr>
+          <tr><td>Photo assessment</td><td><span class="pill no">Not built</span> The page says AI review is unavailable</td></tr>
+          <tr><td>Hidden instruction warning</td><td><span class="pill no">Not built</span> The backend always reports none. Scoring still ignores notes</td></tr>
+          <tr><td>Voice</td><td>Browser speech recognition. <code>/voice/transcribe</code> returns 501</td></tr>
+          <tr><td>Admin pages</td><td><span class="pill no">Sample data</span> The API has no <code>/admin</code> routes</td></tr>
+        </tbody>
+      </table></div>
+      <p>The <code>mock.ts</code> files now serve unit tests and the admin pages only.</p>
     </section>
 
     <section id="update">

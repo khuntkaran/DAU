@@ -13,6 +13,7 @@
     "verify": "npm run typecheck && npm run lint && npm run test",
     "test:hooks": "node --test .claude/hooks/hooks.test.mjs",
     "api:openapi": "node scripts/py.mjs api.app.export_openapi",
+    "dev": "node scripts/dev.mjs",
     "api:dev": "node scripts/py.mjs uvicorn api.app.main:app --reload --port 8000",
     "db:seed": "node scripts/py.mjs api.app.seed",
     "verify:ui": "npm --prefix ui run verify"

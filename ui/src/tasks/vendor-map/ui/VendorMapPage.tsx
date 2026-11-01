@@ -10,6 +10,7 @@ import { formatInr, formatKw, joinParts } from '@/shared/lib/format';
 import { Card, EmptyState, ErrorState, Loading, PageTitle, Stat, StatusBadge, buttonStyles } from '@/shared/ui/primitives';
 import { listOpenRequests } from '../api';
 import type { BoundingBox } from '../types';
+import { MyQuotes } from './MyQuotes';
 
 const RequestsMap = dynamic(() => import('./RequestsMap'), { ssr: false, loading: () => <Loading /> });
 
@@ -28,7 +29,7 @@ export function VendorMapPage() {
       {error && <ErrorState onRetry={reload} />}
       {data?.length === 0 && <EmptyState>{t('vendor.empty')}</EmptyState>}
       {data && data.length > 0 && (
-        <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
+        <div className="mb-6 grid gap-4 lg:grid-cols-[2fr_1fr]">
           <Card className="p-2 sm:p-2">
             <RequestsMap requests={data} selectedId={selectedId} onSelect={setSelectedId} />
           </Card>
@@ -76,6 +77,7 @@ export function VendorMapPage() {
           </div>
         </div>
       )}
+      <MyQuotes />
     </>
   );
 }

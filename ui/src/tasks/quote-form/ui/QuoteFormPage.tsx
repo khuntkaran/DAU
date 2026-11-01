@@ -54,6 +54,7 @@ export function QuoteFormPage({ id }: { id: string }) {
   const [items, setItems] = useState<LineItemType[]>([]);
   const [notes, setNotes] = useState('');
   const [invalid, setInvalid] = useState<FormField[]>([]);
+  const [dcrChecked, setDcrChecked] = useState(false);
   const [submitError, setSubmitError] = useState<string>();
   const [busy, setBusy] = useState(false);
 
@@ -75,7 +76,8 @@ export function QuoteFormPage({ id }: { id: string }) {
     ];
     const missing = required.filter(isBlank);
     setInvalid(missing);
-    if (missing.length > 0) return;
+    setDcrChecked(true);
+    if (missing.length > 0 || dcr === '') return;
 
     setBusy(true);
     setSubmitError(undefined);
@@ -159,10 +161,11 @@ export function QuoteFormPage({ id }: { id: string }) {
                   onChange={(event) => setDcr(event.target.value)}
                   className="min-h-11 w-full rounded-lg border border-line bg-surface px-3 text-ink"
                 >
-                  <option value="">{t('common.notStated')}</option>
+                  <option value="">{t('quote.dcrChoose')}</option>
                   <option value="yes">{t('common.yes')}</option>
                   <option value="no">{t('common.no')}</option>
                 </select>
+                {dcrChecked && dcr === '' && <p className="mt-1.5 text-sm text-danger">{t('quote.required')}</p>}
               </div>
             </div>
 

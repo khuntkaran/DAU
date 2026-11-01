@@ -20,6 +20,7 @@ async function fillRequired() {
   await userEvent.type(screen.getByLabelText('System size (kW)'), '2');
   await userEvent.type(screen.getByLabelText('Panel warranty (years)'), '25');
   await userEvent.type(screen.getByLabelText('Timeline (days)'), '20');
+  await userEvent.selectOptions(screen.getByLabelText('DCR panels'), 'yes');
 }
 
 describe('QuoteFormPage', () => {
@@ -28,7 +29,7 @@ describe('QuoteFormPage', () => {
   it('requires price, components, warranty and timeline', async () => {
     setup();
     await userEvent.click(await screen.findByRole('button', { name: 'Submit quote' }));
-    expect(screen.getAllByText('This is required.')).toHaveLength(6);
+    expect(screen.getAllByText('This is required.')).toHaveLength(7);
     expect(getState().requests[1]?.status).toBe('open');
   });
 
@@ -36,7 +37,7 @@ describe('QuoteFormPage', () => {
     setup();
     await userEvent.click(await screen.findByRole('button', { name: 'Submit quote' }));
     await userEvent.type(screen.getByLabelText('Panel brand'), 'Waaree');
-    expect(screen.getAllByText('This is required.')).toHaveLength(5);
+    expect(screen.getAllByText('This is required.')).toHaveLength(6);
   });
 
   it('submits a quote and moves the request to quoted', async () => {

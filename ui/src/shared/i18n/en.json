@@ -223,7 +223,6 @@
   "mine.intro": "Track your requests and incoming quotes.",
   "mine.statRequests": "Requests",
   "mine.statQuotes": "Quotes received",
-  "mine.statSubsidy": "Estimated subsidy",
   "compare.top": "Top score",
   "admin.intro": "How the marketplace is doing, and what needs attention.",
   "admin.active": "active",
@@ -281,5 +280,17 @@
   "audit.vendor.suspend": "Vendor suspended",
   "audit.vendor.reinstate": "Vendor reinstated",
   "audit.request.cancel": "Request cancelled",
-  "audit.quote.review": "Flagged quote reviewed"
+  "audit.quote.review": "Flagged quote reviewed",
+  "estimate.paybackLater": "Your cost and payback appear on each quote, once vendors send prices.",
+  "mine.statCapacity": "Total capacity",
+  "vendor.myQuotes": "My quotes",
+  "quote.dcrChoose": "Choose",
+  "recommend.noReasons": "This is the highest score, calculated in code. AI-written reasons are not available yet.",
+  "login.newAccount": "This number is new. Tell us who you are.",
+  "login.iAm": "I am a",
+  "login.fullName": "Your name",
+  "login.tooManyCodes": "Too many codes requested. Try again later.",
+  "admin.sampleNotice": "These admin pages show sample data, because the backend has no admin API yet. Changes here do not affect real requests or vendors.",
+  "missing.net_metering_fee": "Net meter and DISCOM fees",
+  "missing.earthing_and_lightning_arrester": "Earthing and lightning arrester"
 }

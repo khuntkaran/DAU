@@ -1,6 +1,6 @@
 {
-  "date": "2026-11-01T10:10:44.487Z",
-  "passed": 105,
+  "date": "2026-11-01T10:59:38.180Z",
+  "passed": 113,
   "failed": 0,
   "results": [
     {
@@ -256,235 +256,283 @@
       "detail": ""
     },
     {
-      "group": "Household: estimate and photo check",
-      "name": "The request posts",
+      "group": "Household: estimate and photo check (real API)",
+      "name": "The request posts to the API",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Household: estimate and photo check",
-      "name": "Estimate shows the ₹78,000 subsidy",
+      "group": "Household: estimate and photo check (real API)",
+      "name": "The API gives a new request code",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Household: estimate and photo check",
-      "name": "Working steps are shown",
+      "group": "Household: estimate and photo check (real API)",
+      "name": "The estimate shows the subsidy from the API",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Household: estimate and photo check",
+      "group": "Household: estimate and photo check (real API)",
+      "name": "Working steps come from the API",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: estimate and photo check (real API)",
       "name": "A rule links to its source",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Household: estimate and photo check",
+      "group": "Household: estimate and photo check (real API)",
       "name": "Assumptions are labelled as estimates",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Household: estimate and photo check",
+      "group": "Household: estimate and photo check (real API)",
+      "name": "It says cost and payback come with quotes",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: estimate and photo check (real API)",
+      "name": "The request reloads from the API by its real id",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: estimate and photo check (real API)",
       "name": "A new request has no quotes yet",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Household: estimate and photo check",
-      "name": "AI review shows as pending",
+      "group": "Household: estimate and photo check (real API)",
+      "name": "Unbuilt AI is reported honestly",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Household: estimate and photo check",
-      "name": "The AI result arrives without a reload",
+      "group": "Household: estimate and photo check (real API)",
+      "name": "No obstructions are invented",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Household: estimate and photo check",
-      "name": "Obstruction boxes are drawn over the photo",
+      "group": "Household: estimate and photo check (real API)",
+      "name": "The uploaded photo loads through the API",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Vendor: map and quote",
+      "group": "Household: estimate and photo check (real API)",
+      "name": "The list shows the new request",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Vendor: map and quote (real API)",
       "name": "Pins appear on the map",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Vendor: map and quote",
+      "group": "Vendor: map and quote (real API)",
       "name": "Map tiles load",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Vendor: map and quote",
+      "group": "Vendor: map and quote (real API)",
       "name": "Exact location is not promised",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Vendor: map and quote",
+      "group": "Vendor: map and quote (real API)",
       "name": "No household phone is shown",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Vendor: map and quote",
+      "group": "Vendor: map and quote (real API)",
+      "name": "This vendor’s quotes are listed",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Vendor: map and quote (real API)",
+      "name": "The new request reached the vendor",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Vendor: map and quote (real API)",
       "name": "Selecting a request shows its details",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Vendor: map and quote",
+      "group": "Vendor: map and quote (real API)",
       "name": "Required quote fields are enforced",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Vendor: map and quote",
-      "name": "The quote is submitted",
+      "group": "Vendor: map and quote (real API)",
+      "name": "The API accepts the quote",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Vendor: map and quote",
+      "group": "Vendor: map and quote (real API)",
       "name": "Household contact stays hidden before acceptance",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Household: compare, recommend, accept",
+      "group": "Household: compare, recommend, accept (real API)",
       "name": "The new quote arrives",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Household: compare, recommend, accept",
+      "group": "Household: compare, recommend, accept (real API)",
       "name": "Its status changed to quotes received",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Household: compare, recommend, accept",
-      "name": "The hidden instruction is flagged",
+      "group": "Household: compare, recommend, accept (real API)",
+      "name": "Net cost is calculated by the API",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Household: compare, recommend, accept",
-      "name": "The vendor’s raw note is not shown",
-      "passed": true,
-      "detail": ""
-    },
-    {
-      "group": "Household: compare, recommend, accept",
-      "name": "Net cost comes from the API",
-      "passed": true,
-      "detail": ""
-    },
-    {
-      "group": "Household: compare, recommend, accept",
-      "name": "Payback is the corrected 4.2 years",
-      "passed": true,
-      "detail": ""
-    },
-    {
-      "group": "Household: compare, recommend, accept",
-      "name": "Missing items are flagged",
-      "passed": true,
-      "detail": ""
-    },
-    {
-      "group": "Household: compare, recommend, accept",
+      "group": "Household: compare, recommend, accept (real API)",
       "name": "Non-DCR panels are flagged",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Household: compare, recommend, accept",
-      "name": "An oversized system is flagged",
+      "group": "Household: compare, recommend, accept (real API)",
+      "name": "Missing items are flagged",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Household: compare, recommend, accept",
+      "group": "Household: compare, recommend, accept (real API)",
+      "name": "The vendor’s hidden instruction is never shown or used",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: compare, recommend, accept (real API)",
+      "name": "Seeded quotes come from the database",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: compare, recommend, accept (real API)",
+      "name": "Net cost comes from the API",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: compare, recommend, accept (real API)",
+      "name": "Payback is the corrected 4.2 years",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: compare, recommend, accept (real API)",
       "name": "Best values are marked",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Household: compare, recommend, accept",
+      "group": "Household: compare, recommend, accept (real API)",
+      "name": "The top score is marked",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Household: compare, recommend, accept (real API)",
       "name": "The top scored vendor is recommended",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Household: compare, recommend, accept",
-      "name": "The injected vendor is not recommended",
+      "group": "Household: compare, recommend, accept (real API)",
+      "name": "No AI reasons are invented",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Household: compare, recommend, accept",
-      "name": "The page says ranking comes from code",
-      "passed": true,
-      "detail": ""
-    },
-    {
-      "group": "Household: compare, recommend, accept",
+      "group": "Household: compare, recommend, accept (real API)",
       "name": "Accepting asks for confirmation",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Household: compare, recommend, accept",
+      "group": "Household: compare, recommend, accept (real API)",
       "name": "Cancel leaves the quote unaccepted",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Household: compare, recommend, accept",
+      "group": "Household: compare, recommend, accept (real API)",
       "name": "Accepting reveals the vendor phone",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Household: compare, recommend, accept",
+      "group": "Household: compare, recommend, accept (real API)",
       "name": "Other quotes show as not selected",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Household: compare, recommend, accept",
+      "group": "Household: compare, recommend, accept (real API)",
       "name": "No more quotes can be accepted",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "Household: compare, recommend, accept",
+      "group": "Household: compare, recommend, accept (real API)",
       "name": "The decision survives a reload",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "After acceptance",
-      "name": "Household accepts the demo vendor",
+      "group": "Household: compare, recommend, accept (real API)",
+      "name": "The vendor phone survives a reload",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "After acceptance",
+      "group": "After acceptance (real API)",
+      "name": "Household accepts the new quote",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "After acceptance (real API)",
+      "name": "The vendor’s list shows the contact",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "After acceptance (real API)",
       "name": "The vendor sees the acceptance",
       "passed": true,
       "detail": ""
     },
     {
-      "group": "After acceptance",
+      "group": "After acceptance (real API)",
       "name": "The vendor now gets the household phone",
       "passed": true,
       "detail": ""
@@ -498,6 +546,12 @@
     {
       "group": "Admin",
       "name": "Totals are shown",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "Admin",
+      "name": "Sample admin data is labelled as sample",
       "passed": true,
       "detail": ""
     },
@@ -540,12 +594,6 @@
     {
       "group": "Admin",
       "name": "A flagged quote can be marked reviewed",
-      "passed": true,
-      "detail": ""
-    },
-    {
-      "group": "Admin",
-      "name": "A suspended vendor cannot sign in",
       "passed": true,
       "detail": ""
     },
@@ -605,7 +653,7 @@
     },
     {
       "group": "Phone width, 360 px",
-      "name": "/household/requests/r-1 has no sideways scroll",
+      "name": "/household/requests/173750b9-5a3a-4988-bc14-93e8418ec4b1 has no sideways scroll",
       "passed": true,
       "detail": ""
     },
@@ -617,7 +665,7 @@
     },
     {
       "group": "Phone width, 360 px",
-      "name": "/vendor/requests/r-2 has no sideways scroll",
+      "name": "/vendor/requests/f308d630-f371-4bfc-9539-d1bdd3eae3d2 has no sideways scroll",
       "passed": true,
       "detail": ""
     },
