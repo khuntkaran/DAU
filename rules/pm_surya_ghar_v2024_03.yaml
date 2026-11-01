@@ -1,0 +1,95 @@
+# PM Surya Ghar rule set. This is the only place rule values are written.
+# status: confirmed | verify | assumption. See .claude/skills/pm-surya-rules/references/rules.md
+version: pm_surya_ghar_v2024_03
+effective_from: 2024-02-13
+checked_on: 2026-11-01
+
+subsidy:
+  general:
+    first_slab_inr_per_kw: 30000
+    second_slab_inr_per_kw: 18000
+  special:
+    first_slab_inr_per_kw: 33000
+    second_slab_inr_per_kw: 19800
+  first_slab_kw: 2
+  second_slab_kw: 1
+
+sizing:
+  generation_kwh_per_kw_month: 120
+  roof_m2_per_kw: 10
+  default_usable_fraction: 0.8
+  step_kw: 0.5
+
+payback:
+  default_tariff_inr_per_kwh: 6.50
+
+scoring:
+  weights:
+    net_cost_per_kw: 30
+    warranty: 20
+    component_quality: 15
+    completeness: 15
+    timeline: 10
+    vendor_rating: 10
+  warranty_targets_years:
+    panel: 25
+    inverter: 10
+    workmanship: 5
+  max_vendor_rating: 5
+
+citations:
+  CFA_SLAB_1:
+    title: CFA for the first 2 kW
+    source: PIB, Cabinet approves PM-Surya Ghar
+    url: https://www.pib.gov.in/PressReleasePage.aspx?PRID=2010133&reg=48&lang=2
+    status: confirmed
+  CFA_SLAB_2:
+    title: CFA for the third kW
+    source: PIB, Cabinet approves PM-Surya Ghar
+    url: https://www.pib.gov.in/PressReleasePage.aspx?PRID=2010133&reg=48&lang=2
+    status: confirmed
+  CFA_CAP:
+    title: No additional CFA above 3 kW
+    source: PIB, Cabinet approves PM-Surya Ghar
+    url: https://www.pib.gov.in/PressReleasePage.aspx?PRID=2010133&reg=48&lang=2
+    status: confirmed
+  CFA_PRO_RATA:
+    title: Fractional kW earns the slab rate pro rata
+    source: SuryaSetu assumption
+    url: null
+    status: assumption
+  CFA_SPECIAL:
+    title: Higher CFA in special category states and UTs
+    source: Quick Estimate, PM Surya Ghar FAQ
+    url: https://quickestimate.co/blog/pm-surya-ghar-faq
+    status: verify
+  SIZE_BANDS:
+    title: Suitable system size by monthly use
+    source: PIB, PM Surya Ghar, India's Solar Revolution
+    url: https://www.pib.gov.in/PressReleaseIframePage.aspx?PRID=2111106&reg=48&lang=2
+    status: confirmed
+  GENERATION:
+    title: Generation of about 120 kWh per kW per month
+    source: SuryaSetu assumption, within vendor estimates of 110-130 kWh
+    url: null
+    status: assumption
+  ROOF_AREA:
+    title: About 10 m² of shadow-free roof per kW
+    source: Secured Engineers, shadow-free area calculator
+    url: https://www.securedengineers.com/solar-shadow-free-area-calculator/
+    status: verify
+  USABLE_FRACTION:
+    title: 80% of the roof usable until the photo is assessed
+    source: SuryaSetu assumption
+    url: null
+    status: assumption
+  TARIFF_DEFAULT:
+    title: Sample tariff of ₹6.50 per kWh
+    source: SuryaSetu assumption, not a DISCOM tariff
+    url: null
+    status: assumption
+  SCORE_MODEL:
+    title: Quote scoring weights
+    source: SuryaSetu design
+    url: null
+    status: assumption

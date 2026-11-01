@@ -1,0 +1,37 @@
+node_modules/
+.next/
+next-env.d.ts
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Local data
+minio-data/
+
+# Test output
+playwright-report/
+test-results/
+
+# Claude Code, personal or generated
+.claude/settings.local.json
+.claude/.cache/
+.claude/worktrees/
+
+.DS_Store
+Thumbs.db
+*.log

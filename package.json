@@ -1,0 +1,16 @@
+{
+  "name": "suryasetu",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "typecheck": "node scripts/py.mjs mypy rules",
+    "lint": "node scripts/py.mjs ruff check . && node scripts/py.mjs ruff format --check .",
+    "test": "node scripts/py.mjs pytest",
+    "verify": "npm run typecheck && npm run lint && npm run test",
+    "test:hooks": "node --test .claude/hooks/hooks.test.mjs"
+  }
+}
