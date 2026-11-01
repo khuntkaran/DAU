@@ -8,30 +8,30 @@ coverage/
 
 # Python
 # .venv/
-# __pycache__/
-# *.pyc
-# .pytest_cache/
-# .mypy_cache/
-# .ruff_cache/
-# .coverage
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
 
 # Secrets
-# .env
-# .env.*
-# !.env.example
+.env
+.env.*
+!.env.example
 
 # Local data
-# minio-data/
+minio-data/
 
 # Test output
-# playwright-report/
+playwright-report/
 test-results/
 
 # Claude Code, personal or generated
-# .claude/settings.local.json
-# .claude/.cache/
-# .claude/worktrees/
+.claude/settings.local.json
+.claude/.cache/
+.claude/worktrees/
 
 # .DS_Store
-# Thumbs.db
-# *.log
+Thumbs.db
+*.log
