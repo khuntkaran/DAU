@@ -39,7 +39,7 @@ Everyone works in parallel against this after it is agreed.
 |---|---|---|---|
 | `docker-compose.yml` for all six services | Architect | `docker compose up` healthy | blocked by P2 |
 | SQLAlchemy models and first migration | Backend | `npm run db:migrate` | blocked by P2 |
-| Pydantic schemas and OpenAPI for all routes | Backend | Schema test | todo |
+| Pydantic schemas and OpenAPI for all routes | Backend | Schema test | doing |
 
 ### Phase 3: Core flow, worth 30% of the score
 
@@ -83,3 +83,5 @@ Everyone works in parallel against this after it is agreed.
 - 2026-11-01: `npm run` is the single entry point, because `make` is not installed here.
 - 2026-11-01: `GENERATION` stays at the design's 120 kWh but is shown as an assumption, because no MNRE source was found.
 - 2026-11-01: The design's worked example is wrong. The correct saving is ₹25,740 and payback is 4.2 years.
+- 2026-11-01: Agents share one working tree instead of worktrees, because their paths do not overlap and `origin` has no branches for a worktree to start from.
+- 2026-11-01: Until P1 is done, hooks do not run, so the manager runs `npm run verify` after every agent task.

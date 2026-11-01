@@ -18,7 +18,7 @@ strict = true
 python_version = "3.11"
 
 [tool.pytest.ini_options]
-testpaths = ["rules/tests"]
+testpaths = ["rules/tests", "api/tests", "worker/tests"]
 pythonpath = ["."]
 addopts = "-q --strict-markers --cov=rules --cov-fail-under=90"
 

@@ -28,7 +28,7 @@ def test_unknown_keys_are_rejected() -> None:
 
 def test_rules_cannot_be_changed_at_runtime() -> None:
     with pytest.raises(ValidationError):
-        load_rules().subsidy.general.first_slab_inr_per_kw = 1  # type: ignore[misc]
+        load_rules().subsidy.general.first_slab_inr_per_kw = 1
 
 
 def test_assumptions_never_claim_a_source_link() -> None:

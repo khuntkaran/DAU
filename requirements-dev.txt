@@ -1,7 +1,9 @@
-pydantic>=2.14,<3
-pyyaml>=6,<7
+-r requirements.txt
 mypy>=2.4,<3
 pytest>=9.2,<10
 pytest-cov>=7,<8
 ruff>=0.17,<0.18
 types-PyYAML
+pytest-asyncio
+httpx
+fakeredis
