@@ -11,6 +11,8 @@
     "lint": "node scripts/py.mjs ruff check . && node scripts/py.mjs ruff format --check .",
     "test": "node scripts/py.mjs pytest",
     "verify": "npm run typecheck && npm run lint && npm run test",
-    "test:hooks": "node --test .claude/hooks/hooks.test.mjs"
+    "test:hooks": "node --test .claude/hooks/hooks.test.mjs",
+    "api:openapi": "node scripts/py.mjs api.app.export_openapi",
+    "api:dev": "node scripts/py.mjs uvicorn api.app.main:app --reload --port 8000"
   }
 }

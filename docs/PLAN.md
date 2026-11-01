@@ -39,7 +39,7 @@ Everyone works in parallel against this after it is agreed.
 |---|---|---|---|
 | `docker-compose.yml` for all six services | Architect | `docker compose up` healthy | blocked by P2 |
 | SQLAlchemy models and first migration | Backend | `npm run db:migrate` | blocked by P2 |
-| Pydantic schemas and OpenAPI for all routes | Backend | Schema test | doing |
+| Pydantic schemas and OpenAPI for all routes | Backend | `api/tests/test_contract.py` | done |
 
 ### Phase 3: Core flow, worth 30% of the score
 
@@ -85,3 +85,7 @@ Everyone works in parallel against this after it is agreed.
 - 2026-11-01: The design's worked example is wrong. The correct saving is ₹25,740 and payback is 4.2 years.
 - 2026-11-01: Agents share one working tree instead of worktrees, because their paths do not overlap and `origin` has no branches for a worktree to start from.
 - 2026-11-01: Until P1 is done, hooks do not run, so the manager runs `npm run verify` after every agent task.
+- 2026-11-01: The API contract is `api/app/schemas.py`, published as `api/openapi.json` (`npm run api:openapi`). A test fails if the file is stale. Unbuilt routes answer 501 in the standard error shape.
+- 2026-11-01: The contract adds `GET /requests/mine`, `GET /quotes/mine` and `GET /requests/{id}/recommendation` to section 08, because the household and vendor screens need them.
+- 2026-11-01: `Decimal` fields such as kW reach the web app as strings, so no precision is lost. Money stays `int` rupees.
+- 2026-11-01: `GET /requests/{id}/quotes` is not paginated so all quotes can be compared side by side; the service caps a request at 50 quotes.

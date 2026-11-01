@@ -1,0 +1,3894 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SuryaSetu API",
+    "description": "PM Surya Ghar rooftop solar marketplace. Every number comes from `rules/`.",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/auth/otp": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Send Otp",
+        "description": "Public. Sends a login code. The demo code is 123456.",
+        "operationId": "send_otp_auth_otp_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OtpRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpSent"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/verify": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Verify Otp",
+        "description": "Public. Exchanges the code for a JWT that carries the user's role.",
+        "operationId": "verify_otp_auth_verify_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/uploads/presign": {
+      "post": {
+        "tags": [
+          "uploads"
+        ],
+        "summary": "Presign Upload",
+        "description": "Returns a presigned PUT URL. The browser uploads straight to storage, never via the API.",
+        "operationId": "presign_upload_uploads_presign_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PresignRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresignResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/voice/transcribe": {
+      "post": {
+        "tags": [
+          "voice"
+        ],
+        "summary": "Transcribe",
+        "description": "Queues `voice_extract`. The job output is a `VoiceResult` with fields to prefill.",
+        "operationId": "transcribe_voice_transcribe_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoiceTranscribeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobAccepted"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/requests": {
+      "post": {
+        "tags": [
+          "requests"
+        ],
+        "summary": "Create Request",
+        "description": "Opens a request. Sizing and subsidy are calculated in code and returned at once.",
+        "operationId": "create_request_requests_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/requests/mine": {
+      "get": {
+        "tags": [
+          "requests"
+        ],
+        "summary": "My Requests",
+        "operationId": "my_requests_requests_mine_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_RequestSummary_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/requests/open": {
+      "get": {
+        "tags": [
+          "requests"
+        ],
+        "summary": "Open Requests",
+        "description": "Open and quoted requests inside the viewport and the vendor's service radius.",
+        "operationId": "open_requests_requests_open_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "bbox",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Map viewport as west,south,east,north in degrees.",
+              "title": "Bbox"
+            },
+            "description": "Map viewport as west,south,east,north in degrees."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_OpenRequestPin_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/requests/{request_id}": {
+      "get": {
+        "tags": [
+          "requests"
+        ],
+        "summary": "Get Request",
+        "description": "The owner gets `RequestOut`; a vendor gets `VendorRequestView`. Check `view`.",
+        "operationId": "get_request_requests__request_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Request Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/RequestOut"
+                    },
+                    {
+                      "$ref": "#/components/schemas/VendorRequestView"
+                    }
+                  ],
+                  "title": "Response Get Request Requests  Request Id  Get"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/requests/{request_id}/quotes": {
+      "post": {
+        "tags": [
+          "requests"
+        ],
+        "summary": "Submit Quote",
+        "description": "Saves the quote with net cost and payback from code, then queues `quote_review`.\n\n409 when the request is not OPEN or QUOTED, or this vendor has already quoted it.",
+        "operationId": "submit_quote_requests__request_id__quotes_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Request Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuoteCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteCreated"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "requests"
+        ],
+        "summary": "Compare Quotes",
+        "operationId": "compare_quotes_requests__request_id__quotes_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Request Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteComparison"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/requests/{request_id}/recommendation": {
+      "post": {
+        "tags": [
+          "requests"
+        ],
+        "summary": "Request Recommendation",
+        "description": "Queues `recommend`, or returns the existing job while the quotes are unchanged.",
+        "operationId": "request_recommendation_requests__request_id__recommendation_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Request Id"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobAccepted"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "requests"
+        ],
+        "summary": "Get Recommendation",
+        "operationId": "get_recommendation_requests__request_id__recommendation_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Request Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Recommendation"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/quotes/mine": {
+      "get": {
+        "tags": [
+          "quotes"
+        ],
+        "summary": "My Quotes",
+        "operationId": "my_quotes_quotes_mine_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_VendorQuoteSummary_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/quotes/{quote_id}/accept": {
+      "post": {
+        "tags": [
+          "quotes"
+        ],
+        "summary": "Accept Quote",
+        "description": "One transaction: this quote ACCEPTED, the others REJECTED, the request ACCEPTED.\n\n409 when the request is no longer QUOTED, including the loser of two simultaneous accepts.",
+        "operationId": "accept_quote_quotes__quote_id__accept_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "quote_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Quote Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcceptResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}": {
+      "get": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Get Job",
+        "description": "Polling fallback for clients without SSE. Only the job's owner can read it.",
+        "operationId": "get_job_jobs__job_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "tags": [
+          "events"
+        ],
+        "summary": "Events",
+        "description": "Server-Sent Events for the signed-in user.",
+        "operationId": "events_events_get",
+        "responses": {
+          "200": {
+            "description": "A stream of `Event` messages.",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/Event",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/rules/current": {
+      "get": {
+        "tags": [
+          "rules"
+        ],
+        "summary": "Get Current Rules",
+        "description": "Public. The rule set and its sources, for the \"where does this number come from\" panel.",
+        "operationId": "get_current_rules_rules_current_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RulesOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string",
+                    "const": "ok"
+                  },
+                  "propertyNames": {
+                    "const": "status"
+                  },
+                  "type": "object",
+                  "title": "Response Health Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AcceptResult": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Request Id"
+          },
+          "request_status": {
+            "$ref": "#/components/schemas/RequestStatus"
+          },
+          "accepted_quote_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Accepted Quote Id"
+          },
+          "rejected_quote_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Rejected Quote Ids"
+          },
+          "vendor_contact": {
+            "$ref": "#/components/schemas/VendorContact"
+          }
+        },
+        "type": "object",
+        "required": [
+          "request_id",
+          "request_status",
+          "accepted_quote_id",
+          "rejected_quote_ids",
+          "vendor_contact"
+        ],
+        "title": "AcceptResult"
+      },
+      "CitationOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "confirmed",
+              "verify",
+              "assumption"
+            ],
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "title",
+          "source",
+          "url",
+          "status"
+        ],
+        "title": "CitationOut"
+      },
+      "ErrorBody": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "details": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Details"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ErrorBody"
+      },
+      "ErrorResponse": {
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorBody"
+          }
+        },
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "title": "ErrorResponse"
+      },
+      "Estimate": {
+        "properties": {
+          "rule_version": {
+            "type": "string",
+            "title": "Rule Version"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/CitationOut"
+            },
+            "type": "array",
+            "title": "Citations"
+          },
+          "raw_kw": {
+            "type": "string",
+            "title": "Raw Kw"
+          },
+          "size_kw": {
+            "type": "string",
+            "title": "Size Kw"
+          },
+          "max_kw": {
+            "type": "string",
+            "title": "Max Kw"
+          },
+          "capped_by_roof": {
+            "type": "boolean",
+            "title": "Capped By Roof"
+          },
+          "subsidy_inr": {
+            "type": "integer",
+            "title": "Subsidy Inr"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rule_version",
+          "citations",
+          "raw_kw",
+          "size_kw",
+          "max_kw",
+          "capped_by_roof",
+          "subsidy_inr"
+        ],
+        "title": "Estimate",
+        "description": "Calculated by `rules.sizing` and `rules.subsidy` when the request is created."
+      },
+      "Event": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "quote.submitted",
+              "quote.reviewed",
+              "quote.accepted",
+              "quote.rejected",
+              "request.updated",
+              "recommendation.ready",
+              "job.finished"
+            ],
+            "title": "Type"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          },
+          "quote_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quote Id"
+          },
+          "job_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "title": "Event",
+        "description": "One SSE message. The `event:` line carries `type`; the `data:` line carries this JSON."
+      },
+      "GeoPoint": {
+        "properties": {
+          "lat": {
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "title": "Lat"
+          },
+          "lng": {
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "Lng"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lat",
+          "lng"
+        ],
+        "title": "GeoPoint"
+      },
+      "HouseholdContact": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoPoint"
+          },
+          "address_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "phone",
+          "location",
+          "address_text"
+        ],
+        "title": "HouseholdContact",
+        "description": "Shared with a vendor only after that vendor's quote is accepted."
+      },
+      "JobAccepted": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Job Id"
+          },
+          "type": {
+            "$ref": "#/components/schemas/JobType"
+          },
+          "status": {
+            "$ref": "#/components/schemas/JobStatus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "type",
+          "status"
+        ],
+        "title": "JobAccepted",
+        "description": "Returned with 202. Follow progress on `GET /jobs/{id}` or the SSE stream."
+      },
+      "JobOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "type": {
+            "$ref": "#/components/schemas/JobType"
+          },
+          "status": {
+            "$ref": "#/components/schemas/JobStatus"
+          },
+          "attempts": {
+            "type": "integer",
+            "title": "Attempts"
+          },
+          "output": {
+            "anyOf": [
+              {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/VoiceResult"
+                  },
+                  {
+                    "$ref": "#/components/schemas/PhotoAssessment"
+                  },
+                  {
+                    "$ref": "#/components/schemas/QuoteReview"
+                  },
+                  {
+                    "$ref": "#/components/schemas/Recommendation"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "kind",
+                  "mapping": {
+                    "photo_assess": "#/components/schemas/PhotoAssessment",
+                    "quote_review": "#/components/schemas/QuoteReview",
+                    "recommend": "#/components/schemas/Recommendation",
+                    "voice_extract": "#/components/schemas/VoiceResult"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "status",
+          "attempts",
+          "created_at"
+        ],
+        "title": "JobOut"
+      },
+      "JobStatus": {
+        "type": "string",
+        "enum": [
+          "queued",
+          "running",
+          "succeeded",
+          "failed"
+        ],
+        "title": "JobStatus"
+      },
+      "JobType": {
+        "type": "string",
+        "enum": [
+          "photo_assess",
+          "voice_extract",
+          "quote_review",
+          "recommend"
+        ],
+        "title": "JobType"
+      },
+      "MediaOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "photo",
+              "audio"
+            ],
+            "title": "Kind"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url",
+            "description": "Short-lived signed GET URL."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "url"
+        ],
+        "title": "MediaOut"
+      },
+      "Obstruction": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "water_tank",
+              "staircase_room",
+              "parapet",
+              "tree_shade",
+              "dish_antenna",
+              "solar_heater",
+              "other"
+            ],
+            "title": "Type"
+          },
+          "x": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "X",
+            "description": "Box position and size as fractions of the image."
+          },
+          "y": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Y"
+          },
+          "w": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "W"
+          },
+          "h": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "H"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "title": "Severity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "x",
+          "y",
+          "w",
+          "h",
+          "severity"
+        ],
+        "title": "Obstruction"
+      },
+      "OpenRequestPin": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "approx_location": {
+            "$ref": "#/components/schemas/GeoPoint"
+          },
+          "distance_km": {
+            "type": "string",
+            "title": "Distance Km"
+          },
+          "monthly_units": {
+            "type": "integer",
+            "title": "Monthly Units"
+          },
+          "budget_inr": {
+            "type": "integer",
+            "title": "Budget Inr"
+          },
+          "size_kw": {
+            "type": "string",
+            "title": "Size Kw"
+          },
+          "roof_area_m2": {
+            "type": "string",
+            "title": "Roof Area M2"
+          },
+          "quotes_count": {
+            "type": "integer",
+            "title": "Quotes Count"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "approx_location",
+          "distance_km",
+          "monthly_units",
+          "budget_inr",
+          "size_kw",
+          "roof_area_m2",
+          "quotes_count",
+          "created_at"
+        ],
+        "title": "OpenRequestPin"
+      },
+      "OtpRequest": {
+        "properties": {
+          "phone": {
+            "type": "string",
+            "pattern": "^\\+[1-9]\\d{7,14}$",
+            "title": "Phone",
+            "description": "E.164, e.g. +919812345678"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "phone"
+        ],
+        "title": "OtpRequest"
+      },
+      "OtpSent": {
+        "properties": {
+          "expires_in_s": {
+            "type": "integer",
+            "title": "Expires In S"
+          }
+        },
+        "type": "object",
+        "required": [
+          "expires_in_s"
+        ],
+        "title": "OtpSent"
+      },
+      "Page_OpenRequestPin_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OpenRequestPin"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor",
+            "description": "Pass back as `cursor` for the next page."
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "Page[OpenRequestPin]"
+      },
+      "Page_RequestSummary_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RequestSummary"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor",
+            "description": "Pass back as `cursor` for the next page."
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "Page[RequestSummary]"
+      },
+      "Page_VendorQuoteSummary_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/VendorQuoteSummary"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor",
+            "description": "Pass back as `cursor` for the next page."
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "Page[VendorQuoteSummary]"
+      },
+      "PaybackRules": {
+        "properties": {
+          "default_tariff_inr_per_kwh": {
+            "type": "string",
+            "title": "Default Tariff Inr Per Kwh"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "default_tariff_inr_per_kwh"
+        ],
+        "title": "PaybackRules"
+      },
+      "PhotoAssessment": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "photo_assess",
+            "title": "Kind",
+            "default": "photo_assess"
+          },
+          "status": {
+            "$ref": "#/components/schemas/JobStatus"
+          },
+          "usable_fraction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Usable Fraction"
+          },
+          "usable_area_m2": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Usable Area M2"
+          },
+          "max_kw": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Kw"
+          },
+          "shade_risk": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shade Risk"
+          },
+          "obstructions": {
+            "items": {
+              "$ref": "#/components/schemas/Obstruction"
+            },
+            "type": "array",
+            "title": "Obstructions"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "PhotoAssessment",
+        "description": "`usable_fraction` and the obstructions come from the LLM; the areas and kW cap from code."
+      },
+      "PrefillFields": {
+        "properties": {
+          "monthly_units": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monthly Units"
+          },
+          "monthly_bill_inr": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monthly Bill Inr"
+          },
+          "budget_inr": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budget Inr"
+          },
+          "roof_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "rcc_flat",
+                  "sloped",
+                  "tin_sheet",
+                  "other"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Roof Type"
+          },
+          "floors": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Floors"
+          },
+          "address_hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address Hint"
+          }
+        },
+        "type": "object",
+        "title": "PrefillFields",
+        "description": "What the LLM heard. The household confirms each value; nothing is posted automatically."
+      },
+      "PresignRequest": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "photo",
+              "audio",
+              "quote_doc"
+            ],
+            "title": "Kind"
+          },
+          "content_type": {
+            "type": "string",
+            "title": "Content Type"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Size Bytes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "content_type",
+          "size_bytes"
+        ],
+        "title": "PresignRequest"
+      },
+      "PresignResponse": {
+        "properties": {
+          "object_key": {
+            "type": "string",
+            "title": "Object Key"
+          },
+          "upload_url": {
+            "type": "string",
+            "title": "Upload Url"
+          },
+          "method": {
+            "type": "string",
+            "const": "PUT",
+            "title": "Method",
+            "default": "PUT"
+          },
+          "headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Headers",
+            "description": "Send these headers with the PUT unchanged."
+          },
+          "expires_in_s": {
+            "type": "integer",
+            "title": "Expires In S"
+          }
+        },
+        "type": "object",
+        "required": [
+          "object_key",
+          "upload_url",
+          "headers",
+          "expires_in_s"
+        ],
+        "title": "PresignResponse"
+      },
+      "QuoteComparison": {
+        "properties": {
+          "rule_version": {
+            "type": "string",
+            "title": "Rule Version"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/CitationOut"
+            },
+            "type": "array",
+            "title": "Citations"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Request Id"
+          },
+          "quotes": {
+            "items": {
+              "$ref": "#/components/schemas/QuoteOut"
+            },
+            "type": "array",
+            "title": "Quotes"
+          },
+          "top_quote_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top Quote Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rule_version",
+          "citations",
+          "request_id",
+          "quotes",
+          "top_quote_id"
+        ],
+        "title": "QuoteComparison",
+        "description": "All quotes on one request, ranked by `rules.scoring`. Capped at 50 quotes per request."
+      },
+      "QuoteCreate": {
+        "properties": {
+          "system_kw": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 100.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "System Kw"
+          },
+          "price_inr": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Price Inr"
+          },
+          "panel_brand": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Panel Brand"
+          },
+          "panel_watt": {
+            "type": "integer",
+            "maximum": 1000.0,
+            "minimum": 100.0,
+            "title": "Panel Watt"
+          },
+          "dcr": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dcr",
+            "description": "Domestic content panels. Leave empty if unknown."
+          },
+          "inverter_brand": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Inverter Brand"
+          },
+          "inverter_kw": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 100.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Inverter Kw"
+          },
+          "warranty_panel_yrs": {
+            "type": "integer",
+            "maximum": 40.0,
+            "minimum": 0.0,
+            "title": "Warranty Panel Yrs"
+          },
+          "warranty_inverter_yrs": {
+            "type": "integer",
+            "maximum": 40.0,
+            "minimum": 0.0,
+            "title": "Warranty Inverter Yrs"
+          },
+          "warranty_work_yrs": {
+            "type": "integer",
+            "maximum": 40.0,
+            "minimum": 0.0,
+            "title": "Warranty Work Yrs"
+          },
+          "timeline_days": {
+            "type": "integer",
+            "maximum": 365.0,
+            "minimum": 1.0,
+            "title": "Timeline Days"
+          },
+          "inclusions": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "net_metering_fee",
+                "mounting_structure",
+                "earthing_and_lightning_arrester",
+                "amc",
+                "insurance",
+                "cabling",
+                "acdb_dcdb",
+                "transport"
+              ]
+            },
+            "type": "array",
+            "uniqueItems": true,
+            "title": "Inclusions"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes",
+            "description": "Untrusted. Shown to the household, never used to rank."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "system_kw",
+          "price_inr",
+          "panel_brand",
+          "panel_watt",
+          "inverter_brand",
+          "inverter_kw",
+          "warranty_panel_yrs",
+          "warranty_inverter_yrs",
+          "warranty_work_yrs",
+          "timeline_days"
+        ],
+        "title": "QuoteCreate"
+      },
+      "QuoteCreated": {
+        "properties": {
+          "quote": {
+            "$ref": "#/components/schemas/QuoteOut"
+          },
+          "review_job_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Review Job Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "quote",
+          "review_job_id"
+        ],
+        "title": "QuoteCreated"
+      },
+      "QuoteFinancials": {
+        "properties": {
+          "rule_version": {
+            "type": "string",
+            "title": "Rule Version"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/CitationOut"
+            },
+            "type": "array",
+            "title": "Citations"
+          },
+          "subsidy_inr": {
+            "type": "integer",
+            "title": "Subsidy Inr"
+          },
+          "net_cost_inr": {
+            "type": "integer",
+            "title": "Net Cost Inr"
+          },
+          "annual_generation_kwh": {
+            "type": "string",
+            "title": "Annual Generation Kwh"
+          },
+          "annual_saving_inr": {
+            "type": "integer",
+            "title": "Annual Saving Inr"
+          },
+          "payback_years": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payback Years",
+            "description": "Empty when the system saves nothing."
+          }
+        },
+        "type": "object",
+        "required": [
+          "rule_version",
+          "citations",
+          "subsidy_inr",
+          "net_cost_inr",
+          "annual_generation_kwh",
+          "annual_saving_inr",
+          "payback_years"
+        ],
+        "title": "QuoteFinancials",
+        "description": "Calculated by `rules.subsidy` and `rules.payback` when the quote is submitted."
+      },
+      "QuoteOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Request Id"
+          },
+          "vendor": {
+            "$ref": "#/components/schemas/VendorSummary"
+          },
+          "status": {
+            "$ref": "#/components/schemas/QuoteStatus"
+          },
+          "system_kw": {
+            "type": "string",
+            "title": "System Kw"
+          },
+          "price_inr": {
+            "type": "integer",
+            "title": "Price Inr"
+          },
+          "panel_brand": {
+            "type": "string",
+            "title": "Panel Brand"
+          },
+          "panel_watt": {
+            "type": "integer",
+            "title": "Panel Watt"
+          },
+          "dcr": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dcr"
+          },
+          "inverter_brand": {
+            "type": "string",
+            "title": "Inverter Brand"
+          },
+          "inverter_kw": {
+            "type": "string",
+            "title": "Inverter Kw"
+          },
+          "warranty_panel_yrs": {
+            "type": "integer",
+            "title": "Warranty Panel Yrs"
+          },
+          "warranty_inverter_yrs": {
+            "type": "integer",
+            "title": "Warranty Inverter Yrs"
+          },
+          "warranty_work_yrs": {
+            "type": "integer",
+            "title": "Warranty Work Yrs"
+          },
+          "timeline_days": {
+            "type": "integer",
+            "title": "Timeline Days"
+          },
+          "inclusions": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "net_metering_fee",
+                "mounting_structure",
+                "earthing_and_lightning_arrester",
+                "amc",
+                "insurance",
+                "cabling",
+                "acdb_dcdb",
+                "transport"
+              ]
+            },
+            "type": "array",
+            "title": "Inclusions"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "financials": {
+            "$ref": "#/components/schemas/QuoteFinancials"
+          },
+          "review": {
+            "$ref": "#/components/schemas/QuoteReview"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QuoteScore"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "submitted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Submitted At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "request_id",
+          "vendor",
+          "status",
+          "system_kw",
+          "price_inr",
+          "panel_brand",
+          "panel_watt",
+          "dcr",
+          "inverter_brand",
+          "inverter_kw",
+          "warranty_panel_yrs",
+          "warranty_inverter_yrs",
+          "warranty_work_yrs",
+          "timeline_days",
+          "inclusions",
+          "notes",
+          "financials",
+          "review",
+          "score",
+          "submitted_at"
+        ],
+        "title": "QuoteOut"
+      },
+      "QuoteReview": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "quote_review",
+            "title": "Kind",
+            "default": "quote_review"
+          },
+          "status": {
+            "$ref": "#/components/schemas/JobStatus"
+          },
+          "missing_items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Items"
+          },
+          "injection_flag": {
+            "type": "boolean",
+            "title": "Injection Flag"
+          },
+          "injection_excerpt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Injection Excerpt"
+          },
+          "llm_notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Llm Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "missing_items",
+          "injection_flag"
+        ],
+        "title": "QuoteReview",
+        "description": "`missing_items` and the injection flag come from code. `llm_notes` is explanation only."
+      },
+      "QuoteScore": {
+        "properties": {
+          "score": {
+            "type": "string",
+            "title": "Score"
+          },
+          "breakdown": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Breakdown"
+          }
+        },
+        "type": "object",
+        "required": [
+          "score",
+          "breakdown"
+        ],
+        "title": "QuoteScore"
+      },
+      "QuoteStatus": {
+        "type": "string",
+        "enum": [
+          "SUBMITTED",
+          "ACCEPTED",
+          "REJECTED",
+          "WITHDRAWN"
+        ],
+        "title": "QuoteStatus"
+      },
+      "RankedQuote": {
+        "properties": {
+          "quote_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Quote Id"
+          },
+          "rank": {
+            "type": "integer",
+            "title": "Rank"
+          },
+          "score": {
+            "type": "string",
+            "title": "Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "quote_id",
+          "rank",
+          "score"
+        ],
+        "title": "RankedQuote"
+      },
+      "Recommendation": {
+        "properties": {
+          "rule_version": {
+            "type": "string",
+            "title": "Rule Version"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/CitationOut"
+            },
+            "type": "array",
+            "title": "Citations"
+          },
+          "kind": {
+            "type": "string",
+            "const": "recommend",
+            "title": "Kind",
+            "default": "recommend"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Request Id"
+          },
+          "recommended_quote_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recommended Quote Id"
+          },
+          "ranking": {
+            "items": {
+              "$ref": "#/components/schemas/RankedQuote"
+            },
+            "type": "array",
+            "title": "Ranking"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons"
+          },
+          "other_notes": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Other Notes",
+            "description": "One line per other quote, keyed by quote id."
+          },
+          "stale": {
+            "type": "boolean",
+            "title": "Stale",
+            "description": "True when quotes changed since this was written."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rule_version",
+          "citations",
+          "request_id",
+          "recommended_quote_id",
+          "ranking",
+          "reasons",
+          "other_notes",
+          "stale",
+          "created_at"
+        ],
+        "title": "Recommendation",
+        "description": "Ranking from `rules.scoring`. The LLM writes the reasons and notes from the score table."
+      },
+      "RequestCreate": {
+        "properties": {
+          "location": {
+            "$ref": "#/components/schemas/GeoPoint"
+          },
+          "address_text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address Text"
+          },
+          "discom": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 50
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discom"
+          },
+          "state_category": {
+            "type": "string",
+            "enum": [
+              "general",
+              "special"
+            ],
+            "title": "State Category"
+          },
+          "monthly_units": {
+            "type": "integer",
+            "maximum": 100000.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Monthly Units"
+          },
+          "monthly_bill_inr": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monthly Bill Inr"
+          },
+          "budget_inr": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Budget Inr"
+          },
+          "roof_area_m2": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 10000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Roof Area M2"
+          },
+          "roof_type": {
+            "type": "string",
+            "enum": [
+              "rcc_flat",
+              "sloped",
+              "tin_sheet",
+              "other"
+            ],
+            "title": "Roof Type"
+          },
+          "floors": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Floors"
+          },
+          "photo_keys": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Photo Keys"
+          },
+          "audio_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audio Key"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "location",
+          "state_category",
+          "monthly_units",
+          "budget_inr",
+          "roof_area_m2",
+          "roof_type"
+        ],
+        "title": "RequestCreate"
+      },
+      "RequestOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RequestStatus"
+          },
+          "state_category": {
+            "type": "string",
+            "enum": [
+              "general",
+              "special"
+            ],
+            "title": "State Category"
+          },
+          "monthly_units": {
+            "type": "integer",
+            "title": "Monthly Units"
+          },
+          "budget_inr": {
+            "type": "integer",
+            "title": "Budget Inr"
+          },
+          "roof_area_m2": {
+            "type": "string",
+            "title": "Roof Area M2"
+          },
+          "roof_type": {
+            "type": "string",
+            "enum": [
+              "rcc_flat",
+              "sloped",
+              "tin_sheet",
+              "other"
+            ],
+            "title": "Roof Type"
+          },
+          "floors": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Floors"
+          },
+          "estimate": {
+            "$ref": "#/components/schemas/Estimate"
+          },
+          "photo_assessment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PhotoAssessment"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photos": {
+            "items": {
+              "$ref": "#/components/schemas/MediaOut"
+            },
+            "type": "array",
+            "title": "Photos"
+          },
+          "quotes_count": {
+            "type": "integer",
+            "title": "Quotes Count"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "view": {
+            "type": "string",
+            "const": "owner",
+            "title": "View",
+            "default": "owner"
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoPoint"
+          },
+          "address_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address Text"
+          },
+          "discom": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discom"
+          },
+          "monthly_bill_inr": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monthly Bill Inr"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "accepted_quote_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accepted Quote Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "state_category",
+          "monthly_units",
+          "budget_inr",
+          "roof_area_m2",
+          "roof_type",
+          "floors",
+          "estimate",
+          "photo_assessment",
+          "photos",
+          "quotes_count",
+          "created_at",
+          "expires_at",
+          "location",
+          "address_text",
+          "discom",
+          "monthly_bill_inr",
+          "notes",
+          "accepted_quote_id"
+        ],
+        "title": "RequestOut",
+        "description": "The household's own view."
+      },
+      "RequestStatus": {
+        "type": "string",
+        "enum": [
+          "DRAFT",
+          "OPEN",
+          "QUOTED",
+          "ACCEPTED",
+          "INSTALLED",
+          "CANCELLED",
+          "EXPIRED"
+        ],
+        "title": "RequestStatus"
+      },
+      "RequestSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RequestStatus"
+          },
+          "monthly_units": {
+            "type": "integer",
+            "title": "Monthly Units"
+          },
+          "size_kw": {
+            "type": "string",
+            "title": "Size Kw"
+          },
+          "quotes_count": {
+            "type": "integer",
+            "title": "Quotes Count"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "monthly_units",
+          "size_kw",
+          "quotes_count",
+          "created_at"
+        ],
+        "title": "RequestSummary"
+      },
+      "RulesOut": {
+        "properties": {
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "effective_from": {
+            "type": "string",
+            "format": "date",
+            "title": "Effective From"
+          },
+          "checked_on": {
+            "type": "string",
+            "format": "date",
+            "title": "Checked On"
+          },
+          "subsidy": {
+            "$ref": "#/components/schemas/SubsidyRules"
+          },
+          "sizing": {
+            "$ref": "#/components/schemas/SizingRules"
+          },
+          "payback": {
+            "$ref": "#/components/schemas/PaybackRules"
+          },
+          "scoring": {
+            "$ref": "#/components/schemas/ScoringRules"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/CitationOut"
+            },
+            "type": "array",
+            "title": "Citations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version",
+          "effective_from",
+          "checked_on",
+          "subsidy",
+          "sizing",
+          "payback",
+          "scoring",
+          "citations"
+        ],
+        "title": "RulesOut"
+      },
+      "ScoreWeights": {
+        "properties": {
+          "net_cost_per_kw": {
+            "type": "integer",
+            "title": "Net Cost Per Kw"
+          },
+          "warranty": {
+            "type": "integer",
+            "title": "Warranty"
+          },
+          "component_quality": {
+            "type": "integer",
+            "title": "Component Quality"
+          },
+          "completeness": {
+            "type": "integer",
+            "title": "Completeness"
+          },
+          "timeline": {
+            "type": "integer",
+            "title": "Timeline"
+          },
+          "vendor_rating": {
+            "type": "integer",
+            "title": "Vendor Rating"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "net_cost_per_kw",
+          "warranty",
+          "component_quality",
+          "completeness",
+          "timeline",
+          "vendor_rating"
+        ],
+        "title": "ScoreWeights"
+      },
+      "ScoringRules": {
+        "properties": {
+          "weights": {
+            "$ref": "#/components/schemas/ScoreWeights"
+          },
+          "warranty_targets_years": {
+            "$ref": "#/components/schemas/WarrantyTargets"
+          },
+          "max_vendor_rating": {
+            "type": "string",
+            "title": "Max Vendor Rating"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "weights",
+          "warranty_targets_years",
+          "max_vendor_rating"
+        ],
+        "title": "ScoringRules"
+      },
+      "SizingRules": {
+        "properties": {
+          "generation_kwh_per_kw_month": {
+            "type": "string",
+            "title": "Generation Kwh Per Kw Month"
+          },
+          "roof_m2_per_kw": {
+            "type": "string",
+            "title": "Roof M2 Per Kw"
+          },
+          "default_usable_fraction": {
+            "type": "string",
+            "title": "Default Usable Fraction"
+          },
+          "step_kw": {
+            "type": "string",
+            "title": "Step Kw"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "generation_kwh_per_kw_month",
+          "roof_m2_per_kw",
+          "default_usable_fraction",
+          "step_kw"
+        ],
+        "title": "SizingRules"
+      },
+      "Slabs": {
+        "properties": {
+          "first_slab_inr_per_kw": {
+            "type": "integer",
+            "title": "First Slab Inr Per Kw"
+          },
+          "second_slab_inr_per_kw": {
+            "type": "integer",
+            "title": "Second Slab Inr Per Kw"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "first_slab_inr_per_kw",
+          "second_slab_inr_per_kw"
+        ],
+        "title": "Slabs"
+      },
+      "SubsidyRules": {
+        "properties": {
+          "general": {
+            "$ref": "#/components/schemas/Slabs"
+          },
+          "special": {
+            "$ref": "#/components/schemas/Slabs"
+          },
+          "first_slab_kw": {
+            "type": "string",
+            "title": "First Slab Kw"
+          },
+          "second_slab_kw": {
+            "type": "string",
+            "title": "Second Slab Kw"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "general",
+          "special",
+          "first_slab_kw",
+          "second_slab_kw"
+        ],
+        "title": "SubsidyRules"
+      },
+      "TokenResponse": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "token_type": {
+            "type": "string",
+            "const": "bearer",
+            "title": "Token Type",
+            "default": "bearer"
+          },
+          "expires_in_s": {
+            "type": "integer",
+            "title": "Expires In S"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token",
+          "expires_in_s",
+          "user"
+        ],
+        "title": "TokenResponse"
+      },
+      "UserOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "household",
+              "vendor",
+              "admin"
+            ],
+            "title": "Role"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          },
+          "lang": {
+            "type": "string",
+            "enum": [
+              "en",
+              "hi",
+              "gu"
+            ],
+            "title": "Lang"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "role",
+          "name",
+          "phone",
+          "lang"
+        ],
+        "title": "UserOut"
+      },
+      "VendorContact": {
+        "properties": {
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "contact_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Name"
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company",
+          "contact_name",
+          "phone"
+        ],
+        "title": "VendorContact"
+      },
+      "VendorQuoteSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Request Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/QuoteStatus"
+          },
+          "price_inr": {
+            "type": "integer",
+            "title": "Price Inr"
+          },
+          "system_kw": {
+            "type": "string",
+            "title": "System Kw"
+          },
+          "submitted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Submitted At"
+          },
+          "contact": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HouseholdContact"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set once this quote is accepted."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "request_id",
+          "status",
+          "price_inr",
+          "system_kw",
+          "submitted_at"
+        ],
+        "title": "VendorQuoteSummary"
+      },
+      "VendorRequestView": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RequestStatus"
+          },
+          "state_category": {
+            "type": "string",
+            "enum": [
+              "general",
+              "special"
+            ],
+            "title": "State Category"
+          },
+          "monthly_units": {
+            "type": "integer",
+            "title": "Monthly Units"
+          },
+          "budget_inr": {
+            "type": "integer",
+            "title": "Budget Inr"
+          },
+          "roof_area_m2": {
+            "type": "string",
+            "title": "Roof Area M2"
+          },
+          "roof_type": {
+            "type": "string",
+            "enum": [
+              "rcc_flat",
+              "sloped",
+              "tin_sheet",
+              "other"
+            ],
+            "title": "Roof Type"
+          },
+          "floors": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Floors"
+          },
+          "estimate": {
+            "$ref": "#/components/schemas/Estimate"
+          },
+          "photo_assessment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PhotoAssessment"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photos": {
+            "items": {
+              "$ref": "#/components/schemas/MediaOut"
+            },
+            "type": "array",
+            "title": "Photos"
+          },
+          "quotes_count": {
+            "type": "integer",
+            "title": "Quotes Count"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "view": {
+            "type": "string",
+            "const": "vendor",
+            "title": "View",
+            "default": "vendor"
+          },
+          "approx_location": {
+            "$ref": "#/components/schemas/GeoPoint"
+          },
+          "distance_km": {
+            "type": "string",
+            "title": "Distance Km"
+          },
+          "my_quote_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "My Quote Id"
+          },
+          "contact": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HouseholdContact"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set once this vendor's quote is accepted."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "state_category",
+          "monthly_units",
+          "budget_inr",
+          "roof_area_m2",
+          "roof_type",
+          "floors",
+          "estimate",
+          "photo_assessment",
+          "photos",
+          "quotes_count",
+          "created_at",
+          "expires_at",
+          "approx_location",
+          "distance_km",
+          "my_quote_id"
+        ],
+        "title": "VendorRequestView",
+        "description": "A vendor's view. The location is rounded to about 500 m and there is no phone number."
+      },
+      "VendorSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "mnre_reg_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mnre Reg No"
+          },
+          "rating": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rating"
+          },
+          "verified": {
+            "type": "boolean",
+            "title": "Verified"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "company",
+          "mnre_reg_no",
+          "rating",
+          "verified"
+        ],
+        "title": "VendorSummary"
+      },
+      "VerifyRequest": {
+        "properties": {
+          "phone": {
+            "type": "string",
+            "pattern": "^\\+[1-9]\\d{7,14}$",
+            "title": "Phone",
+            "description": "E.164, e.g. +919812345678"
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^\\d{6}$",
+            "title": "Code"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "household",
+                  "vendor"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role",
+            "description": "Required the first time a phone signs in; ignored afterwards."
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "lang": {
+            "type": "string",
+            "enum": [
+              "en",
+              "hi",
+              "gu"
+            ],
+            "title": "Lang",
+            "default": "en"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "phone",
+          "code"
+        ],
+        "title": "VerifyRequest"
+      },
+      "VoiceResult": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "voice_extract",
+            "title": "Kind",
+            "default": "voice_extract"
+          },
+          "lang": {
+            "type": "string",
+            "enum": [
+              "en",
+              "hi",
+              "gu"
+            ],
+            "title": "Lang"
+          },
+          "transcript": {
+            "type": "string",
+            "title": "Transcript"
+          },
+          "fields": {
+            "$ref": "#/components/schemas/PrefillFields"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lang",
+          "transcript",
+          "fields"
+        ],
+        "title": "VoiceResult"
+      },
+      "VoiceTranscribeRequest": {
+        "properties": {
+          "object_key": {
+            "type": "string",
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Object Key"
+          },
+          "lang": {
+            "type": "string",
+            "enum": [
+              "en",
+              "hi",
+              "gu"
+            ],
+            "title": "Lang"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "object_key",
+          "lang"
+        ],
+        "title": "VoiceTranscribeRequest"
+      },
+      "WarrantyTargets": {
+        "properties": {
+          "panel": {
+            "type": "integer",
+            "title": "Panel"
+          },
+          "inverter": {
+            "type": "integer",
+            "title": "Inverter"
+          },
+          "workmanship": {
+            "type": "integer",
+            "title": "Workmanship"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "panel",
+          "inverter",
+          "workmanship"
+        ],
+        "title": "WarrantyTargets"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

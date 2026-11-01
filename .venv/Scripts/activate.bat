@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set VIRTUAL_ENV=E:\DAU\DAU\.venv
+set VIRTUAL_ENV=D:\Vivek\Claude Code Workshop At DAU 2026\HandsOn\New folder\DAU\.venv
 
 if not defined PROMPT set PROMPT=$P$G
 
