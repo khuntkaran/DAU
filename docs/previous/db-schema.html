@@ -1,0 +1,602 @@
+<title>SuryaSetu Database Schema</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: reading column for the overview, then a filterable catalogue of table cards (2 columns on wide screens), then coverage and rules. */
+:root{
+  --bg:#F4F6F3; --surface:#FFFFFF; --ink:#16233B; --muted:#56637A; --line:#D9DED6;
+  --sun:#E9A21A; --sun-ink:#9A5F00; --grid:#0E7A6E; --warn:#B4361F; --soft:#FBF3E1; --tint:#EEF3F1;
+  --p0:#0E7A6E; --p1:#9A5F00; --p2:#5B5FC7; --p3:#7A7F8C;
+  --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1522; --surface:#172034; --ink:#E7ECF4; --muted:#9AA6BA; --line:#2A3550;
+  --sun:#F2B33D; --sun-ink:#F5C566; --grid:#3FC2B0; --warn:#F07A63; --soft:#2A2616; --tint:#1B2740;
+  --p0:#3FC2B0; --p1:#F5C566; --p2:#9EA2FF; --p3:#9AA6BA; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1522; --surface:#172034; --ink:#E7ECF4; --muted:#9AA6BA; --line:#2A3550;
+  --sun:#F2B33D; --sun-ink:#F5C566; --grid:#3FC2B0; --warn:#F07A63; --soft:#2A2616; --tint:#1B2740;
+  --p0:#3FC2B0; --p1:#F5C566; --p2:#9EA2FF; --p3:#9AA6BA; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.6 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+.wrap{max-width:1200px;margin:0 auto}
+header.hero{padding-block:44px 24px;border-bottom:1px solid var(--line)}
+.eyebrow{font:500 12px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--sun-ink)}
+h1{font:800 clamp(32px,5vw,50px)/1.05 var(--f-display);margin:12px 0;text-wrap:balance}
+.lede{font-size:17px;color:var(--muted);max-width:72ch;margin:0}
+.stats{display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:22px;font:13px var(--f-mono);color:var(--muted)}
+.stats b{display:block;font:700 24px var(--f-display);color:var(--ink)}
+h2{font:700 26px/1.2 var(--f-display);margin:52px 0 10px;text-wrap:balance;scroll-margin-top:16px}
+h2 small{display:block;font:500 12px var(--f-mono);letter-spacing:.1em;color:var(--sun-ink);margin-bottom:6px;text-transform:uppercase}
+h3{font:600 16px var(--f-body);margin:22px 0 8px}
+p{max-width:76ch}
+code{font-family:var(--f-mono);font-size:.86em;background:var(--soft);padding:1px 5px;border-radius:4px}
+nav.jump{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0}
+nav.jump a{font:500 13px var(--f-body);color:var(--ink);text-decoration:none;border:1px solid var(--line);background:var(--surface);padding:5px 11px;border-radius:999px}
+nav.jump a:hover,nav.jump a:focus-visible{border-color:var(--sun);outline:none}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;margin:12px 0}
+.panel pre.mermaid{margin:0;background:transparent;min-width:720px}
+details.diagram{margin:12px 0}
+details.diagram summary{cursor:pointer;font:600 15px var(--f-body);padding:6px 0}
+details.diagram summary span{font:400 13px var(--f-body);color:var(--muted);margin-left:6px}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13px;color:var(--muted);margin:8px 0}
+.pill{display:inline-flex;align-items:center;gap:5px;font:600 11px/1 var(--f-mono);letter-spacing:.04em;padding:4px 7px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.pill.P0{color:var(--p0)} .pill.P1{color:var(--p1)} .pill.P2{color:var(--p2)} .pill.P3{color:var(--p3)}
+.pill.view{color:var(--muted);border-style:dashed}
+
+/* filter bar */
+.filters{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:12px;border-bottom:1px solid var(--line);display:grid;gap:10px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.frow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.frow .lbl{font:500 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-right:4px;min-width:62px}
+.chip{font:500 13px var(--f-body);color:var(--ink);background:var(--surface);border:1px solid var(--line);padding:4px 10px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip:focus-visible,#q:focus-visible{outline:2px solid var(--sun);outline-offset:2px}
+#q{font:14px var(--f-body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:7px 10px;width:100%;max-width:360px}
+#count{font:13px var(--f-mono);color:var(--muted)}
+
+/* table cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,540px),1fr));gap:16px;margin-top:16px;align-items:start}
+.tcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;min-width:0;scroll-margin-top:150px}
+.thead{padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.tname{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.tname h4{margin:0;font:600 17px var(--f-mono)}
+.dom{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.purpose{margin:6px 0 0;font-size:14px;color:var(--muted)}
+.feat{margin:6px 0 0;font-size:12.5px;color:var(--muted)}
+.feat b{color:var(--ink);font-weight:500}
+.cols{overflow-x:auto}
+.cols table{border-collapse:collapse;width:100%;font-size:13px;min-width:480px}
+.cols td{padding:5px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.cols tr:last-child td{border-bottom:none}
+.cols td.c{font:500 12.5px var(--f-mono);white-space:nowrap}
+.cols td.t{font:12px var(--f-mono);color:var(--grid);white-space:nowrap}
+.cols td.k{white-space:nowrap}
+.cols td.n{color:var(--muted)}
+.key{display:inline-block;font:600 10px/1 var(--f-mono);padding:3px 5px;border-radius:4px;margin:0 3px 2px 0;background:var(--tint);color:var(--ink)}
+.key.pk{background:var(--sun);color:#1b1300}
+.key.fk a{color:inherit}
+.tfoot{padding:10px 16px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);background:var(--tint);border-radius:0 0 10px 10px}
+.tfoot code{background:transparent;padding:0}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+
+.tbl{overflow-x:auto;margin:12px 0;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.tbl table{border-collapse:collapse;width:100%;font-size:14px;min-width:620px}
+.tbl th,.tbl td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl th{font:500 11.5px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl td a{font-family:var(--f-mono);font-size:12.5px;color:var(--grid);margin-right:6px;white-space:nowrap}
+.tbl td.grp{font:600 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--sun-ink);background:var(--soft)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:14px}
+.note{border-left:3px solid var(--sun);background:var(--soft);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0}
+.note p{margin:0}
+@media (prefers-reduced-motion:no-preference){.tcard:target{animation:flash 1.4s ease-out}}
+@keyframes flash{from{box-shadow:0 0 0 3px var(--sun)}to{box-shadow:0 0 0 0 transparent}}
+</style>
+
+<div class="wrap">
+<header class="hero">
+  <div class="eyebrow">SELC Hackathon · AI rooftop solar marketplace · data model</div>
+  <h1>SuryaSetu database schema</h1>
+  <p class="lede">Every table needed for the 22 mandatory features, the 3 bonus features and all recommended extras in the feature list. Each table is tagged with its build priority (P0–P3) and the features it serves. Subsidy, cost and payback results are stored with the rule rows they were calculated from, so the app can always show where a number came from.</p>
+  <div class="stats" id="stats"></div>
+  <nav class="jump" aria-label="Sections">
+    <a href="#overview">Domains</a><a href="#er">ER diagrams</a><a href="#catalogue">All tables</a><a href="#coverage">Feature coverage</a><a href="#enums">Status values</a><a href="#constraints">Keys &amp; indexes</a><a href="#engines">Local vs production</a>
+  </nav>
+</header>
+
+<h2 id="overview"><small>Architecture</small>Seven domains</h2>
+<p>The schema is split into domains that map to backend modules. <code>files</code> and <code>ai_jobs</code> are shared by every domain: any uploaded file is one row in <code>files</code>, and every LLM call is one row in <code>ai_jobs</code>.</p>
+<div class="panel"><pre class="mermaid">
+flowchart LR
+  ID["Identity and access<br/>users, auth_otps, household_profiles"]
+  VEN["Vendors<br/>vendors, service areas, documents,<br/>leads, reviews, vendor_stats"]
+  REF["Reference and rules<br/>discoms, tariff slabs, rule_sets,<br/>rule_items, components, faqs"]
+  REQ["Requests and roof AI<br/>solar_requests, attachments, bills, voice,<br/>roof assessment, obstructions, calculations"]
+  QUO["Quotes and decision<br/>quotes, line items, extraction, reviews,<br/>scores, recommendations, chat, reports"]
+  INS["Installation and communication<br/>projects, events, messages, notifications"]
+  PLT["Platform<br/>files, ai_jobs, llm_usage, audit_logs"]
+  ID --> REQ
+  ID --> VEN
+  REF --> REQ
+  REF --> QUO
+  REQ --> QUO
+  VEN --> QUO
+  QUO --> INS
+  INS --> VEN
+  PLT -.-> REQ
+  PLT -.-> QUO
+  PLT -.-> VEN
+  PLT -.-> INS
+</pre></div>
+
+<h2 id="er"><small>Relationships</small>ER diagrams</h2>
+<p>The diagrams show keys and cardinality. Every column is listed in the table catalogue below. Links to <code>files</code>, <code>ai_jobs</code> and <code>users</code> (as creator) are left out of the domain diagrams to keep them readable.</p>
+
+<details class="diagram" open><summary>1. Core flow: request → quote → accept <span>the P0 path the judges score at 30%</span></summary>
+<div class="panel"><pre class="mermaid">
+erDiagram
+  users ||--o| household_profiles : "has profile"
+  users ||--o| vendors : "is vendor"
+  users ||--o{ solar_requests : posts
+  rule_sets ||--o{ rule_items : contains
+  rule_sets ||--o{ calculations : "used by"
+  solar_requests ||--o{ request_attachments : has
+  solar_requests ||--o{ roof_assessments : "assessed by"
+  solar_requests ||--o{ calculations : "estimated in"
+  solar_requests ||--o{ quotes : receives
+  vendors ||--o{ quotes : submits
+  quotes ||--o{ quote_line_items : itemises
+  quotes ||--o| quote_reviews : "reviewed in"
+  quotes ||--o| quote_scores : "scored in"
+  quotes ||--o| calculations : "financials in"
+  solar_requests ||--o{ recommendations : gets
+  quotes ||--o{ recommendations : "recommended in"
+  solar_requests ||--o{ request_status_history : logs
+  solar_requests ||--o| installation_projects : "becomes"
+</pre></div></details>
+
+<details class="diagram"><summary>2. Requests and roof AI <span>map pin, photo, bill, voice, sizing</span></summary>
+<div class="panel"><pre class="mermaid">
+erDiagram
+  users ||--o{ solar_requests : posts
+  discoms ||--o{ solar_requests : "supplies"
+  discoms ||--o{ discom_tariff_slabs : "charges"
+  solar_requests ||--o{ request_attachments : has
+  files ||--o{ request_attachments : "stored as"
+  solar_requests ||--o{ electricity_bills : "bill uploaded"
+  solar_requests ||--o{ voice_inputs : "spoken input"
+  solar_requests ||--o{ roof_assessments : "photo assessed"
+  roof_assessments ||--o{ roof_obstructions : detects
+  roof_assessments ||--o{ panel_layouts : "layout drawn"
+  solar_requests ||--o{ calculations : "estimate"
+  rule_sets ||--o{ calculations : "rules applied"
+  rule_sets ||--o{ rule_items : contains
+  solar_requests ||--o{ request_status_history : logs
+  ai_jobs ||--o{ roof_assessments : produces
+  ai_jobs ||--o{ voice_inputs : produces
+  ai_jobs ||--o{ electricity_bills : produces
+</pre></div></details>
+
+<details class="diagram"><summary>3. Quotes and decision <span>review, score, recommend, chat, report</span></summary>
+<div class="panel"><pre class="mermaid">
+erDiagram
+  solar_requests ||--o{ quotes : receives
+  vendors ||--o{ quotes : submits
+  components ||--o{ quotes : "panel / inverter"
+  quotes ||--o{ quote_line_items : itemises
+  files ||--o{ quote_extractions : "uploaded quote"
+  quote_extractions |o--o| quotes : "fills"
+  quotes ||--o| quote_reviews : "missing items"
+  quotes ||--o| quote_scores : "explainable score"
+  quotes ||--o| calculations : "net cost, payback"
+  solar_requests ||--o{ recommendations : gets
+  quotes ||--o{ recommendations : "top pick"
+  users ||--o{ saved_quotes : bookmarks
+  quotes ||--o{ saved_quotes : "saved"
+  solar_requests ||--o{ comparison_reports : exports
+  recommendations ||--o{ comparison_reports : "included in"
+  solar_requests ||--o{ ai_chat_threads : "ask AI"
+  ai_chat_threads ||--o{ ai_chat_messages : contains
+</pre></div></details>
+
+<details class="diagram"><summary>4. Vendors, installation and communication <span>profile, leads, tracker, reviews, messages</span></summary>
+<div class="panel"><pre class="mermaid">
+erDiagram
+  users ||--o| vendors : "is vendor"
+  vendors ||--o{ vendor_service_areas : covers
+  vendors ||--o{ vendor_documents : "verified by"
+  vendors ||--o{ vendor_leads : tracks
+  solar_requests ||--o{ vendor_leads : "seen as lead"
+  solar_requests ||--o| installation_projects : becomes
+  quotes ||--o| installation_projects : "accepted into"
+  vendors ||--o{ installation_projects : installs
+  installation_projects ||--o{ installation_events : "stage log"
+  installation_projects ||--o| vendor_reviews : "reviewed after"
+  vendors ||--o{ vendor_reviews : receives
+  users ||--o{ messages : sends
+  solar_requests ||--o{ messages : "about"
+  users ||--o{ notifications : receives
+</pre></div></details>
+
+<h2 id="catalogue"><small>Catalogue</small>All tables</h2>
+<div class="legend">
+  <span><span class="pill P0">P0</span> essential, the mandatory flow</span>
+  <span><span class="pill P1">P1</span> high-value additions</span>
+  <span><span class="pill P2">P2</span> polish</span>
+  <span><span class="pill P3">P3</span> future scope</span>
+  <span><span class="key pk">PK</span><span class="key">FK</span><span class="key">UQ</span><span class="key">IDX</span><span class="key">NN</span> primary key, foreign key, unique, indexed, not null</span>
+</div>
+<div class="filters" role="search">
+  <div class="frow"><span class="lbl">Domain</span><span id="domChips"></span></div>
+  <div class="frow"><span class="lbl">Priority</span><span id="priChips"></span></div>
+  <div class="frow"><label class="lbl" for="q">Search</label><input id="q" type="search" placeholder="Table, column or feature, e.g. subsidy, dcr, voice"><span id="count"></span></div>
+</div>
+<div class="grid" id="grid"></div>
+
+<h2 id="coverage"><small>Traceability</small>Feature → table coverage</h2>
+<p>Every feature in the feature list, with the tables that store it. Click a table name to jump to its card.</p>
+<div class="tbl"><table id="cov"><thead><tr><th>Feature</th><th>Priority</th><th>Tables</th></tr></thead><tbody></tbody></table></div>
+
+<h2 id="enums"><small>Workflow</small>Status values</h2>
+<div class="tbl"><table>
+<thead><tr><th>Column</th><th>Values, in lifecycle order</th><th>Feature-list wording</th></tr></thead>
+<tbody>
+<tr><td><code>solar_requests.status</code></td><td><code>draft → open → quoted → accepted → completed</code>, plus <code>cancelled</code>, <code>expired</code></td><td>Pending = open · Quotations Received = quoted · Accepted · Rejected = cancelled / expired · Completed</td></tr>
+<tr><td><code>quotes.status</code></td><td><code>draft → submitted → revised → accepted</code>, or <code>rejected</code>, <code>withdrawn</code>, <code>expired</code></td><td>Accepting one quote rejects the others in the same transaction</td></tr>
+<tr><td><code>installation_projects.stage</code></td><td><code>vendor_selected → site_survey → scheduled → installing → installed → net_metering → commissioned</code>, plus <code>cancelled</code></td><td>Request Submitted, Vendor Selected, Installation Scheduled, Installation Completed</td></tr>
+<tr><td><code>installation_projects.subsidy_status</code></td><td><code>not_applied → applied → approved → disbursed</code></td><td>Subsidy tracking on the national portal</td></tr>
+<tr><td><code>vendors.verification_status</code></td><td><code>pending → verified</code>, or <code>rejected</code>, <code>suspended</code></td><td>Vendor profile and verification</td></tr>
+<tr><td><code>vendor_leads.status</code></td><td><code>new → viewed → shortlisted → quoted → won</code>, or <code>lost</code>, <code>dismissed</code></td><td>Lead management</td></tr>
+<tr><td><code>ai_jobs.status</code></td><td><code>queued → running → succeeded</code>, or <code>failed</code>, <code>cancelled</code></td><td>Background jobs for AI calls</td></tr>
+<tr><td><code>users.role</code></td><td><code>household</code> · <code>vendor</code> · <code>admin</code></td><td>Role-based authentication</td></tr>
+</tbody></table></div>
+
+<h2 id="constraints"><small>Integrity</small>Keys, constraints and indexes</h2>
+<div class="two">
+<div>
+<h3>Business rules enforced by the database</h3>
+<div class="tbl"><table><thead><tr><th>Constraint</th><th>Why</th></tr></thead><tbody>
+<tr><td><code>UNIQUE quotes(request_id, vendor_id)</code></td><td>One quote per vendor per request. Revisions update the row and bump <code>revision</code>.</td></tr>
+<tr><td><code>UNIQUE quotes(request_id) WHERE status='accepted'</code></td><td>A request can never have two accepted quotes, even if two clicks race.</td></tr>
+<tr><td><code>UNIQUE installation_projects(request_id)</code></td><td>One installation per accepted request.</td></tr>
+<tr><td><code>UNIQUE vendor_reviews(project_id)</code></td><td>One review per completed installation, and only after one exists.</td></tr>
+<tr><td><code>UNIQUE vendor_leads(vendor_id, request_id)</code></td><td>One lead row per vendor per request.</td></tr>
+<tr><td><code>UNIQUE rule_items(rule_set_id, rule_key, applies_to)</code></td><td>Each rule appears once per version.</td></tr>
+<tr><td><code>CHECK vendor_reviews.rating BETWEEN 1 AND 5</code></td><td>Valid ratings only.</td></tr>
+<tr><td><code>CHECK monthly_units &gt; 0 AND budget_inr &gt; 0</code></td><td>The sizing and payback maths needs positive inputs.</td></tr>
+<tr><td><code>CHECK calculations.quote_id IS NOT NULL WHEN scope='quote_financials'</code></td><td>Quote financials always belong to a quote.</td></tr>
+</tbody></table></div>
+</div>
+<div>
+<h3>Indexes for the hot queries</h3>
+<div class="tbl"><table><thead><tr><th>Index</th><th>Query it serves</th></tr></thead><tbody>
+<tr><td><code>solar_requests(status, lat, lng)</code> · production: GiST on <code>location</code> <code>WHERE status IN ('open','quoted')</code></td><td>Vendor map: open requests in the visible area</td></tr>
+<tr><td><code>solar_requests(household_id, created_at DESC)</code></td><td>"My requests"</td></tr>
+<tr><td><code>quotes(request_id, status)</code></td><td>Comparison screen</td></tr>
+<tr><td><code>quotes(vendor_id, status)</code></td><td>Vendor quote list and analytics</td></tr>
+<tr><td><code>ai_jobs(input_hash, job_type)</code></td><td>Cache hit before calling the LLM, and idempotent retries</td></tr>
+<tr><td><code>ai_jobs(status, priority, queued_at)</code></td><td>Worker picks the next job</td></tr>
+<tr><td><code>notifications(user_id, read_at)</code></td><td>Unread badge</td></tr>
+<tr><td><code>files(sha256)</code></td><td>Duplicate upload detection</td></tr>
+<tr><td><code>vendor_leads(vendor_id, status)</code></td><td>Lead pipeline</td></tr>
+</tbody></table></div>
+</div>
+</div>
+
+<h2 id="engines"><small>Portability</small>Local vs production</h2>
+<p>The same schema runs on SQLite for the hackathon demo and on PostgreSQL + PostGIS at state scale. Use SQLAlchemy so that switching is a change to <code>DATABASE_URL</code>.</p>
+<div class="tbl"><table>
+<thead><tr><th>Type in this schema</th><th>Local: SQLite</th><th>Production: PostgreSQL 16 + PostGIS</th></tr></thead>
+<tbody>
+<tr><td><code>uuid</code></td><td><code>TEXT</code> (generated in Python with uuid4)</td><td><code>uuid</code></td></tr>
+<tr><td><code>jsonb</code></td><td><code>JSON</code>, stored as text</td><td><code>jsonb</code> with GIN indexes where it is queried</td></tr>
+<tr><td><code>timestamptz</code></td><td><code>TEXT</code>, ISO-8601 UTC</td><td><code>timestamptz</code></td></tr>
+<tr><td><code>bool</code></td><td><code>INTEGER</code> 0/1</td><td><code>boolean</code></td></tr>
+<tr><td><code>lat</code>, <code>lng</code> as <code>double</code></td><td>Two <code>REAL</code> columns; distance computed in Python (haversine)</td><td>Add <code>location geography(Point,4326)</code> with a GiST index; query with <code>ST_DWithin</code></td></tr>
+<tr><td><code>numeric(p,s)</code></td><td><code>NUMERIC</code>; money is kept as whole rupees in <code>int</code> columns to avoid float errors</td><td><code>numeric</code></td></tr>
+<tr><td><code>vendor_stats</code> view</td><td>Plain view</td><td>Materialized view refreshed every 15 minutes</td></tr>
+<tr><td><code>llm_usage</code></td><td>Table, single process</td><td>Moved to Redis token buckets; the table keeps daily totals for cost reports</td></tr>
+<tr><td>Partitioning</td><td>Not needed</td><td><code>ai_jobs</code>, <code>notifications</code>, <code>audit_logs</code> partitioned by month and archived after 12 months</td></tr>
+</tbody></table></div>
+<div class="note"><p>Files are never stored in the database. <code>files.storage_key</code> points to a path in the local <code>uploads/</code> folder during the demo, or to an object key in S3 / Cloud Storage in production.</p></div>
+</div>
+
+<script>
+const DOMAINS = {
+  identity:"Identity & access", vendors:"Vendors", reference:"Reference & rules",
+  requests:"Requests & roof AI", quotes:"Quotes & decision", install:"Installation & communication", platform:"Platform"
+};
+const STD_TS = ["created_at|timestamptz|NN|", "updated_at|timestamptz|NN|"];
+// column format: name|type|keys (space separated: PK, FK:table, UQ, IDX, NN)|note
+const T = [
+ {n:"users", d:"identity", p:"P0", purpose:"Every account: household, vendor or admin. Login is by phone OTP.",
+  f:["Role-based authentication","Multilingual interface"],
+  c:["id|uuid|PK|","role|text|NN IDX|household · vendor · admin","full_name|text|NN|","phone|text|UQ NN|E.164, used for OTP login","email|text|UQ|optional","password_hash|text||admin accounts only","preferred_lang|text|NN|en · hi · gu, default en","avatar_file_id|uuid|FK:files|","is_active|bool|NN|default true; admin can suspend","last_login_at|timestamptz||",...STD_TS]},
+ {n:"auth_otps", d:"identity", p:"P0", purpose:"One-time login codes. Codes are hashed, never stored as plain text.",
+  f:["Role-based authentication"],
+  c:["id|uuid|PK|","phone|text|IDX NN|","code_hash|text|NN|demo code 123456","purpose|text|NN|login · verify_phone","attempts|int|NN|locked after 5","expires_at|timestamptz|NN|5 minutes","consumed_at|timestamptz||","created_at|timestamptz|NN|"]},
+ {n:"household_profiles", d:"identity", p:"P1", purpose:"Saved address and electricity connection of a household, reused for every new request.",
+  f:["Automatic location detection","Electricity bill upload"],
+  c:["user_id|uuid|PK FK:users|one-to-one with users","address_line|text||","city|text||","district|text|IDX|","state|text|NN|","pincode|text|IDX|","discom_id|uuid|FK:discoms|","consumer_number|text||from the electricity bill","sanctioned_load_kw|numeric(6,2)||can cap the system size","connection_type|text||residential · rwa_ghs","default_lat|double||","default_lng|double||",...STD_TS]},
+
+ {n:"vendors", d:"vendors", p:"P0", purpose:"Solar installer company profile, verification state and denormalised rating.",
+  f:["Vendor profile and verification","Contact vendor","Vendor ratings and reviews"],
+  c:["id|uuid|PK|","user_id|uuid|FK:users UQ NN|login account","company_name|text|NN|","gstin|text|UQ|","mnre_registration_no|text|UQ|registered vendor on the national portal","years_in_business|int||","installations_completed|int||","contact_person|text||","contact_phone|text||shared with household after accept","contact_email|text||","website|text||","address|text||","base_lat|double||office location","base_lng|double||","service_radius_km|int|NN|default 50","logo_file_id|uuid|FK:files|","about|text||","verification_status|text|NN IDX|pending · verified · rejected · suspended","verified_by|uuid|FK:users|admin","verified_at|timestamptz||","avg_rating|numeric(3,2)||refreshed from vendor_reviews","rating_count|int|NN|default 0",...STD_TS]},
+ {n:"vendor_service_areas", d:"vendors", p:"P1", purpose:"Districts, pincodes or DISCOM areas a vendor serves. Filters which requests appear on the vendor map.",
+  f:["Vendor profile and verification","View open requests on a map"],
+  c:["id|uuid|PK|","vendor_id|uuid|FK:vendors IDX NN|","area_type|text|NN|district · pincode · discom","district|text|IDX|","pincode|text|IDX|","discom_id|uuid|FK:discoms|","created_at|timestamptz|NN|"]},
+ {n:"vendor_documents", d:"vendors", p:"P2", purpose:"Certificates an admin reviews before marking a vendor verified.",
+  f:["Vendor profile and verification","Admin dashboard"],
+  c:["id|uuid|PK|","vendor_id|uuid|FK:vendors IDX NN|","doc_type|text|NN|mnre_registration · gst_certificate · discom_empanelment · id_proof","file_id|uuid|FK:files NN|","status|text|NN|pending · approved · rejected","reviewed_by|uuid|FK:users|","review_note|text||","uploaded_at|timestamptz|NN|"]},
+ {n:"vendor_leads", d:"vendors", p:"P2", purpose:"A vendor's pipeline: which requests they have seen, shortlisted, quoted, won or lost.",
+  f:["Lead management","Vendor analytics"],
+  c:["id|uuid|PK|","vendor_id|uuid|FK:vendors NN|","request_id|uuid|FK:solar_requests NN|","status|text|NN IDX|new · viewed · shortlisted · quoted · won · lost · dismissed","distance_km|numeric(6,2)||from vendor base, computed","first_viewed_at|timestamptz||","last_action_at|timestamptz||","private_notes|text||only the vendor sees this"],
+  foot:"UNIQUE (vendor_id, request_id)"},
+ {n:"vendor_reviews", d:"vendors", p:"P2", purpose:"Rating and review from a household after a completed installation.",
+  f:["Vendor ratings and reviews","Recommend a vendor with reasons"],
+  c:["id|uuid|PK|","project_id|uuid|FK:installation_projects UQ NN|only after installation","vendor_id|uuid|FK:vendors IDX NN|","household_id|uuid|FK:users NN|","rating|smallint|NN|1–5","quality_rating|smallint||1–5","timeliness_rating|smallint||1–5","communication_rating|smallint||1–5","comment|text||","is_visible|bool|NN|admin can hide abuse","created_at|timestamptz|NN|"]},
+ {n:"vendor_stats", d:"vendors", p:"P2", view:true, purpose:"Read-only view computed from leads, quotes and reviews. Not a stored table.",
+  f:["Vendor analytics","Admin dashboard"],
+  c:["vendor_id|uuid||","leads_count|int||count of vendor_leads","quotes_submitted|int||","quotes_accepted|int||","conversion_rate|numeric(5,2)||accepted ÷ submitted × 100","avg_price_per_kw_inr|int||","avg_rating|numeric(3,2)||"]},
+
+ {n:"discoms", d:"reference", p:"P0", purpose:"Electricity distribution companies. The state category decides which subsidy rates apply.",
+  f:["Estimate subsidy","Estimate payback"],
+  c:["id|uuid|PK|","code|text|UQ NN|UGVCL · MGVCL · DGVCL · PGVCL · Torrent","name|text|NN|","state|text|NN|","state_category|text|NN|general · special (NE, hill states, islands)","net_metering_fee_inr|int||","portal_url|text||"]},
+ {n:"discom_tariff_slabs", d:"reference", p:"P0", purpose:"Per-unit tariff by consumption slab, used to turn generated units into rupee savings.",
+  f:["Estimate payback","Solar savings calculator"],
+  c:["id|uuid|PK|","discom_id|uuid|FK:discoms IDX NN|","from_units|int|NN|","to_units|int||null means no upper limit","rate_per_unit_inr|numeric(6,2)|NN|","fixed_charge_inr|numeric(8,2)||","effective_from|date|NN|","source_url|text||","is_sample|bool|NN|true for demo values; the UI labels them"]},
+ {n:"rule_sets", d:"reference", p:"P0", purpose:"A versioned PM Surya Ghar rulebook. Old calculations keep pointing at the version they used.",
+  f:["Follow PM Surya Ghar rules","Show where each rule comes from"],
+  c:["id|uuid|PK|","scheme|text|NN|pm_surya_ghar","version|text|UQ NN|e.g. 2024-03","effective_from|date|NN|","effective_to|date||","is_active|bool|NN|exactly one active per scheme","source_checked_on|date|NN|date the team checked the portal","notes|text||","created_at|timestamptz|NN|"]},
+ {n:"rule_items", d:"reference", p:"P0", purpose:"Each individual rule with its parameters and public source. The UI shows source_title and source_url next to every number.",
+  f:["Follow PM Surya Ghar rules","Show where each rule comes from","Suggest system size","Estimate subsidy"],
+  c:["id|uuid|PK|","rule_set_id|uuid|FK:rule_sets NN|","rule_key|text|NN|cfa_first_2kw · cfa_third_kw · cfa_cap · sizing_band · gen_kwh_per_kw_day · area_sqm_per_kw · dcr_required","rule_type|text|NN|subsidy · sizing · generation · area · eligibility · cost_benchmark","applies_to|text|NN|general · special · all","params|jsonb|NN|e.g. {\"per_kw\":30000,\"up_to_kw\":2}","description|text|NN|plain-language rule","source_title|text|NN|e.g. MNRE Operational Guidelines, Mar 2024","source_url|text|NN|","source_clause|text||section or table reference"],
+  foot:"UNIQUE (rule_set_id, rule_key, applies_to)"},
+ {n:"components", d:"reference", p:"P2", purpose:"Catalogue of panel and inverter models. Gives the quotation score objective data on quality.",
+  f:["Explainable quotation score","Flag missing items"],
+  c:["id|uuid|PK|","component_type|text|NN|panel · inverter","brand|text|NN|","model|text|NN|","technology|text||mono_perc · topcon · bifacial · string · micro · hybrid","rated_capacity|numeric(8,2)||Wp for panels, kW for inverters","efficiency_pct|numeric(5,2)||","tier|text||tier1 · tier2 · unknown","almm_listed|bool||on the government approved list","dcr_eligible|bool||domestic content, needed for subsidy","default_warranty_yrs|int||","datasheet_url|text||"],
+  foot:"UNIQUE (component_type, brand, model)"},
+ {n:"faqs", d:"reference", p:"P2", purpose:"Help and FAQ content in English, Hindi and Gujarati.",
+  f:["Help and FAQ section","Multilingual interface"],
+  c:["id|uuid|PK|","category|text|NN|solar_basics · subsidy · process · vendors","lang|text|NN|en · hi · gu","question|text|NN|","answer|text|NN|","sort_order|int|NN|","is_published|bool|NN|"]},
+
+ {n:"solar_requests", d:"requests", p:"P0", purpose:"A household's rooftop solar requirement. The centre of the whole flow.",
+  f:["Pin home on map","Enter monthly consumption","Enter budget","View open requests on a map","Request status tracking","Voice input"],
+  c:["id|uuid|PK|","request_code|text|UQ NN|SR-2026-000123, shown to users","household_id|uuid|FK:users IDX NN|","lat|double|NN IDX|map pin","lng|double|NN IDX|","location_source|text|NN|map_pin · gps · search","address_text|text||","district|text|IDX|","pincode|text||","discom_id|uuid|FK:discoms|","state_category|text|NN|general · special, copied from discom","monthly_units|int|NN|kWh per month","monthly_bill_inr|int||","budget_inr|int|NN|","roof_type|text||rcc_flat · sloped · tin_sheet · asbestos","roof_area_sqm|numeric(7,2)||","floors|int||","building_type|text||independent · rwa_ghs","input_method|text|NN|form · voice · bill","notes|text||","status|text|NN IDX|see Status values","rule_set_id|uuid|FK:rule_sets NN|rules used for sizing","latest_estimate_id|uuid|FK:calculations|","quotes_count|int|NN|default 0","accepted_quote_id|uuid|FK:quotes|","submitted_at|timestamptz||","expires_at|timestamptz||submitted + 30 days","closed_at|timestamptz||",...STD_TS]},
+ {n:"request_attachments", d:"requests", p:"P0", purpose:"Links terrace photos and bills to a request.",
+  f:["Upload terrace photo","Electricity bill upload"],
+  c:["id|uuid|PK|","request_id|uuid|FK:solar_requests IDX NN|","file_id|uuid|FK:files NN|","kind|text|NN|terrace_photo · electricity_bill · other","is_primary|bool|NN|photo used for AI assessment","sort_order|int|NN|","created_at|timestamptz|NN|"],
+  foot:"UNIQUE (request_id, file_id)"},
+ {n:"electricity_bills", d:"requests", p:"P1", purpose:"Details the AI extracts from an uploaded bill. The household confirms them before they fill the request.",
+  f:["Electricity bill upload","Enter monthly consumption"],
+  c:["id|uuid|PK|","request_id|uuid|FK:solar_requests IDX|","file_id|uuid|FK:files NN|","ai_job_id|uuid|FK:ai_jobs|","extraction_status|text|NN|pending · done · failed","consumer_number|text||","discom_name|text||","billing_period_start|date||","billing_period_end|date||","units_consumed|int||","amount_inr|numeric(10,2)||","sanctioned_load_kw|numeric(6,2)||","confidence|numeric(3,2)||0–1","confirmed_by_user|bool|NN|default false","created_at|timestamptz|NN|"]},
+ {n:"voice_inputs", d:"requests", p:"P0", purpose:"A spoken requirement: the audio, its transcript, and the fields extracted from it to prefill the form.",
+  f:["Voice input","Voice input in Hindi","Voice input in Gujarati"],
+  c:["id|uuid|PK|","user_id|uuid|FK:users NN|","request_id|uuid|FK:solar_requests|null until the form is saved","audio_file_id|uuid|FK:files|","language|text|NN|hi · gu · en · auto","stt_provider|text|NN|groq_whisper · web_speech","transcript|text||","extracted_fields|jsonb||{monthly_units, budget_inr, roof_type, ...}","ai_job_id|uuid|FK:ai_jobs|","applied_to_request|bool|NN|household confirmed the prefill","created_at|timestamptz|NN|"]},
+ {n:"roof_assessments", d:"requests", p:"P0", purpose:"AI analysis of the terrace photo. The LLM supplies the usable fraction; code computes area and the kW cap.",
+  f:["Analyze terrace photo","Suggest system size"],
+  c:["id|uuid|PK|","request_id|uuid|FK:solar_requests IDX NN|","photo_file_id|uuid|FK:files NN|","ai_job_id|uuid|FK:ai_jobs|","status|text|NN|pending · done · failed","model|text||e.g. gemini flash","roof_area_input_sqm|numeric(7,2)||entered by household","usable_fraction|numeric(3,2)||0–1, from LLM","usable_area_sqm|numeric(7,2)||computed in code","max_kw_by_area|numeric(5,2)||code: usable area ÷ area_sqm_per_kw rule","shade_risk|text||low · medium · high","summary|text||plain-language explanation","raw_output|jsonb||validated LLM JSON","created_at|timestamptz|NN|"]},
+ {n:"roof_obstructions", d:"requests", p:"P0", purpose:"Each obstruction found in the photo, with a box the UI draws over the image.",
+  f:["Identify obstructions (water tank, staircase room)"],
+  c:["id|uuid|PK|","assessment_id|uuid|FK:roof_assessments IDX NN|","obstruction_type|text|NN|water_tank · staircase_room · parapet · tree_shade · dish_antenna · solar_water_heater · other","bbox_x|numeric(4,3)||0–1, fraction of image width","bbox_y|numeric(4,3)||","bbox_w|numeric(4,3)||","bbox_h|numeric(4,3)||","severity|text||low · medium · high","confidence|numeric(3,2)||","note|text||"]},
+ {n:"panel_layouts", d:"requests", p:"P3", purpose:"A rough panel placement drawn around detected obstructions.",
+  f:["Rooftop solar layout visualization"],
+  c:["id|uuid|PK|","assessment_id|uuid|FK:roof_assessments NN|","panel_wattage|int|NN|","panel_count|int|NN|","layout_kw|numeric(5,2)|NN|","layout_json|jsonb|NN|panel rectangles in image coordinates","generated_by|text|NN|code","created_at|timestamptz|NN|"]},
+ {n:"calculations", d:"requests", p:"P0", purpose:"Every number the calculation engine produces, with the steps and rule rows used. One table for both the request estimate and each quote's financials.",
+  f:["Suggest system size","Estimate subsidy","Estimate payback","Solar savings calculator","Calculate in code, not by LLM","Show where each rule comes from"],
+  c:["id|uuid|PK|","scope|text|NN|request_estimate · quote_financials","request_id|uuid|FK:solar_requests IDX NN|","quote_id|uuid|FK:quotes UQ|set when scope = quote_financials","rule_set_id|uuid|FK:rule_sets NN|","recommended_kw|numeric(5,2)||","kw_band_min|numeric(5,2)||from sizing band rule","kw_band_max|numeric(5,2)||","roof_cap_kw|numeric(5,2)||from roof assessment","system_kw|numeric(5,2)|NN|size used in the maths","gross_cost_inr|int||quote price, or benchmark for an estimate","subsidy_inr|int|NN|","net_cost_inr|int||","annual_generation_kwh|int||","monthly_savings_inr|int||","annual_savings_inr|int||","bill_reduction_pct|numeric(5,2)||","payback_years|numeric(4,1)||","savings_25y_inr|int||","inputs_snapshot|jsonb|NN|inputs at the time of calculation","steps|jsonb|NN|[{label, formula, value, rule_item_id}], rendered in the UI","engine_version|text|NN|","computed_at|timestamptz|NN|"]},
+ {n:"request_status_history", d:"requests", p:"P0", purpose:"Every status change on a request: who changed it and when.",
+  f:["Request status tracking","Installation progress tracker"],
+  c:["id|uuid|PK|","request_id|uuid|FK:solar_requests IDX NN|","from_status|text||","to_status|text|NN|","changed_by|uuid|FK:users|null for system changes","reason|text||","created_at|timestamptz|NN|"]},
+
+ {n:"quotes", d:"quotes", p:"P0", purpose:"A vendor's quotation for a request: price, panels, inverter, warranty and timeline. Vendor notes are untrusted text.",
+  f:["Submit a quotation","Enter price","Panel details","Inverter details","Warranty details","Installation timeline","View and compare quotations","Ignore hidden instructions"],
+  c:["id|uuid|PK|","quote_code|text|UQ NN|Q-2026-000456","request_id|uuid|FK:solar_requests IDX NN|","vendor_id|uuid|FK:vendors IDX NN|","status|text|NN IDX|see Status values","system_kw|numeric(5,2)|NN|","price_total_inr|int|NN|","gst_included|bool|NN|","gst_amount_inr|int||","panel_component_id|uuid|FK:components|optional catalogue match","panel_brand|text|NN|","panel_model|text||","panel_technology|text||mono_perc · topcon · bifacial","panel_wattage|int||Wp per panel","panel_count|int||","panel_efficiency_pct|numeric(5,2)||","dcr_compliant|bool|NN|required for subsidy","panel_product_warranty_yrs|int||","panel_performance_warranty_yrs|int||usually 25","inverter_component_id|uuid|FK:components|","inverter_brand|text|NN|","inverter_model|text||","inverter_type|text||string · micro · hybrid","inverter_capacity_kw|numeric(5,2)||","inverter_warranty_yrs|int||","workmanship_warranty_yrs|int||","amc_years|int||","timeline_days|int|NN|","valid_until|date||","payment_terms|text||","notes|text||untrusted; never sent to the recommender","source|text|NN|form · uploaded_document","source_file_id|uuid|FK:files|original PDF or photo","generated_pdf_file_id|uuid|FK:files|professional quotation PDF","injection_flag|bool|NN|default false","injection_reason|text||","revision|int|NN|default 1","submitted_at|timestamptz||","decided_at|timestamptz||",...STD_TS],
+  foot:"UNIQUE (request_id, vendor_id) · UNIQUE (request_id) WHERE status = 'accepted'"},
+ {n:"quote_line_items", d:"quotes", p:"P0", purpose:"Itemised components and services in a quote. The missing-items checklist reads this table.",
+  f:["Flag missing items","Compare quotations","Smart quotation generator"],
+  c:["id|uuid|PK|","quote_id|uuid|FK:quotes IDX NN|","item_type|text|NN|panels · inverter · mounting_structure · cabling · earthing · lightning_arrester · acdb_dcdb · net_meter · discom_fees · installation · transport · amc · insurance · other","description|text||","quantity|numeric(8,2)||","unit|text||nos · m · set · lot","unit_price_inr|int||","amount_inr|int||","included|bool|NN|false = listed as excluded","sort_order|int|NN|"]},
+ {n:"quote_extractions", d:"quotes", p:"P2", purpose:"Fields the AI reads from an uploaded quotation PDF or photo, before a person confirms them into a quote.",
+  f:["Quotation PDF/image reader","Ignore hidden instructions"],
+  c:["id|uuid|PK|","file_id|uuid|FK:files NN|","uploaded_by|uuid|FK:users NN|vendor or household","request_id|uuid|FK:solar_requests IDX|","quote_id|uuid|FK:quotes|set after confirmation","ai_job_id|uuid|FK:ai_jobs|","status|text|NN|pending · extracted · confirmed · failed","extracted|jsonb||same shape as the quote form","field_confidence|jsonb||per-field 0–1","injection_detected|bool|NN|","created_at|timestamptz|NN|"]},
+ {n:"quote_reviews", d:"quotes", p:"P0", purpose:"The checklist result for a quote: missing items and warnings from code, plain-language notes from the LLM, and the injection check.",
+  f:["Flag missing items","Compare quotations","Ignore hidden instructions"],
+  c:["id|uuid|PK|","quote_id|uuid|FK:quotes UQ NN|","rule_set_id|uuid|FK:rule_sets NN|","checklist_version|text|NN|","missing_items|jsonb|NN|[{item, severity, why}] from code","warnings|jsonb||e.g. non-DCR panels, size exceeds roof cap","injection_detected|bool|NN|","injection_excerpt|text||the suspicious text, shown to the household","llm_notes|text||explanations only, no numbers","ai_job_id|uuid|FK:ai_jobs|","reviewed_at|timestamptz|NN|"]},
+ {n:"quote_scores", d:"quotes", p:"P0", purpose:"An explainable 0–100 score per quote, computed in code with the weights and the inputs to each criterion.",
+  f:["Explainable quotation score","Recommend a vendor with reasons","Compare quotations"],
+  c:["id|uuid|PK|","quote_id|uuid|FK:quotes UQ NN|","scoring_version|text|NN|","total_score|numeric(5,2)|NN|0–100","price_score|numeric(5,2)||net cost per kW","panel_score|numeric(5,2)||","inverter_score|numeric(5,2)||","warranty_score|numeric(5,2)||","timeline_score|numeric(5,2)||","completeness_score|numeric(5,2)||from quote_reviews","vendor_rating_score|numeric(5,2)||","weights|jsonb|NN|{price:0.30, warranty:0.20, ...}","explanation|jsonb|NN|per criterion: input, formula, points","computed_at|timestamptz|NN|"]},
+ {n:"recommendations", d:"quotes", p:"P0", purpose:"The recommended quote for a request. Ranking comes from quote_scores; the LLM only writes the reasons.",
+  f:["Recommend a vendor with reasons","Compare quotations","Ignore hidden instructions"],
+  c:["id|uuid|PK|","request_id|uuid|FK:solar_requests IDX NN|","recommended_quote_id|uuid|FK:quotes NN|","quotes_fingerprint|text|NN|hash of quote ids and versions; stale when quotes change","ranking|jsonb|NN|[{quote_id, score, rank}] from code","reasons|jsonb|NN|LLM text, written only from the score table","caveats|text||","ai_job_id|uuid|FK:ai_jobs|","model|text||","created_at|timestamptz|NN|"]},
+ {n:"saved_quotes", d:"quotes", p:"P2", purpose:"Quotes a household bookmarks for later comparison.",
+  f:["Save/bookmark quotations"],
+  c:["user_id|uuid|PK FK:users|composite key","quote_id|uuid|PK FK:quotes|composite key","note|text||","created_at|timestamptz|NN|"]},
+ {n:"comparison_reports", d:"quotes", p:"P2", purpose:"Generated comparison report files with quotes and the AI recommendation.",
+  f:["Downloadable comparison report"],
+  c:["id|uuid|PK|","request_id|uuid|FK:solar_requests IDX NN|","recommendation_id|uuid|FK:recommendations|","file_id|uuid|FK:files NN|generated PDF","generated_by|uuid|FK:users NN|","created_at|timestamptz|NN|"]},
+ {n:"ai_chat_threads", d:"quotes", p:"P3", purpose:"An Ask-AI conversation about the quotes on one request.",
+  f:["Ask-AI-about-quotations chatbot"],
+  c:["id|uuid|PK|","request_id|uuid|FK:solar_requests IDX NN|","user_id|uuid|FK:users NN|","lang|text|NN|en · hi · gu","created_at|timestamptz|NN|"]},
+ {n:"ai_chat_messages", d:"quotes", p:"P3", purpose:"Messages in an Ask-AI thread. Answers cite quote ids and use numbers from calculations.",
+  f:["Ask-AI-about-quotations chatbot"],
+  c:["id|uuid|PK|","thread_id|uuid|FK:ai_chat_threads IDX NN|","role|text|NN|user · assistant","content|text|NN|","cited_quote_ids|jsonb||","ai_job_id|uuid|FK:ai_jobs|","tokens_in|int||","tokens_out|int||","created_at|timestamptz|NN|"]},
+
+ {n:"installation_projects", d:"install", p:"P1", purpose:"Created when a quote is accepted. Tracks installation and subsidy progress.",
+  f:["Installation progress tracker","Request status tracking"],
+  c:["id|uuid|PK|","request_id|uuid|FK:solar_requests UQ NN|","quote_id|uuid|FK:quotes UQ NN|","vendor_id|uuid|FK:vendors IDX NN|","household_id|uuid|FK:users IDX NN|","stage|text|NN|see Status values","site_survey_date|date||","scheduled_date|date||","completed_date|date||","commissioned_date|date||","subsidy_application_no|text||national portal reference","subsidy_status|text|NN|not_applied · applied · approved · disbursed",...STD_TS]},
+ {n:"installation_events", d:"install", p:"P1", purpose:"Timeline entries for an installation, optionally with a site photo.",
+  f:["Installation progress tracker","Notifications"],
+  c:["id|uuid|PK|","project_id|uuid|FK:installation_projects IDX NN|","stage|text|NN|","note|text||","photo_file_id|uuid|FK:files|","created_by|uuid|FK:users NN|","created_at|timestamptz|NN|"]},
+ {n:"messages", d:"install", p:"P2", purpose:"Direct messages between a household and a vendor about a request.",
+  f:["Contact vendor"],
+  c:["id|uuid|PK|","request_id|uuid|FK:solar_requests IDX NN|","quote_id|uuid|FK:quotes|","sender_id|uuid|FK:users NN|","recipient_id|uuid|FK:users IDX NN|","body|text|NN|","read_at|timestamptz||","created_at|timestamptz|NN|"]},
+ {n:"notifications", d:"install", p:"P2", purpose:"In-app (and later SMS) alerts for quotes, AI results, leads and stage changes.",
+  f:["Notifications","Lead management"],
+  c:["id|uuid|PK|","user_id|uuid|FK:users IDX NN|","type|text|NN|quote_received · quote_accepted · quote_rejected · ai_review_ready · new_lead · stage_changed · message","title|text|NN|","body|text||","entity_type|text||e.g. quote","entity_id|uuid||","channel|text|NN|in_app · sms · email","sent_at|timestamptz||","read_at|timestamptz||","created_at|timestamptz|NN|"]},
+
+ {n:"files", d:"platform", p:"P0", purpose:"Metadata for every uploaded or generated file. Bytes live in uploads/ locally or object storage in production.",
+  f:["Upload terrace photo","Electricity bill upload","Quotation PDF/image reader","Smart quotation generator","Downloadable comparison report"],
+  c:["id|uuid|PK|","owner_user_id|uuid|FK:users IDX|","purpose|text|NN|terrace_photo · electricity_bill · voice_audio · quote_document · quote_pdf · comparison_report · vendor_document · logo · installation_photo","storage_backend|text|NN|local · s3","storage_key|text|UQ NN|path or object key","original_name|text||","mime_type|text|NN|","size_bytes|bigint|NN|","sha256|text|IDX NN|dedupe and AI cache key","width|int||images only","height|int||","thumbnail_key|text||","created_at|timestamptz|NN|","deleted_at|timestamptz||soft delete"]},
+ {n:"ai_jobs", d:"platform", p:"P0", purpose:"One row per AI call: queue state, model, tokens and output. Used for background processing, caching and rate-limit reporting.",
+  f:["Analyze terrace photo","Voice input","Compare quotations","Recommend a vendor with reasons","Use Gemini/Groq free tier"],
+  c:["id|uuid|PK|","job_type|text|NN|photo_assess · voice_extract · bill_extract · quote_extract · quote_review · recommend · chat","entity_type|text||","entity_id|uuid|IDX|","status|text|NN IDX|queued · running · succeeded · failed · cancelled","priority|text|NN|high (user waiting) · low (background)","provider|text||gemini · groq","model|text||","prompt_version|text|NN|","input_hash|text|IDX NN|cache and idempotency key","output|jsonb||schema-validated result","error|text||","attempts|int|NN|","tokens_in|int||","tokens_out|int||","latency_ms|int||","requested_by|uuid|FK:users|","queued_at|timestamptz|NN|","started_at|timestamptz||","finished_at|timestamptz||"]},
+ {n:"llm_usage", d:"platform", p:"P2", purpose:"Request and token counts per model per time window, for staying within free-tier limits.",
+  f:["Use Gemini/Groq free tier","Scaling: LLM rate limits"],
+  c:["provider|text|PK|composite key","model|text|PK|composite key","window_start|timestamptz|PK|composite key","window_type|text|NN|minute · day","request_count|int|NN|","token_count|int|NN|"]},
+ {n:"audit_logs", d:"platform", p:"P2", purpose:"Who did what: verifications, accepts, cancellations, suspensions. Feeds the admin dashboard.",
+  f:["Admin dashboard"],
+  c:["id|uuid|PK|","actor_user_id|uuid|FK:users IDX|","action|text|NN|vendor.verify · quote.accept · request.cancel · user.suspend","entity_type|text|NN|","entity_id|uuid|IDX|","before|jsonb||","after|jsonb||","ip_address|text||","created_at|timestamptz|NN|"]},
+];
+
+const COVERAGE = [
+ ["Mandatory · Household", null],
+ ["Pin home location on a map","P0",["solar_requests","household_profiles"]],
+ ["Upload terrace photo","P0",["files","request_attachments"]],
+ ["Enter monthly electricity consumption","P0",["solar_requests"]],
+ ["Enter installation budget","P0",["solar_requests"]],
+ ["View incoming quotations","P0",["quotes","quote_line_items"]],
+ ["Compare multiple quotations","P0",["quotes","quote_reviews","quote_scores","calculations"]],
+ ["Mandatory · Vendor", null],
+ ["View open requests on a map","P0",["solar_requests","vendor_service_areas","vendors"]],
+ ["Submit a quotation","P0",["quotes","quote_line_items"]],
+ ["Price, panel, inverter, warranty, timeline","P0",["quotes","components"]],
+ ["Mandatory · AI assistant", null],
+ ["Analyze terrace photo","P0",["roof_assessments","ai_jobs"]],
+ ["Identify obstructions (water tank, staircase room)","P0",["roof_obstructions"]],
+ ["Suggest system size","P0",["calculations","rule_items","roof_assessments"]],
+ ["Estimate subsidy","P0",["calculations","rule_items","discoms"]],
+ ["Estimate payback period","P0",["calculations","discom_tariff_slabs"]],
+ ["Compare vendor quotations","P0",["quote_scores","quote_reviews"]],
+ ["Flag missing items","P0",["quote_reviews","quote_line_items"]],
+ ["Recommend a vendor with reasons","P0",["recommendations","quote_scores"]],
+ ["Mandatory · Voice", null],
+ ["Fill requirement by speaking","P0",["voice_inputs","files","ai_jobs"]],
+ ["Bonus", null],
+ ["Voice input in Gujarati and Hindi","P0",["voice_inputs","users"]],
+ ["Ignore hidden instructions in a quote","P0",["quotes","quote_reviews","quote_extractions","recommendations"]],
+ ["Technical and business rules", null],
+ ["Follow PM Surya Ghar rules","P0",["rule_sets","rule_items"]],
+ ["Show where each rule comes from","P0",["rule_items","calculations"]],
+ ["Calculate subsidy, cost, payback in code","P0",["calculations"]],
+ ["Seed sample vendors and quotes","P0",["vendors","quotes","components"]],
+ ["Gemini / Groq free tier, within limits","P0",["ai_jobs","llm_usage"]],
+ ["Recommended · Household", null],
+ ["Electricity bill upload and extraction","P1",["electricity_bills","files"]],
+ ["Automatic location detection","P1",["solar_requests","household_profiles"]],
+ ["Solar savings calculator","P1",["calculations","discom_tariff_slabs"]],
+ ["Installation progress tracker","P1",["installation_projects","installation_events"]],
+ ["Notifications","P2",["notifications"]],
+ ["Recommended · Vendor", null],
+ ["Vendor profile and verification","P1",["vendors","vendor_documents","vendor_service_areas"]],
+ ["Lead management","P2",["vendor_leads"]],
+ ["Smart quotation PDF generator","P1",["quotes","quote_line_items","files"]],
+ ["Vendor analytics","P2",["vendor_stats","vendor_leads"]],
+ ["Recommended · AI", null],
+ ["Quotation PDF/image reader","P2",["quote_extractions","files"]],
+ ["Explainable quotation score","P0",["quote_scores"]],
+ ["Ask-AI-about-quotations chatbot","P3",["ai_chat_threads","ai_chat_messages"]],
+ ["Rooftop layout visualization","P3",["panel_layouts","roof_obstructions"]],
+ ["Recommended · General", null],
+ ["Role-based auth (household, vendor, admin)","P0",["users","auth_otps"]],
+ ["Admin dashboard","P2",["audit_logs","vendor_documents","vendor_stats"]],
+ ["Request status tracking","P0",["solar_requests","request_status_history"]],
+ ["Vendor ratings and reviews","P2",["vendor_reviews","vendors"]],
+ ["Save/bookmark quotations","P2",["saved_quotes"]],
+ ["Downloadable comparison report","P2",["comparison_reports","files"]],
+ ["Multilingual interface (en, hi, gu)","P2",["users","faqs"]],
+ ["Help and FAQ","P2",["faqs"]],
+ ["Contact vendor","P2",["messages","vendors"]],
+ ["Mobile-responsive interface","P0",[]],
+];
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const state = {dom:"all", pri:"all", q:""};
+
+function keyHtml(k){
+  if(!k) return "";
+  return k.split(" ").map(x=>{
+    if(x==="PK") return '<span class="key pk">PK</span>';
+    if(x.startsWith("FK:")){const t=x.slice(3);return `<span class="key fk">FK <a href="#t-${t}">${t}</a></span>`;}
+    return `<span class="key">${x}</span>`;
+  }).join("");
+}
+function card(t){
+  const rows = t.c.map(line=>{
+    const [c,ty,k,n] = line.split("|");
+    return `<tr><td class="c">${esc(c)}</td><td class="t">${esc(ty)}</td><td class="k">${keyHtml(k)}</td><td class="n">${esc(n||"")}</td></tr>`;
+  }).join("");
+  const refs = [...new Set(t.c.flatMap(l=>(l.split("|")[2]||"").split(" ").filter(x=>x.startsWith("FK:")).map(x=>x.slice(3))))];
+  const refBy = T.filter(o=>o.n!==t.n && o.c.some(l=>(l.split("|")[2]||"").includes("FK:"+t.n))).map(o=>o.n);
+  const foot = [];
+  if(t.foot) foot.push(`<div><b>Constraints:</b> <code>${esc(t.foot)}</code></div>`);
+  if(refs.length) foot.push(`<div><b>References:</b> ${refs.map(r=>`<a href="#t-${r}">${r}</a>`).join(", ")}</div>`);
+  if(refBy.length) foot.push(`<div><b>Referenced by:</b> ${refBy.map(r=>`<a href="#t-${r}">${r}</a>`).join(", ")}</div>`);
+  return `<article class="tcard" id="t-${t.n}">
+    <div class="thead">
+      <div class="tname"><h4>${t.n}</h4><span class="pill ${t.p}">${t.p}</span>${t.view?'<span class="pill view">VIEW</span>':""}<span class="dom">${DOMAINS[t.d]} · ${t.c.length} columns</span></div>
+      <p class="purpose">${esc(t.purpose)}</p>
+      <p class="feat"><b>Serves:</b> ${t.f.map(esc).join(" · ")}</p>
+    </div>
+    <div class="cols"><table><tbody>${rows}</tbody></table></div>
+    ${foot.length?`<div class="tfoot">${foot.join("")}</div>`:""}
+  </article>`;
+}
+function matches(t){
+  if(state.dom!=="all" && t.d!==state.dom) return false;
+  if(state.pri!=="all" && t.p!==state.pri) return false;
+  if(state.q){
+    const hay=(t.n+" "+t.purpose+" "+t.f.join(" ")+" "+t.c.join(" ")).toLowerCase();
+    if(!hay.includes(state.q)) return false;
+  }
+  return true;
+}
+function render(){
+  const list=T.filter(matches);
+  document.getElementById("grid").innerHTML = list.length ? list.map(card).join("") : '<div class="empty">No tables match. Clear the search or pick another domain.</div>';
+  document.getElementById("count").textContent = `${list.length} of ${T.length}`;
+}
+function chips(el, items, key){
+  el.innerHTML = items.map(([v,l])=>`<button type="button" class="chip" data-v="${v}" aria-pressed="${state[key]===v}">${l}</button>`).join(" ");
+  el.addEventListener("click", e=>{
+    const b=e.target.closest(".chip"); if(!b) return;
+    state[key]=b.dataset.v;
+    el.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed", c.dataset.v===state[key]));
+    render();
+  });
+}
+chips(document.getElementById("domChips"), [["all","All"],...Object.entries(DOMAINS)], "dom");
+chips(document.getElementById("priChips"), [["all","All"],["P0","P0"],["P1","P1"],["P2","P2"],["P3","P3"]], "pri");
+document.getElementById("q").addEventListener("input", e=>{state.q=e.target.value.trim().toLowerCase();render();});
+render();
+
+// jumping to a table from a link clears filters so the card exists
+document.addEventListener("click", e=>{
+  const a=e.target.closest('a[href^="#t-"]'); if(!a) return;
+  const id=a.getAttribute("href").slice(1);
+  if(!document.getElementById(id)){
+    state.dom="all";state.pri="all";state.q="";document.getElementById("q").value="";
+    document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed", c.dataset.v==="all"));
+    render();
+  }
+});
+
+// stats
+const stored=T.filter(t=>!t.view);
+const cols=T.reduce((s,t)=>s+t.c.length,0);
+const p0=stored.filter(t=>t.p==="P0").length;
+document.getElementById("stats").innerHTML =
+  `<span><b>${stored.length}</b>tables</span><span><b>1</b>view</span><span><b>${cols}</b>columns</span><span><b>${Object.keys(DOMAINS).length}</b>domains</span><span><b>${p0}</b>P0 tables to build first</span>`;
+
+// coverage
+document.querySelector("#cov tbody").innerHTML = COVERAGE.map(r=>{
+  if(r[1]===null) return `<tr><td class="grp" colspan="3">${esc(r[0])}</td></tr>`;
+  const links = r[2].length ? r[2].map(t=>`<a href="#t-${t}">${t}</a>`).join(" ") : '<span style="color:var(--muted)">Frontend only, no tables</span>';
+  return `<tr><td>${esc(r[0])}</td><td><span class="pill ${r[1]}">${r[1]}</span></td><td>${links}</td></tr>`;
+}).join("");
+</script>

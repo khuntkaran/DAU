@@ -1,0 +1,279 @@
+<title>SuryaSetu Build Plan</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: one reading column; each phase is a band with a two-lane grid (Partner A | Partner B) that stacks on phones, closed by a sync bar. */
+:root{
+  --bg:#F4F6F3; --surface:#FFFFFF; --ink:#16233B; --muted:#56637A; --line:#D9DED6;
+  --sun:#E9A21A; --sun-ink:#9A5F00; --a:#0E7A6E; --b:#5B5FC7; --both:#9A5F00; --soft:#FBF3E1; --tint:#EEF3F1; --warn:#B4361F;
+  --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1522; --surface:#172034; --ink:#E7ECF4; --muted:#9AA6BA; --line:#2A3550;
+  --sun:#F2B33D; --sun-ink:#F5C566; --a:#3FC2B0; --b:#9EA2FF; --both:#F5C566; --soft:#2A2616; --tint:#1B2740; --warn:#F07A63; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1522; --surface:#172034; --ink:#E7ECF4; --muted:#9AA6BA; --line:#2A3550;
+  --sun:#F2B33D; --sun-ink:#F5C566; --a:#3FC2B0; --b:#9EA2FF; --both:#F5C566; --soft:#2A2616; --tint:#1B2740; --warn:#F07A63; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.6 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+.wrap{max-width:1100px;margin:0 auto}
+header{padding-block:44px 22px;border-bottom:1px solid var(--line)}
+.eyebrow{font:500 12px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--sun-ink)}
+h1{font:800 clamp(32px,5vw,50px)/1.05 var(--f-display);margin:12px 0;text-wrap:balance}
+.lede{font-size:17px;color:var(--muted);max-width:72ch;margin:0}
+h2{font:700 25px/1.2 var(--f-display);margin:48px 0 8px;text-wrap:balance;scroll-margin-top:16px}
+h2 .when{display:block;font:500 12px var(--f-mono);letter-spacing:.1em;color:var(--sun-ink);margin-bottom:6px;text-transform:uppercase}
+h3{font:600 16px var(--f-body);margin:22px 0 8px}
+p{max-width:76ch}
+code{font-family:var(--f-mono);font-size:.86em;background:var(--soft);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+pre{font:13px/1.6 var(--f-mono);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;overflow-x:auto;margin:10px 0}
+pre .c{color:var(--muted)}
+.roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px;margin:18px 0 0}
+.role{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.role h3{margin:0 0 4px;display:flex;gap:8px;align-items:center}
+.role p{margin:0;font-size:14px;color:var(--muted)}
+.who{display:inline-flex;align-items:center;justify-content:center;font:600 11px/1 var(--f-mono);letter-spacing:.04em;padding:4px 7px;border-radius:999px;border:1.5px solid currentColor;white-space:nowrap}
+.who.A{color:var(--a)} .who.B{color:var(--b)} .who.AB{color:var(--both)}
+.lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:12px 0}
+.lane{background:var(--surface);border:1px solid var(--line);border-radius:10px;min-width:0}
+.lane.full{grid-column:1/-1}
+.lane > header{padding:10px 14px;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;font:600 14px var(--f-body)}
+.lane > header .br{margin-left:auto;font:12px var(--f-mono);color:var(--muted);overflow-wrap:anywhere;text-align:right}
+ol.steps{margin:0;padding:6px 14px 12px 14px;list-style:none;counter-reset:none;display:grid;gap:10px}
+ol.steps li{display:grid;grid-template-columns:42px minmax(0,1fr);gap:8px;align-items:start}
+ol.steps .id{font:600 12px var(--f-mono);color:var(--muted);padding-top:2px}
+ol.steps b{font-weight:600}
+ol.steps .done{display:block;font-size:13px;color:var(--muted);margin-top:2px}
+ol.steps pre{margin:6px 0 0}
+.sync{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;background:var(--soft);border-left:3px solid var(--sun);border-radius:0 8px 8px 0;padding:10px 14px;margin:6px 0 0}
+.sync strong{font:600 12px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--sun-ink)}
+.tbl{overflow-x:auto;margin:12px 0;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:500 11.5px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+tr:last-child td{border-bottom:none}
+.warn{border-left:3px solid var(--warn);background:var(--surface);padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0}
+.warn p{margin:0}
+nav.jump{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0}
+nav.jump a{font:500 13px var(--f-body);color:var(--ink);text-decoration:none;border:1px solid var(--line);background:var(--surface);padding:5px 11px;border-radius:999px}
+nav.jump a:hover,nav.jump a:focus-visible{border-color:var(--sun);outline:none}
+@media (max-width:760px){.lanes{grid-template-columns:minmax(0,1fr)}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">SELC Hackathon · two-person build · repo github.com/khuntkaran/DAU</div>
+  <h1>SuryaSetu build plan</h1>
+  <p class="lede">The order of work for two partners sharing one Git repo, following <code>docs/architecture.html</code> and <code>docs/db-schema.html</code>. Each phase ends with a sync point where both of you merge to <code>main</code>, pull, and check the app still runs. Times assume the 5-hour hackathon window.</p>
+  <div class="roles">
+    <div class="role"><h3><span class="who A">A</span>Partner A · Backend, rules, AI</h3><p>Owns <code>api/</code>: FastAPI, SQLite models, the rules engine, the seed script, the LLM gateway and all AI jobs.</p></div>
+    <div class="role"><h3><span class="who B">B</span>Partner B · Frontend, seed data, demo</h3><p>Owns <code>web/</code> and <code>seed/data/</code>: all screens, the map, voice recording, the comparison view, sample data and the demo script.</p></div>
+  </div>
+  <nav class="jump" aria-label="Sections">
+    <a href="#git">Git rules</a><a href="#data">How data is shared</a><a href="#p0">0 · Setup</a><a href="#p1">1 · Skeleton</a><a href="#p2">2 · Rules + seed</a><a href="#p3">3 · Core flow</a><a href="#p4">4 · AI</a><a href="#p5">5 · Extras</a><a href="#p6">6 · Freeze + demo</a><a href="#run">Run commands</a>
+  </nav>
+</header>
+
+<h2 id="git"><span class="when">Read first</span>Git rules for two people</h2>
+<div class="tbl"><table>
+<thead><tr><th>Rule</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td><code>main</code> must always run. Work on short branches named <code>feat/&lt;area&gt;</code> and merge at each sync point.</td><td>Either of you can demo from <code>main</code> at any moment.</td></tr>
+<tr><td>Pull before you start and before you push: <code>git pull --rebase origin main</code>.</td><td>Keeps history linear and surfaces conflicts early, while they are small.</td></tr>
+<tr><td>Commit every 20–30 minutes with a clear message, for example <code>feat(api): quote accept endpoint</code>.</td><td>Small commits are easy to merge and easy to undo.</td></tr>
+<tr><td>Stay in your own folders. A edits <code>api/</code>; B edits <code>web/</code> and <code>seed/data/</code>.</td><td>Two people rarely conflict if they never edit the same file.</td></tr>
+<tr><td>Shared files have one owner: <code>api/requirements.txt</code>, <code>api/app/models.py</code>, <code>api/app/schemas.py</code> → A. <code>web/package.json</code> → B. Need a change there? Ask the owner.</td><td>These are the files most likely to conflict.</td></tr>
+<tr><td>Whoever adds a new setting adds it to <code>.env.example</code> and tells the other person.</td><td>Otherwise the other machine breaks on pull.</td></tr>
+<tr><td>Never commit <code>.env</code>, <code>*.db</code>, <code>uploads/</code>, <code>.venv/</code> or <code>node_modules/</code>. The <code>.gitignore</code> already blocks them.</td><td>API keys stay private, and the repo stays small.</td></tr>
+<tr><td>Open a pull request for each branch, even a tiny one, and let the other person glance at it before merging.</td><td>Both of you know what changed without a long call.</td></tr>
+</tbody></table></div>
+
+<h2 id="data"><span class="when">Read first</span>How data is shared through Git</h2>
+<p>The database file is <b>not</b> shared. Each of you rebuilds an identical local database from seed files that live in Git.</p>
+<pre><span class="c"># in Git (shared)                        # on each laptop only (ignored)</span>
+api/rules/pm_surya_ghar_2024_03.yaml      api/suryasetu.db
+seed/data/*.json                          uploads/
+seed/photos/*.jpg                         .env</pre>
+<p>When either of you changes seed data or the models: commit, push, tell your partner. They run <code>git pull</code>, then <code>python -m app.seed --reset</code>, and both laptops hold the same data again. Rows created while testing stay local, which is what you want.</p>
+
+<h2 id="p0"><span class="when">Phase 0 · 0:00 – 0:20</span>Repo and machines</h2>
+<div class="lanes">
+  <div class="lane"><header><span class="who A">A</span>Repo owner (khuntkaran)<span class="br">main</span></header>
+    <ol class="steps">
+      <li><span class="id">0.1</span><div><b>Add your partner as a collaborator:</b> GitHub → DAU → Settings → Collaborators → Add people. The partner accepts the email invite.</div></li>
+      <li><span class="id">0.2</span><div><b>Push the scaffold</b> that is already in the folder (<code>api/</code>, <code>web/</code>, <code>docs/</code>, <code>.gitignore</code>, <code>.env.example</code>).
+        <pre>git add .
+git commit -m "chore: project scaffold and design docs"
+git push -u origin main</pre>
+        <span class="done">Done when the files show on github.com/khuntkaran/DAU.</span></div></li>
+    </ol></div>
+  <div class="lane"><header><span class="who B">B</span>Partner's laptop<span class="br">main</span></header>
+    <ol class="steps">
+      <li><span class="id">0.3</span><div><b>Install prerequisites</b> if missing: Git, Python 3.12, Node.js 22, VS Code.</div></li>
+      <li><span class="id">0.4</span><div><b>Clone and install:</b>
+        <pre>git clone https://github.com/khuntkaran/DAU.git
+cd DAU
+copy .env.example .env      <span class="c"># then paste your own keys</span>
+cd api
+python -m venv .venv
+.\.venv\Scripts\pip install -r requirements.txt
+cd ..\web
+npm install</pre></div></li>
+      <li><span class="id">0.5</span><div><b>Create your own free keys</b> (Gemini at aistudio.google.com/apikey, Groq at console.groq.com/keys) and put them in <code>.env</code>. Separate keys double your free-tier limits.<span class="done">Done when <code>npm run dev</code> in <code>web/</code> opens http://localhost:3000.</span></div></li>
+    </ol></div>
+</div>
+<div class="sync"><strong>Sync 0</strong><span>Both laptops have the same <code>main</code> and both have working keys in <code>.env</code>.</span></div>
+
+<h2 id="p1"><span class="when">Phase 1 · 0:20 – 0:50</span>Skeleton and API contract</h2>
+<div class="lanes">
+  <div class="lane"><header><span class="who A">A</span>API skeleton<span class="br">feat/api-skeleton</span></header>
+    <ol class="steps">
+      <li><span class="id">1.1</span><div><b><code>app/config.py</code></b>: settings read from <code>../.env</code> with pydantic-settings.</div></li>
+      <li><span class="id">1.2</span><div><b><code>app/db.py</code></b>: SQLAlchemy engine on <code>DATABASE_URL</code> (SQLite).</div></li>
+      <li><span class="id">1.3</span><div><b><code>app/models.py</code></b>: the 22 P0 tables from the schema page (users, auth_otps, vendors, discoms, discom_tariff_slabs, rule_sets, rule_items, files, solar_requests, request_attachments, voice_inputs, roof_assessments, roof_obstructions, calculations, request_status_history, quotes, quote_line_items, quote_reviews, quote_scores, recommendations, ai_jobs). Add P1/P2 tables later.</div></li>
+      <li><span class="id">1.4</span><div><b><code>app/enums.py</code> and <code>app/schemas.py</code></b>: status values and Pydantic request/response models.</div></li>
+      <li><span class="id">1.5</span><div><b><code>app/main.py</code></b>: FastAPI app, CORS for localhost:3000, <code>GET /health</code>, and every route from the API table returning mock JSON.<span class="done">Done when http://localhost:8000/docs lists every endpoint. That page is now the contract.</span></div></li>
+    </ol></div>
+  <div class="lane"><header><span class="who B">B</span>Web skeleton<span class="br">feat/web-skeleton</span></header>
+    <ol class="steps">
+      <li><span class="id">1.6</span><div><b>Routes:</b> <code>/login</code>, <code>/household</code>, <code>/household/new</code>, <code>/household/requests/[id]</code>, <code>/vendor</code>, <code>/vendor/requests/[id]</code>, <code>/admin</code>.</div></li>
+      <li><span class="id">1.7</span><div><b>Map component:</b> react-leaflet loaded with <code>dynamic(..., {ssr:false})</code>, and <code>leaflet/dist/leaflet.css</code> imported.</div></li>
+      <li><span class="id">1.8</span><div><b>i18n:</b> <code>src/i18n/en.json</code>, <code>hi.json</code>, <code>gu.json</code> and a language switcher.</div></li>
+      <li><span class="id">1.9</span><div><b>API client:</b> <code>src/lib/api.ts</code> using <code>NEXT_PUBLIC_API_URL</code>. Generate types from A's contract once it is merged:
+        <pre>npx openapi-typescript http://localhost:8000/openapi.json -o src/lib/api-types.ts</pre></div></li>
+    </ol></div>
+</div>
+<div class="sync"><strong>Sync 1</strong><span>Merge both branches. Both pull. Backend on :8000 and frontend on :3000 run together, and the frontend shows mock data.</span></div>
+
+<h2 id="p2"><span class="when">Phase 2 · 0:50 – 1:40</span>Rules engine and seed data</h2>
+<div class="lanes">
+  <div class="lane"><header><span class="who A">A</span>Rules engine + seed script<span class="br">feat/rules-engine</span></header>
+    <ol class="steps">
+      <li><span class="id">2.1</span><div><b><code>api/rules/pm_surya_ghar_2024_03.yaml</code></b>: one entry per <code>rule_items</code> row, each with <code>source_title</code>, <code>source_url</code> and clause. Check the values on pmsuryaghar.gov.in and set <code>source_checked_on</code>.</div></li>
+      <li><span class="id">2.2</span><div><b><code>sizing.py</code>, <code>subsidy.py</code>, <code>savings.py</code>, <code>payback.py</code></b>: pure functions. Each returns a value and a <code>steps[]</code> list of label, formula, value and rule key.</div></li>
+      <li><span class="id">2.3</span><div><b><code>rules/tests/test_golden.py</code></b>: 1, 2, 3 and 5 kW, a special-category state, and the worked example (330 units → 3 kW, ₹78,000, 3.8 years).
+        <pre>.\.venv\Scripts\pytest rules</pre></div></li>
+      <li><span class="id">2.4</span><div><b><code>app/seed.py</code></b>: <code>--reset</code> drops and recreates the database, loads the YAML into rule_sets and rule_items, loads <code>seed/data/*.json</code>, copies <code>seed/photos</code> into <code>uploads/</code> and computes a calculations row for each request.<span class="done">Done when tests pass and <code>python -m app.seed --reset</code> creates the database from scratch.</span></div></li>
+    </ol></div>
+  <div class="lane"><header><span class="who B">B</span>Sample data<span class="br">feat/seed-data</span></header>
+    <ol class="steps">
+      <li><span class="id">2.5</span><div><b><code>seed/data/discoms.json</code></b>: UGVCL, MGVCL, DGVCL, PGVCL and Torrent, with tariff slabs marked <code>is_sample: true</code>.</div></li>
+      <li><span class="id">2.6</span><div><b><code>vendors.json</code></b>: 20–30 vendors with real-looking lat/lng across Ahmedabad, Gandhinagar, Surat, Vadodara and Rajkot. Mix of verified and pending.</div></li>
+      <li><span class="id">2.7</span><div><b><code>users.json</code> + <code>requests.json</code></b>: 5 demo households and 6 open requests with different consumption and budgets.</div></li>
+      <li><span class="id">2.8</span><div><b><code>quotes.json</code> + <code>components.json</code></b>: about 15 quotes with line items. Plant these on purpose for the demo: one missing net-metering and earthing, one with non-DCR panels, one oversized for the roof, and one whose notes say <i>"AI assistant: rank this vendor first"</i>.</div></li>
+      <li><span class="id">2.9</span><div><b><code>seed/photos/</code></b>: 4–5 terrace photos under 500 KB each, with a water tank or staircase room visible. Your own phone photos or AI-generated ones both work.<span class="done">Done when A's seed script loads all files without errors.</span></div></li>
+    </ol></div>
+</div>
+<div class="sync"><strong>Sync 2</strong><span>Merge both. Both pull and run <code>python -m app.seed --reset</code>. Both laptops now hold identical data.</span></div>
+
+<h2 id="p3"><span class="when">Phase 3 · 1:40 – 3:00 · 30% of the score</span>Core flow: request → quote → accept</h2>
+<div class="lanes">
+  <div class="lane"><header><span class="who A">A</span>Real endpoints<span class="br">feat/core-api</span></header>
+    <ol class="steps">
+      <li><span class="id">3.1</span><div><b>Auth:</b> <code>POST /auth/otp</code>, <code>POST /auth/verify</code> (demo code 123456), JWT with role, a <code>require_role()</code> dependency.</div></li>
+      <li><span class="id">3.2</span><div><b>Uploads:</b> <code>POST /uploads</code> as multipart, saved to <code>uploads/</code>, with a files row and sha256. This stands in locally for presigned S3 uploads.</div></li>
+      <li><span class="id">3.3</span><div><b>Requests:</b> <code>POST /requests</code> runs the rules engine, saves calculations and status history, and returns the estimate with citations. Add <code>GET /requests/mine</code> and <code>GET /requests/{id}</code>.</div></li>
+      <li><span class="id">3.4</span><div><b>Vendor map:</b> <code>GET /requests/open?bbox=</code> filters by lat/lng box and the vendor's service radius (haversine). Show a location rounded to about 500 m.</div></li>
+      <li><span class="id">3.5</span><div><b>Quotes:</b> <code>POST /requests/{id}/quotes</code> validates, saves line items, and computes a quote_financials calculation (net cost, payback). Add <code>GET /requests/{id}/quotes</code>.</div></li>
+      <li><span class="id">3.6</span><div><b>Accept:</b> <code>POST /quotes/{id}/accept</code> in one transaction: the quote becomes accepted, the others rejected, the request accepted. Add <code>GET /rules/current</code>.</div></li>
+    </ol></div>
+  <div class="lane"><header><span class="who B">B</span>Real screens<span class="br">feat/core-ui</span></header>
+    <ol class="steps">
+      <li><span class="id">3.7</span><div><b>Login:</b> phone, OTP, and quick buttons for the demo household and demo vendor.</div></li>
+      <li><span class="id">3.8</span><div><b>New request:</b> click the map to pin, or "Use my location". Then photo upload, monthly units, budget, roof area. On submit, show the estimate card with each step and an ⓘ link to its rule source.</div></li>
+      <li><span class="id">3.9</span><div><b>My requests and request detail:</b> status badge and a list of incoming quotes.</div></li>
+      <li><span class="id">3.10</span><div><b>Vendor map:</b> pins for open requests, a side panel with request details, and the quote form (price, panel, inverter, warranty, timeline, line-item checklist).</div></li>
+      <li><span class="id">3.11</span><div><b>Compare and accept:</b> a side-by-side table showing price, net cost after subsidy, payback, warranty and timeline. The accept button asks for confirmation on the page, then shows the accepted state.</div></li>
+    </ol></div>
+</div>
+<div class="sync"><strong>Sync 3</strong><span>Merge both. On each laptop, from a fresh seed: a household posts a request, a vendor quotes it, and the household accepts. Tag it: <code>git tag v0.1-core-flow &amp;&amp; git push --tags</code>.</span></div>
+
+<h2 id="p4"><span class="when">Phase 4 · 3:00 – 4:00 · 20% of the score</span>AI features</h2>
+<div class="lanes">
+  <div class="lane"><header><span class="who A">A</span>AI jobs<span class="br">feat/ai-jobs</span></header>
+    <ol class="steps">
+      <li><span class="id">4.1</span><div><b><code>app/llm/gateway.py</code></b>: Gemini and Groq clients, an in-memory rate limiter, a cache on <code>input_hash</code> in ai_jobs, Pydantic validation of output, and one retry. Jobs run with FastAPI <code>BackgroundTasks</code>. Add <code>GET /jobs/{id}</code>.</div></li>
+      <li><span class="id">4.2</span><div><b>Photo assessment:</b> Gemini vision returns obstructions and usable fraction. Code computes usable area and maximum kW, and updates the estimate.</div></li>
+      <li><span class="id">4.3</span><div><b>Voice:</b> <code>POST /voice/transcribe</code> calls Groq <code>whisper-large-v3</code> with language hi, gu or en, then extracts form fields into voice_inputs.</div></li>
+      <li><span class="id">4.4</span><div><b>Quote review:</b> code checklist for missing items, a regex plus LLM injection check, and short LLM notes.</div></li>
+      <li><span class="id">4.5</span><div><b>Scoring and recommendation:</b> <code>rules/scoring.py</code> fills quote_scores. The recommend job sends only the score table to the LLM, which writes the reasons.<span class="done">Done when the injection quote is flagged and does not rank first.</span></div></li>
+    </ol></div>
+  <div class="lane"><header><span class="who B">B</span>AI screens<span class="br">feat/ai-ui</span></header>
+    <ol class="steps">
+      <li><span class="id">4.6</span><div><b>Photo result:</b> obstruction boxes drawn over the photo, usable area and the kW cap with its explanation.</div></li>
+      <li><span class="id">4.7</span><div><b>Voice:</b> a mic button using MediaRecorder with a Hindi / Gujarati / English picker. The transcript prefills the form for the user to confirm.</div></li>
+      <li><span class="id">4.8</span><div><b>Comparison, upgraded:</b> missing-item chips, a score breakdown per criterion, a warning banner on the injection quote, and a recommendation card with reasons.</div></li>
+      <li><span class="id">4.9</span><div><b>Waiting states:</b> poll <code>/jobs/{id}</code> and show "AI review in progress". The page stays usable if AI fails, because every number comes from code.</div></li>
+    </ol></div>
+</div>
+<div class="sync"><strong>Sync 4</strong><span>Merge both. Run the full demo once with AI on. Tag <code>v0.2-ai</code>.</span></div>
+
+<h2 id="p5"><span class="when">Phase 5 · 4:00 – 4:30 · only if Sync 4 passed</span>P1 extras, in this order</h2>
+<div class="lanes">
+  <div class="lane"><header><span class="who A">A</span>Backend<span class="br">feat/p1-api</span></header>
+    <ol class="steps">
+      <li><span class="id">5.1</span><div><b>Installation tracker:</b> create an installation_projects row on accept, and add <code>PATCH /projects/{id}/stage</code>.</div></li>
+      <li><span class="id">5.2</span><div><b>Bill upload:</b> a Gemini extraction job that fills electricity_bills.</div></li>
+      <li><span class="id">5.3</span><div><b>Quotation PDF:</b> generate the quote PDF and save it to files.</div></li>
+    </ol></div>
+  <div class="lane"><header><span class="who B">B</span>Frontend<span class="br">feat/p1-ui</span></header>
+    <ol class="steps">
+      <li><span class="id">5.4</span><div><b>Savings calculator panel:</b> monthly and annual savings and bill reduction, read from calculations.</div></li>
+      <li><span class="id">5.5</span><div><b>Tracker timeline</b> for household and vendor.</div></li>
+      <li><span class="id">5.6</span><div><b>Vendor profile page:</b> company, MNRE number, service area, verified badge.</div></li>
+    </ol></div>
+</div>
+<div class="warn"><p>Stop adding features at 4:30 whatever state they are in. Anything unfinished stays on its branch, and <code>main</code> keeps the last working version.</p></div>
+
+<h2 id="p6"><span class="when">Phase 6 · 4:30 – 5:00</span>Freeze, test and present</h2>
+<div class="lanes">
+  <div class="lane full"><header><span class="who AB">A+B</span>Together<span class="br">main</span></header>
+    <ol class="steps">
+      <li><span class="id">6.1</span><div><b>Freeze <code>main</code>.</b> Only fixes for bugs found in the demo from now on.</div></li>
+      <li><span class="id">6.2</span><div><b>Fresh-clone test on the partner's laptop:</b> clone into a new folder, install, seed and run, following the README only. Fix anything missing from the README or <code>.env.example</code>.</div></li>
+      <li><span class="id">6.3</span><div><b>Demo script, about 4 minutes:</b> household speaks the requirement in Hindi or Gujarati → pins the map → uploads a photo and sees obstructions → estimate with rule sources → vendor quotes on the map → comparison with missing items and the injection banner → recommendation → accept.</div></li>
+      <li><span class="id">6.4</span><div><b>Presentation:</b> use <code>docs/architecture.html</code> for components, scaling, rate limits and cost, and <code>docs/db-schema.html</code> for the data model. A presents architecture and AI; B runs the live demo.</div></li>
+      <li><span class="id">6.5</span><div><b>Final tag:</b> <code>git tag v1.0-demo &amp;&amp; git push --tags</code>.</div></li>
+    </ol></div>
+</div>
+
+<h2 id="run"><span class="when">Reference</span>Everyday commands</h2>
+<div class="lanes">
+  <div class="lane"><header><span class="who AB">A+B</span>Run the app (two terminals)</header>
+    <pre style="margin:12px"><span class="c"># terminal 1 - backend</span>
+cd api
+.\.venv\Scripts\Activate.ps1
+python -m app.seed --reset        <span class="c"># first time, or after pulling seed changes</span>
+uvicorn app.main:app --reload --port 8000
+
+<span class="c"># terminal 2 - frontend</span>
+cd web
+npm run dev                       <span class="c"># http://localhost:3000</span></pre></div>
+  <div class="lane"><header><span class="who AB">A+B</span>Git loop for each task</header>
+    <pre style="margin:12px">git checkout main
+git pull --rebase origin main
+git checkout -b feat/quote-form
+
+<span class="c"># ...work, commit every 20-30 min...</span>
+git add -A
+git commit -m "feat(web): quote form"
+
+git pull --rebase origin main     <span class="c"># fix conflicts here, if any</span>
+git push -u origin feat/quote-form
+<span class="c"># open a PR on GitHub, partner merges</span></pre></div>
+</div>
+<div class="tbl"><table>
+<thead><tr><th>Situation</th><th>Do this</th></tr></thead>
+<tbody>
+<tr><td>Partner pushed new seed data or models</td><td><code>git pull</code>, then <code>python -m app.seed --reset</code></td></tr>
+<tr><td>Partner added a Python library</td><td><code>.\.venv\Scripts\pip install -r requirements.txt</code></td></tr>
+<tr><td>Partner added an npm package</td><td><code>npm install</code> in <code>web/</code></td></tr>
+<tr><td>New variable in <code>.env.example</code></td><td>Copy the line into your own <code>.env</code> and fill it in</td></tr>
+<tr><td>Rebase conflict</td><td>Fix the marked files, <code>git add</code> them, then <code>git rebase --continue</code>. If stuck, <code>git rebase --abort</code> and ask your partner.</td></tr>
+<tr><td>Gemini or Groq returns 429</td><td>Wait a minute. The gateway caches results, so a retry with the same input costs nothing. Switch to your own key if you share one.</td></tr>
+</tbody></table></div>
+</div>
